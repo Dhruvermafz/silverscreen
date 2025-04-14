@@ -1,0 +1,21 @@
+const express = require("express");
+const router = express.Router();
+const userController = require("../controllers/userController");
+const protect = require("../middleware/authMiddleware");
+
+// GET logged-in user's profile
+router.get("/profile", protect, userController.getProfile);
+
+// UPDATE profile
+router.put("/profile", protect, userController.updateProfile);
+
+// GET all users
+router.get("/", protect, userController.getAllUsers);
+
+// GET user by ID
+router.get("/:id", protect, userController.getUserById);
+
+// DELETE user by ID
+router.delete("/:id", protect, userController.deleteUser);
+
+module.exports = router;
