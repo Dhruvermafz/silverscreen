@@ -8,6 +8,8 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { getProfile } from "../../actions/users/userActions";
+import "./navbar.css";
+
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,52 +37,52 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="bg-gray-900 p-4 flex justify-between items-center flex-wrap">
-      <div className="text-white text-3xl font-bold">SilverScreeninSight</div>
+    <nav className="navbar">
+      <div className="navbar__title">SilverScreeninSight</div>
 
-      <div className="flex space-x-4 mt-2 md:mt-0">
-        <a className="text-gray-300 hover:text-white" href="#">
+      <div className="navbar__menu">
+        <a className="navbar__menu-item" href="#">
           Films
         </a>
-        <a className="text-gray-300 hover:text-white" href="#">
+        <a className="navbar__menu-item" href="#">
           Lists
         </a>
-        <a className="text-gray-300 hover:text-white" href="#">
+        <a className="navbar__menu-item" href="#">
           Members
         </a>
       </div>
 
-      <div className="flex items-center space-x-3 mt-2 md:mt-0">
+      <div className="navbar__actions">
         <Input
           placeholder="Search films..."
           prefix={<SearchOutlined />}
-          className="w-48"
+          className="navbar__search"
         />
 
         {!loading && !user && (
-          <>
+          <div className="navbar__auth-buttons">
             <a href="/login">
               <Button
                 icon={<LoginOutlined />}
                 type="default"
-                className="text-white border-white hover:border-gray-300"
+                className="navbar__button--login"
               >
                 Log In
               </Button>
             </a>
             <a href="/signup">
-              <Button type="primary" danger>
+              <Button type="primary" danger className="navbar__button--signup">
                 Sign Up
               </Button>
             </a>
-          </>
+          </div>
         )}
 
         {!loading && user && (
           <Dropdown overlay={menu} placement="bottomRight">
             <Button
               icon={<UserOutlined />}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="navbar__button--login bg-blue-600 hover:bg-blue-700"
             >
               {user.username}
             </Button>
@@ -88,10 +90,7 @@ const Navbar = () => {
         )}
 
         <a href="/review">
-          <Button
-            type="primary"
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
+          <Button type="primary" className="navbar__button--review">
             Review
           </Button>
         </a>

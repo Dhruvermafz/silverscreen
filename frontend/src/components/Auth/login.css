@@ -1,0 +1,91 @@
+/* Login.css */
+
+.login-container {
+  background-color: #374151; /* Tailwind's gray-700 */
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 400px;
+  color: #d1d5db; /* Tailwind's gray-300 */
+}
+
+.login-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.login-close {
+  color: #9ca3af; /* Tailwind's gray-400 */
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.login-close:hover {
+  color: #f87171; /* Tailwind's red-400 */
+}
+
+.login-form .ant-form-item-label > label {
+  color: #d1d5db !important;
+}
+
+.login-form .ant-input,
+.login-form .ant-input-password {
+  background-color: #1f2937; /* Tailwind's gray-800 */
+  border: 1px solid #4b5563; /* Tailwind's gray-600 */
+  color: #f9fafb; /* Tailwind's gray-100 */
+}
+
+.login-form .ant-input::placeholder {
+  color: #9ca3af; /* Tailwind's gray-400 */
+}
+
+.login-form .ant-input:focus,
+.login-form .ant-input-password:focus {
+  border-color: #3b82f6; /* Tailwind's blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.login-form .ant-checkbox-inner {
+  background-color: #1f2937;
+  border-color: #6b7280;
+}
+
+.login-form .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.login-form .ant-btn-primary {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  font-weight: 500;
+}
+
+.login-form .ant-btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.login-footer {
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-footer a {
+  color: #60a5fa;
+  transition: text-decoration 0.2s ease;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}

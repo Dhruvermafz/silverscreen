@@ -1,5 +1,5 @@
 const axios = require("axios");
-const Movie = require("../models/Movie");
+const Movie = require("../models/movies");
 
 exports.searchMovies = async (req, res) => {
   const { query } = req.query;

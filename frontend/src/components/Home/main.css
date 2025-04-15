@@ -1,0 +1,153 @@
+/* MainContent Styles */
+.main-content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #121212; /* Dark background */
+}
+
+.movie-card {
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #1e1e1e; /* Dark card background */
+  color: #ffffff;
+  transition: background-color 0.3s ease-in-out;
+  padding: 1rem;
+}
+
+.movie-card:hover {
+  background-color: #2c2c2c; /* Slightly lighter on hover */
+}
+
+.movie-image {
+  height: 16rem;
+  object-fit: cover;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.movie-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 1rem;
+}
+
+.movie-info {
+  color: #aaa;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.review-section {
+  margin-top: 2rem;
+}
+
+.user-reviews {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #aaa;
+}
+
+.review-item {
+  background-color: #2c2c2c;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.review-placeholder {
+  color: #777;
+  font-style: italic;
+}
+
+.review-textarea {
+  border-radius: 0.5rem;
+  border: 1px solid #444;
+  padding: 0.75rem;
+  width: 100%;
+  background-color: #333;
+  color: #fff;
+}
+
+.review-button {
+  margin-top: 1rem;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.review-button:hover {
+  background-color: #c0392b;
+}
+
+.add-review-button {
+  margin-top: 1rem;
+  color: #007bff;
+  background-color: transparent;
+  border: 1px solid #007bff;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.add-review-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* HeroSection Styles */
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 18rem;
+  margin-top: 3rem;
+}
+
+.hero-section-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.hero-section-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.hero-description {
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+  color: #ddd;
+}
+
+.hero-signup-button {
+  margin-top: 1.5rem;
+  background-color: #e74c3c;
+  border-radius: 0.5rem;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.hero-signup-button:hover {
+  background-color: #c0392b;
+}

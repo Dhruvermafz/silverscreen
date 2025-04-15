@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/userController");
+const userController = require("../controller/userController");
 const protect = require("../middleware/authMiddleware");
 
 // GET logged-in user's profile

@@ -6,6 +6,7 @@ import {
   InstagramOutlined,
   MailOutlined,
 } from "@ant-design/icons";
+import "./footer.css"; // Link to your custom footer CSS
 
 const { Footer } = Layout;
 const { Link, Text } = Typography;

@@ -1,122 +1,202 @@
-import React from "react";
+import React, { useState } from "react";
+import {
+  ArrowLeftOutlined,
+  CloseOutlined,
+  HeartOutlined,
+  HeartFilled,
+} from "@ant-design/icons";
+import {
+  Button,
+  Input,
+  DatePicker,
+  Checkbox,
+  Rate,
+  Typography,
+  Space,
+  Row,
+  Col,
+  Card,
+} from "antd";
+
+const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 const WriteReview = () => {
+  const [liked, setLiked] = useState(false);
+  const [rating, setRating] = useState(0);
+
+  const recommended = [
+    {
+      title: "Inception (2010)",
+      img: "https://m.media-amazon.com/images/I/71niXI3lxlL._AC_UF894,1000_QL80_.jpg",
+    },
+    {
+      title: "The Martian (2015)",
+      img: "https://m.media-amazon.com/images/I/71nSnpkK0mL._AC_UF894,1000_QL80_.jpg",
+    },
+    {
+      title: "Gravity (2013)",
+      img: "https://m.media-amazon.com/images/I/81k1b6y3Y4L._AC_UF894,1000_QL80_.jpg",
+    },
+    {
+      title: "Arrival (2016)",
+      img: "https://m.media-amazon.com/images/I/71UFBewy-KL._AC_UF894,1000_QL80_.jpg",
+    },
+  ];
+
   return (
-    <div class="bg-gray-800 p-6 rounded-xl shadow-lg w-full max-w-4xl space-y-6">
-      <div class="flex justify-between items-center border-b pb-4">
-        <button class="text-gray-400 hover:text-white flex items-center gap-1">
-          <i class="fas fa-arrow-left"></i>
-          <a href="index.html">Back</a>
-        </button>
-        <h2 class="text-2xl font-semibold">I Watched...</h2>
-        <i class="fas fa-times text-gray-400 hover:text-white cursor-pointer"></i>
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-6">
-        <img
-          src="https://m.media-amazon.com/images/I/61DUasB6X5L._AC_UF894,1000_QL80_.jpg"
-          alt="Interstellar"
-          class="w-36 h-52 object-cover rounded-lg shadow"
+    <div
+      style={{
+        backgroundColor: "#1f2937",
+        padding: 24,
+        borderRadius: 16,
+        maxWidth: 900,
+        margin: "0 auto",
+        color: "white",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid #374151",
+          paddingBottom: 16,
+        }}
+      >
+        <Button
+          type="link"
+          href="/index.html"
+          style={{ color: "#9ca3af" }}
+          icon={<ArrowLeftOutlined />}
+        >
+          Back
+        </Button>
+        <Title level={3} style={{ color: "white", margin: 0 }}>
+          I Watched...
+        </Title>
+        <CloseOutlined
+          style={{ color: "#9ca3af", cursor: "pointer", fontSize: 18 }}
         />
-        <div class="flex-1">
-          <h3 class="text-2xl font-bold">
-            Interstellar <span class="text-gray-400 font-medium">(2014)</span>
-          </h3>
-
-          <div class="flex items-center gap-3 mt-4">
-            <input id="watched" type="checkbox" class="mr-1" />
-            <label for="watched">Watched on</label>
-            <input
-              type="date"
-              class="bg-gray-700 text-white rounded px-3 py-1 w-40"
-            />
-          </div>
-
-          <div class="flex items-center gap-2 mt-2">
-            <input id="watched-before" type="checkbox" />
-            <label for="watched-before">I’ve watched this film before</label>
-          </div>
-
-          <textarea
-            class="bg-gray-700 w-full mt-4 p-3 rounded h-24 resize-none"
-            placeholder="Add a review..."
-          ></textarea>
-
-          <div class="flex items-center justify-between mt-4">
-            <div class="flex flex-col w-1/2">
-              <label for="tags" class="text-sm text-gray-400 mb-1">
-                Tags
-              </label>
-              <input
-                id="tags"
-                type="text"
-                class="bg-gray-700 text-white px-2 py-1 rounded"
-                placeholder="e.g. sci-fi, Nolan, space"
-              />
-            </div>
-
-            <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-400">Rating</label>
-              <div class="flex gap-1 cursor-pointer" id="stars">
-                <i class="fas fa-star text-gray-500" data-index="1"></i>
-                <i class="fas fa-star text-gray-500" data-index="2"></i>
-                <i class="fas fa-star text-gray-500" data-index="3"></i>
-                <i class="fas fa-star text-gray-500" data-index="4"></i>
-                <i class="fas fa-star text-gray-500" data-index="5"></i>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-400">Like</label>
-              <i
-                class="fas fa-heart text-gray-500 hover:text-red-500 cursor-pointer"
-                id="like-btn"
-              ></i>
-            </div>
-          </div>
-
-          <button class="mt-6 bg-green-600 hover:bg-green-700 px-4 py-2 rounded w-full">
-            <a href="index.html">SAVE</a>
-          </button>
-        </div>
       </div>
 
-      <div class="mt-8">
-        <h4 class="text-xl font-semibold mb-4">Recommended for you</h4>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-gray-700 rounded-lg p-2">
-            <img
-              src="https://m.media-amazon.com/images/I/71niXI3lxlL._AC_UF894,1000_QL80_.jpg"
-              alt="Inception"
-              class="rounded w-full h-40 object-cover"
+      <Row gutter={24} style={{ marginTop: 24 }}>
+        <Col xs={24} md={8}>
+          <img
+            src="https://m.media-amazon.com/images/I/61DUasB6X5L._AC_UF894,1000_QL80_.jpg"
+            alt="Interstellar"
+            style={{ width: "100%", height: "auto", borderRadius: 8 }}
+          />
+        </Col>
+        <Col xs={24} md={16}>
+          <Title level={4} style={{ color: "white" }}>
+            Interstellar <Text type="secondary">(2014)</Text>
+          </Title>
+
+          <Space direction="vertical" style={{ marginTop: 16, width: "100%" }}>
+            <Space>
+              <Checkbox /> <Text style={{ color: "white" }}>Watched on</Text>
+              <DatePicker
+                style={{
+                  backgroundColor: "#374151",
+                  border: "none",
+                  color: "white",
+                }}
+              />
+            </Space>
+            <Checkbox>
+              <Text style={{ color: "white" }}>
+                I’ve watched this film before
+              </Text>
+            </Checkbox>
+            <TextArea
+              placeholder="Add a review..."
+              rows={4}
+              style={{ backgroundColor: "#374151", color: "white" }}
             />
-            <p class="mt-2 text-center">Inception (2010)</p>
-          </div>
-          <div class="bg-gray-700 rounded-lg p-2">
-            <img
-              src="https://m.media-amazon.com/images/I/71nSnpkK0mL._AC_UF894,1000_QL80_.jpg"
-              alt="The Martian"
-              class="rounded w-full h-40 object-cover"
-            />
-            <p class="mt-2 text-center">The Martian (2015)</p>
-          </div>
-          <div class="bg-gray-700 rounded-lg p-2">
-            <img
-              src="https://m.media-amazon.com/images/I/81k1b6y3Y4L._AC_UF894,1000_QL80_.jpg"
-              alt="Gravity"
-              class="rounded w-full h-40 object-cover"
-            />
-            <p class="mt-2 text-center">Gravity (2013)</p>
-          </div>
-          <div class="bg-gray-700 rounded-lg p-2">
-            <img
-              src="https://m.media-amazon.com/images/I/71UFBewy-KL._AC_UF894,1000_QL80_.jpg"
-              alt="Arrival"
-              class="rounded w-full h-40 object-cover"
-            />
-            <p class="mt-2 text-center">Arrival (2016)</p>
-          </div>
-        </div>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Text type="secondary">Tags</Text>
+                <Input
+                  placeholder="e.g. sci-fi, Nolan, space"
+                  style={{
+                    backgroundColor: "#374151",
+                    color: "white",
+                    marginTop: 4,
+                  }}
+                />
+              </Col>
+              <Col span={6}>
+                <Text type="secondary">Rating</Text>
+                <Rate
+                  value={rating}
+                  onChange={setRating}
+                  style={{ marginTop: 4 }}
+                />
+              </Col>
+              <Col span={6}>
+                <Text type="secondary">Like</Text>
+                <div style={{ marginTop: 4 }}>
+                  {liked ? (
+                    <HeartFilled
+                      style={{ color: "red", fontSize: 20, cursor: "pointer" }}
+                      onClick={() => setLiked(false)}
+                    />
+                  ) : (
+                    <HeartOutlined
+                      style={{
+                        color: "#9ca3af",
+                        fontSize: 20,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setLiked(true)}
+                    />
+                  )}
+                </div>
+              </Col>
+            </Row>
+            <Button
+              type="primary"
+              block
+              style={{ backgroundColor: "#16a34a" }}
+              href="/index.html"
+            >
+              SAVE
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+
+      <div style={{ marginTop: 48 }}>
+        <Title level={4} style={{ color: "white" }}>
+          Recommended for you
+        </Title>
+        <Row gutter={[16, 16]}>
+          {recommended.map((rec, i) => (
+            <Col xs={12} md={6} key={i}>
+              <Card
+                hoverable
+                cover={
+                  <img
+                    alt={rec.title}
+                    src={rec.img}
+                    style={{ height: 160, objectFit: "cover" }}
+                  />
+                }
+                style={{
+                  backgroundColor: "#374151",
+                  border: "none",
+                  color: "white",
+                }}
+              >
+                <p style={{ color: "white", textAlign: "center" }}>
+                  {rec.title}
+                </p>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       </div>
     </div>
   );

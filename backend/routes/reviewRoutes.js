@@ -1,13 +1,13 @@
 const router = require("express").Router();
-const auth = require("../middlewares/authMiddleware");
+const protect = require("../middleware/authMiddleware");
 const {
   addReview,
   getReviews,
   deleteReview,
-} = require("../controllers/reviewController");
+} = require("../controller/reviewController");
 
-router.post("/", auth, addReview);
+router.post("/", protect, addReview);
 router.get("/:movieId", getReviews);
-router.delete("/:reviewId", auth, deleteReview);
+router.delete("/:reviewId", protect, deleteReview);
 
 module.exports = router;

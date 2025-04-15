@@ -1,0 +1,134 @@
+/* Navbar Styles */
+.navbar {
+  background-color: #1f1f1f; /* Dark background, similar to Letterboxd */
+  padding: 1rem 2rem; /* Padding around the navbar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+/* Logo (Title) Styles */
+.navbar__title {
+  color: #fff; /* Light text color */
+  font-size: 2rem; /* Slightly larger font size for emphasis */
+  font-weight: 700; /* Bold for the title */
+  cursor: pointer;
+}
+
+/* Menu Styles */
+.navbar__menu {
+  display: flex;
+  gap: 2rem; /* Space between items */
+}
+
+.navbar__menu-item {
+  color: #ccc; /* Lighter text for menu items */
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.navbar__menu-item:hover {
+  color: #fff; /* White color on hover */
+}
+
+/* Navbar Actions */
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Space between actions */
+}
+
+/* Search Input */
+.navbar__search {
+  width: 200px;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #333;
+  color: #fff;
+}
+
+/* Auth Buttons Styles */
+.navbar__auth-buttons a {
+  display: inline-block;
+  margin-right: 1rem;
+}
+
+.navbar__auth-button {
+  font-size: 1rem;
+}
+
+/* Login Button */
+.navbar__button--login {
+  border: 1px solid #ccc;
+  color: #ccc;
+  background-color: transparent;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.navbar__button--login:hover {
+  background-color: #444;
+  border-color: #fff;
+}
+
+/* Sign Up Button */
+.navbar__button--signup {
+  background-color: #e50914; /* Letterboxd-style red */
+  border-color: #e50914;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+
+.navbar__button--signup:hover {
+  background-color: #c10810;
+  border-color: #c10810;
+}
+
+/* Review Button */
+.navbar__button--review {
+  background-color: #48bb78; /* Green button for review */
+  border-color: #48bb78;
+  color: #fff;
+  padding: 0.5rem 1rem;
+}
+
+.navbar__button--review:hover {
+  background-color: #38a169;
+  border-color: #38a169;
+}
+
+/* Dropdown Menu */
+.ant-dropdown-menu-item a {
+  color: #333;
+  font-weight: 500;
+}
+
+.ant-dropdown-menu-item a:hover {
+  color: #e50914; /* Red highlight on hover */
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .navbar__menu {
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .navbar__actions {
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .navbar__search {
+    width: 100%;
+  }
+
+  .navbar__title {
+    font-size: 1.5rem; /* Adjust title size for mobile */
+  }
+}

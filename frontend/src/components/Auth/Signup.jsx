@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Checkbox, notification } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
-
+import "./signup.css";
 import { registerUser } from "../../actions/auth/authActions";
 const Signup = () => {
   const [loading, setLoading] = useState(false);

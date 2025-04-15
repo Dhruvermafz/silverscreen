@@ -6,6 +6,8 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import { loginUser } from "../../actions/auth/authActions";
+import "./login.css";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,15 +31,13 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-gray-700 p-8 rounded-lg shadow-lg w-full max-w-md">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-gray-300 text-xl font-semibold">
-          Welcome Back to SilverScreeninSight
-        </h2>
-        <i className="fas fa-times text-gray-400 cursor-pointer"></i>
+    <div className="login-container">
+      <div className="login-header">
+        <h2 className="login-title">Welcome Back to SilverScreeninSight</h2>
+        <i className="fas fa-times login-close"></i>
       </div>
 
-      <Form onSubmitCapture={handleLogin}>
+      <Form onSubmitCapture={handleLogin} className="login-form">
         <Form.Item label="Email Address">
           <Input
             id="email"
@@ -69,16 +69,16 @@ const Login = () => {
           <Button
             type="primary"
             htmlType="submit"
-            className="w-full"
+            className="login-btn"
             loading={loading}
           >
             Log In
           </Button>
         </Form.Item>
 
-        <p className="text-gray-400 text-center mt-4">
+        <p className="login-footer">
           Don't have an account?{" "}
-          <a href="/signup" className="text-blue-400 hover:underline">
+          <a href="/signup" className="login-signup-link">
             Sign up here
           </a>
         </p>

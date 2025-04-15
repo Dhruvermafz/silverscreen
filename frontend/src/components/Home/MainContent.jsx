@@ -1,50 +1,87 @@
-import React from "react";
+import React, { useState } from "react";
+import { Card, Rate, Input, Button } from "antd";
+import { MessageOutlined, StarFilled } from "@ant-design/icons";
+
+const { TextArea } = Input;
 
 const MainContent = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [reviewText, setReviewText] = useState("");
+  const [reviews, setReviews] = useState([]);
+
+  const toggleReviewForm = () => setShowForm(!showForm);
+
+  const submitReview = () => {
+    if (reviewText.trim()) {
+      setReviews([...reviews, reviewText]);
+      setReviewText("");
+      setShowForm(false);
+    }
+  };
+
   return (
-    <div class="container mx-auto p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-md p-4" id="movie-1">
-          <img
-            src="https://resizing.flixster.com/fqA2ALSWe0CIjYaDdkDiW4ONqLI=/fit-in/705x460/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14169043_v_v13_at.jpg"
-            alt="Call Me By Your Name movie poster"
-            class="w-full h-64 object-cover rounded"
-          />
-          <h2 class="text-xl font-bold mt-4">Call Me By Your Name</h2>
-          <p class="text-gray-600">2017 · Drama</p>
-          <div class="flex items-center mt-2 space-x-1">
-            <i class="fas fa-star text-yellow-500"></i>
-            <i class="fas fa-star text-yellow-500"></i>
-            <i class="fas fa-star text-yellow-500"></i>
-            <i class="fas fa-star text-yellow-400"></i>
-            <i class="fas fa-star text-gray-300"></i>
+    <div className="main-content-container">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card
+          key="movie-1"
+          className="movie-card"
+          cover={
+            <img
+              alt="Call Me By Your Name movie poster"
+              src="https://resizing.flixster.com/fqA2ALSWe0CIjYaDdkDiW4ONqLI=/fit-in/705x460/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14169043_v_v13_at.jpg"
+              className="movie-image"
+            />
+          }
+        >
+          <h2 className="movie-title">Call Me By Your Name</h2>
+          <p className="movie-info">2017 · Drama</p>
+
+          <div className="flex items-center mt-2 space-x-1">
+            <Rate disabled defaultValue={4} />
           </div>
 
-          <div class="mt-4">
-            <h3 class="text-lg font-bold">User Reviews</h3>
-            <div id="reviews-1" class="text-sm text-gray-600"></div>
-            <div id="review-form-1" class="mt-2 hidden">
-              <input
-                type="text"
-                id="review-input-1"
-                class="p-2 border border-gray-300 rounded"
-                placeholder="Write your review here..."
-              />
-              <button
-                class="bg-blue-600 text-white px-4 py-2 mt-2 rounded"
-                onclick="submitReview(1)"
-              >
-                Submit Review
-              </button>
+          <div className="review-section">
+            <h3 className="text-lg font-bold">User Reviews</h3>
+            <div className="user-reviews">
+              {reviews.length > 0 ? (
+                reviews.map((review, index) => (
+                  <div key={index} className="review-item">
+                    {review}
+                  </div>
+                ))
+              ) : (
+                <p className="review-placeholder">No reviews yet.</p>
+              )}
             </div>
-            <button
-              class="bg-yellow-500 text-white px-4 py-2 mt-2 rounded"
-              onclick="toggleReviewForm(1)"
+
+            {showForm && (
+              <div className="mt-2">
+                <TextArea
+                  rows={3}
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Write your review here..."
+                  className="review-textarea"
+                />
+                <Button
+                  type="primary"
+                  className="review-button"
+                  onClick={submitReview}
+                >
+                  Submit Review
+                </Button>
+              </div>
+            )}
+
+            <Button
+              className="add-review-button"
+              icon={<MessageOutlined />}
+              onClick={toggleReviewForm}
             >
-              Add Review
-            </button>
+              {showForm ? "Cancel" : "Add Review"}
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

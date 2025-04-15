@@ -5,17 +5,19 @@ import AppFooter from "./components/Common/Footer";
 import HomeWrapper from "./components/Home/HomeWrapper";
 import Login from "./components/Auth/Login";
 import Signup from "./components/Auth/Signup";
+import MovieWrapper from "./components/Movie/MovieWrapper";
 
 function App() {
   return (
     <Router>
-      <div className="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+      <div className="bg-dark text-gray-300 min-h-screen flex flex-col">
         <Navbar />
-        <main className="p-4 flex-grow">
+        <main className="p-8 flex-grow page-container">
           <Routes>
             <Route path="/" element={<HomeWrapper />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/movies/:id" element={<MovieWrapper />} />
           </Routes>
         </main>
         <AppFooter />

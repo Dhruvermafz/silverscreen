@@ -1,4 +1,4 @@
-const Review = require("../models/Review");
+const Review = require("../models/reviews");
 
 exports.addReview = async (req, res) => {
   const { movieId, rating, comment } = req.body;
