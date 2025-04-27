@@ -6,75 +6,145 @@ import {
   InstagramOutlined,
   MailOutlined,
 } from "@ant-design/icons";
-import "./footer.css"; // Link to your custom footer CSS
 
 const { Footer } = Layout;
 const { Link, Text } = Typography;
 
 const AppFooter = () => {
   return (
-    <Footer className="bg-gray-900 text-white py-8 mt-12">
-      <Row gutter={[16, 16]} justify="space-between" className="px-4 md:px-12">
+    <Footer
+      style={{
+        backgroundColor: "#111827", // Dark gray background
+        color: "#fff",
+        padding: "40px 0",
+        marginTop: "80px",
+      }}
+    >
+      <Row
+        gutter={[16, 16]}
+        justify="space-between"
+        style={{ maxWidth: "1200px", margin: "0 auto" }}
+      >
+        {/* SilverScreeninSight Section */}
         <Col xs={24} md={8}>
-          <Text className="text-lg font-semibold text-white">
+          <Text
+            style={{
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#fff",
+            }}
+          >
             SilverScreeninSight
           </Text>
-          <p className="text-gray-400 mt-2">
+          <p style={{ color: "#d1d5db", marginTop: "10px" }}>
             Discover, discuss, and review films with a passionate community.
           </p>
         </Col>
 
+        {/* Quick Links Section */}
         <Col xs={12} md={8}>
-          <Text className="text-white font-medium">Quick Links</Text>
-          <ul className="mt-2 space-y-1">
+          <Text
+            style={{
+              fontSize: "16px",
+              fontWeight: "500",
+              color: "#fff",
+            }}
+          >
+            Quick Links
+          </Text>
+          <ul style={{ marginTop: "10px", listStyle: "none", padding: "0" }}>
             <li>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <Link
+                href="/films"
+                style={{ color: "#d1d5db", fontSize: "14px" }}
+              >
                 Films
               </Link>
             </li>
             <li>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <Link
+                href="/lists"
+                style={{ color: "#d1d5db", fontSize: "14px" }}
+              >
                 Lists
               </Link>
             </li>
             <li>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <Link
+                href="/members"
+                style={{ color: "#d1d5db", fontSize: "14px" }}
+              >
                 Members
               </Link>
             </li>
             <li>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <Link
+                href="/about"
+                style={{ color: "#d1d5db", fontSize: "14px" }}
+              >
                 About
               </Link>
             </li>
             <li>
-              <Link href="#" className="text-gray-400 hover:text-white">
+              <Link
+                href="/contact"
+                style={{ color: "#d1d5db", fontSize: "14px" }}
+              >
                 Contact
               </Link>
             </li>
           </ul>
         </Col>
 
+        {/* Social Media Section */}
         <Col xs={12} md={8}>
-          <Text className="text-white font-medium">Follow Us</Text>
-          <Space size="middle" className="mt-2 text-xl text-gray-400">
-            <a href="https://github.com" target="_blank" rel="noreferrer">
-              <GithubOutlined className="hover:text-white" />
+          <Text
+            style={{
+              fontSize: "16px",
+              fontWeight: "500",
+              color: "#fff",
+            }}
+          >
+            Follow Us
+          </Text>
+          <Space size="middle" style={{ marginTop: "10px", fontSize: "20px" }}>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GithubOutlined style={{ color: "#d1d5db" }} />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">
-              <TwitterOutlined className="hover:text-white" />
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <TwitterOutlined style={{ color: "#d1d5db" }} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer">
-              <InstagramOutlined className="hover:text-white" />
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <InstagramOutlined style={{ color: "#d1d5db" }} />
             </a>
             <a href="mailto:support@silverscreeninsight.com">
-              <MailOutlined className="hover:text-white" />
+              <MailOutlined style={{ color: "#d1d5db" }} />
             </a>
           </Space>
         </Col>
       </Row>
 
-      <div className="text-center text-gray-500 text-sm mt-8">
+      {/* Footer Bottom Section */}
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "40px",
+          color: "#6b7280",
+          fontSize: "14px",
+        }}
+      >
         © {new Date().getFullYear()} SilverScreeninSight. All rights reserved.
       </div>
     </Footer>

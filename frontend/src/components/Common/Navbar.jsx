@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { Menu, Dropdown, Button, Input } from "antd";
+import React, { useEffect } from "react";
+import {
+  Menu,
+  Dropdown,
+  Button,
+  Input,
+  Space,
+  Typography,
+  notification,
+} from "antd";
 import {
   UserOutlined,
   LoginOutlined,
@@ -7,23 +15,22 @@ import {
   ProfileOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { getProfile } from "../../actions/users/userActions";
-import "./navbar.css";
+import { useGetProfileQuery } from "../../actions/userApi";
+const { Title } = Typography;
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Use the Redux hook to get user profile data
+  const { data: user, isLoading, isError } = useGetProfileQuery();
 
+  // Show error message if profile fetching fails
   useEffect(() => {
-    const fetchUser = async () => {
-      const res = await getProfile();
-      if (res.success) {
-        setUser(res.user);
-      }
-      setLoading(false);
-    };
-    fetchUser();
-  }, []);
+    if (isError) {
+      notification.error({
+        message: "Error",
+        description: "Failed to fetch user profile!",
+      });
+    }
+  }, [isError]);
 
   const menu = (
     <Menu>
@@ -37,65 +44,74 @@ const Navbar = () => {
   );
 
   return (
-    <nav className="navbar">
-      <div className="navbar__title">SilverScreeninSight</div>
+    <div
+      style={{
+        width: "100%",
+        background: "#ffffff",
+        padding: "10px 30px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+      }}
+    >
+      {/* Logo */}
+      <Title level={4} style={{ margin: 0 }}>
+        SilverScreenInsight
+      </Title>
 
-      <div className="navbar__menu">
-        <a className="navbar__menu-item" href="#">
+      {/* Menu */}
+      <Space size="large">
+        <a href="/films" style={{ color: "#555", fontWeight: 500 }}>
           Films
         </a>
-        <a className="navbar__menu-item" href="#">
+        <a href="/lists" style={{ color: "#555", fontWeight: 500 }}>
           Lists
         </a>
-        <a className="navbar__menu-item" href="#">
+        <a href="/members" style={{ color: "#555", fontWeight: 500 }}>
           Members
         </a>
-      </div>
+      </Space>
 
-      <div className="navbar__actions">
+      {/* Actions */}
+      <Space size="middle">
         <Input
           placeholder="Search films..."
           prefix={<SearchOutlined />}
-          className="navbar__search"
+          style={{ width: 250 }}
         />
 
-        {!loading && !user && (
-          <div className="navbar__auth-buttons">
+        {!isLoading && !user && (
+          <Space>
             <a href="/login">
-              <Button
-                icon={<LoginOutlined />}
-                type="default"
-                className="navbar__button--login"
-              >
+              <Button icon={<LoginOutlined />} type="default">
                 Log In
               </Button>
             </a>
             <a href="/signup">
-              <Button type="primary" danger className="navbar__button--signup">
+              <Button type="primary" danger>
                 Sign Up
               </Button>
             </a>
-          </div>
+          </Space>
         )}
 
-        {!loading && user && (
+        {!isLoading && user && (
           <Dropdown overlay={menu} placement="bottomRight">
-            <Button
-              icon={<UserOutlined />}
-              className="navbar__button--login bg-blue-600 hover:bg-blue-700"
-            >
-              {user.username}
-            </Button>
+            <Button icon={<UserOutlined />}>{user.username}</Button>
           </Dropdown>
         )}
 
-        <a href="/review">
-          <Button type="primary" className="navbar__button--review">
-            Review
-          </Button>
-        </a>
-      </div>
-    </nav>
+        {!isLoading && user && (
+          <a href="/review">
+            <Button type="primary">Review</Button>
+          </a>
+        )}
+      </Space>
+    </div>
   );
 };
 

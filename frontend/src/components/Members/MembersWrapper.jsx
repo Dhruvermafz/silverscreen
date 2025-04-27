@@ -1,0 +1,71 @@
+import React, { useEffect, useState } from "react";
+import { List, Card, Avatar, Rate, Spin, message } from "antd";
+import axios from "axios";
+
+const MembersWrapper = () => {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMembers();
+  }, []);
+
+  const fetchMembers = async () => {
+    try {
+      const response = await axios.get("/api/members");
+      setMembers(response.data);
+    } catch (error) {
+      message.error("Failed to load members.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading)
+    return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <List
+        grid={{ gutter: 16, column: 4 }}
+        dataSource={members}
+        renderItem={(user) => (
+          <List.Item>
+            <Card
+              hoverable
+              style={{ width: 300 }}
+              cover={
+                <Avatar
+                  src={
+                    user.avatar ||
+                    "https://api.dicebear.com/7.x/miniavs/svg?seed=" +
+                      user.username
+                  }
+                  size={100}
+                  style={{ margin: "20px auto" }}
+                />
+              }
+            >
+              <Card.Meta
+                title={user.username}
+                description={
+                  <div>
+                    <p style={{ margin: "10px 0" }}>
+                      {user.bio || "No bio provided."}
+                    </p>
+                    <Rate disabled allowHalf value={user.rating} />
+                    <p style={{ marginTop: "10px" }}>
+                      Favorite Movies: {user.favoriteMovies?.length || 0}
+                    </p>
+                  </div>
+                }
+              />
+            </Card>
+          </List.Item>
+        )}
+      />
+    </div>
+  );
+};
+
+export default MembersWrapper;

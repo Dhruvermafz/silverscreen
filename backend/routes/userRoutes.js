@@ -17,5 +17,6 @@ router.get("/:id", protect, userController.getUserById);
 
 // DELETE user by ID
 router.delete("/:id", protect, userController.deleteUser);
+router.get("/members", userController.getAllMembers);
 
 module.exports = router;

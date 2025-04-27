@@ -65,3 +65,15 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+exports.getAllMembers = async (req, res) => {
+  try {
+    const users = await User.find(
+      {},
+      "username avatar bio rating favoriteMovies"
+    );
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch members." });
+  }
+};

@@ -1,13 +1,25 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
+import { Provider } from "react-redux"; // Import Provider from react-redux
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-
+import { AuthProvider } from "./context/AuthContext";
+import store from "./context/store";
+// Get the root element
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
+// Render the app with Redux Provider
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      {" "}
+      {/* Wrap your App component with the Provider */}
+      <AuthProvider>
+        {" "}
+        {/* Your existing AuthContext provider */}
+        <App />
+      </AuthProvider>
+    </Provider>
   </React.StrictMode>
 );
 

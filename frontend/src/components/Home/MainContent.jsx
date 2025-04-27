@@ -1,88 +1,105 @@
-import React, { useState } from "react";
-import { Card, Rate, Input, Button } from "antd";
-import { MessageOutlined, StarFilled } from "@ant-design/icons";
-
+import React, { useState, useEffect } from "react";
+import { Card, Rate, Input, Button, Row, Col, Spin } from "antd";
+import { MessageOutlined } from "@ant-design/icons";
+import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
 const { TextArea } = Input;
 
 const MainContent = () => {
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [genre, setGenre] = useState("28"); // Default to Action genre
   const [showForm, setShowForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [reviews, setReviews] = useState([]);
 
+  // Fetch movies when genre changes
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      const data = await getMoviesFromAPI("", { genre }, 1);
+      setMovies(data.movies);
+      setLoading(false);
+    };
+
+    fetchMovies();
+  }, [genre]);
+
   const toggleReviewForm = () => setShowForm(!showForm);
 
-  const submitReview = () => {
+  const submitReview = (movieId) => {
     if (reviewText.trim()) {
-      setReviews([...reviews, reviewText]);
+      setReviews((prevReviews) => [...prevReviews, { movieId, reviewText }]);
       setReviewText("");
       setShowForm(false);
     }
   };
 
   return (
-    <div className="main-content-container">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card
-          key="movie-1"
-          className="movie-card"
-          cover={
-            <img
-              alt="Call Me By Your Name movie poster"
-              src="https://resizing.flixster.com/fqA2ALSWe0CIjYaDdkDiW4ONqLI=/fit-in/705x460/v2/https://resizing.flixster.com/-XZAfHZM39UwaGJIFWKAE8fS0ak=/v3/t/assets/p14169043_v_v13_at.jpg"
-              className="movie-image"
-            />
-          }
-        >
-          <h2 className="movie-title">Call Me By Your Name</h2>
-          <p className="movie-info">2017 · Drama</p>
-
-          <div className="flex items-center mt-2 space-x-1">
-            <Rate disabled defaultValue={4} />
-          </div>
-
-          <div className="review-section">
-            <h3 className="text-lg font-bold">User Reviews</h3>
-            <div className="user-reviews">
-              {reviews.length > 0 ? (
-                reviews.map((review, index) => (
-                  <div key={index} className="review-item">
-                    {review}
-                  </div>
-                ))
-              ) : (
-                <p className="review-placeholder">No reviews yet.</p>
-              )}
-            </div>
-
-            {showForm && (
-              <div className="mt-2">
-                <TextArea
-                  rows={3}
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Write your review here..."
-                  className="review-textarea"
-                />
-                <Button
-                  type="primary"
-                  className="review-button"
-                  onClick={submitReview}
-                >
-                  Submit Review
-                </Button>
-              </div>
-            )}
-
-            <Button
-              className="add-review-button"
-              icon={<MessageOutlined />}
-              onClick={toggleReviewForm}
-            >
-              {showForm ? "Cancel" : "Add Review"}
-            </Button>
-          </div>
-        </Card>
+    <div style={{ padding: "20px" }}>
+      {/* Genre Selector */}
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
+        <Button onClick={() => setGenre("28")}>Action</Button>
+        <Button onClick={() => setGenre("35")}>Comedy</Button>
+        <Button onClick={() => setGenre("18")}>Drama</Button>
+        {/* Add more genres here */}
       </div>
+
+      <Row gutter={[16, 16]}>
+        {loading ? (
+          <Spin size="large" />
+        ) : (
+          movies.map((movie) => (
+            <Col key={movie.id} span={8}>
+              <Card
+                hoverable
+                cover={<img alt={movie.title} src={movie.posterUrl} />}
+              >
+                <h3>{movie.title}</h3>
+                <p>{movie.releaseDate}</p>
+                <Rate disabled defaultValue={movie.rating / 2} />
+
+                {/* Reviews Section */}
+                <div>
+                  <Button
+                    icon={<MessageOutlined />}
+                    onClick={() => toggleReviewForm()}
+                  >
+                    {showForm ? "Cancel" : "Add Review"}
+                  </Button>
+
+                  {showForm && (
+                    <div>
+                      <TextArea
+                        rows={3}
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        placeholder="Write your review..."
+                      />
+                      <Button
+                        type="primary"
+                        onClick={() => submitReview(movie.id)}
+                      >
+                        Submit Review
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Display User Reviews */}
+                  <div style={{ marginTop: "10px" }}>
+                    {reviews
+                      .filter((review) => review.movieId === movie.id)
+                      .map((review, index) => (
+                        <div key={index} style={{ marginTop: "5px" }}>
+                          <p>{review.reviewText}</p>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          ))
+        )}
+      </Row>
     </div>
   );
 };

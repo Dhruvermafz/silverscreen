@@ -6,7 +6,11 @@ import HomeWrapper from "./components/Home/HomeWrapper";
 import Login from "./components/Auth/Login";
 import Signup from "./components/Auth/Signup";
 import MovieWrapper from "./components/Movie/MovieWrapper";
-
+import ListComponent from "./components/Lists/ListWrapper";
+import MembersWrapper from "./components/Members/MembersWrapper";
+import About from "./components/Common/About";
+import Contact from "./components/Common/Contact";
+import ProfileWrapper from "./components/Common/Profile";
 function App() {
   return (
     <Router>
@@ -17,7 +21,12 @@ function App() {
             <Route path="/" element={<HomeWrapper />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/movies/:id" element={<MovieWrapper />} />
+            <Route path="/films" element={<MovieWrapper />} />
+            <Route path="/lists" element={<ListComponent />} />
+            <Route path="/members" element={<MembersWrapper />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/u/:id" element={<ProfileWrapper />} />
           </Routes>
         </main>
         <AppFooter />

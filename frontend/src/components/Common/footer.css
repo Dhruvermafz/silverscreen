@@ -1,7 +1,7 @@
 /* General Footer Styles */
 footer {
   background-color: #1f1f1f; /* Dark background */
-  color: #fff; /* Light text */
+  color: black; /* Light text */
   padding: 40px 0;
   margin-top: 48px; /* Space from the content above */
 }
@@ -17,15 +17,15 @@ footer .ant-col {
 }
 
 footer .ant-typography {
-  color: #fff;
+  color: black;
 }
 
 footer .ant-typography a {
-  color: #bbb; /* Light gray color for links */
+  color: black; /* Light gray color for links */
 }
 
 footer .ant-typography a:hover {
-  color: #fff; /* White on hover */
+  color: black; /* White on hover */
   text-decoration: underline;
 }
 
@@ -46,7 +46,7 @@ footer .font-medium {
 /* Paragraph Styles */
 footer p {
   margin-top: 8px;
-  color: #bbb;
+  color: black;
 }
 
 /* Quick Links List Styles */
@@ -60,26 +60,26 @@ footer ul li {
 }
 
 footer ul li a {
-  color: #bbb;
+  color: black;
   text-decoration: none;
 }
 
 footer ul li a:hover {
-  color: #fff;
+  color: black;
 }
 
 /* Follow Us Section */
 footer .ant-space {
   font-size: 1.5rem;
-  color: #bbb;
+  color: black;
 }
 
 footer .ant-space a {
-  color: #bbb;
+  color: black;
 }
 
 footer .ant-space a:hover {
-  color: #fff;
+  color: black;
 }
 
 /* Footer Bottom Text */
@@ -90,12 +90,12 @@ footer .text-center {
 }
 
 footer .text-center a {
-  color: #bbb;
+  color: black;
   text-decoration: none;
 }
 
 footer .text-center a:hover {
-  color: #fff;
+  color: black;
 }
 
 /* Responsive Design */

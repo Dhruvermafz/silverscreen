@@ -1,62 +1,89 @@
 import React, { useState } from "react";
-import { Input, Button, Checkbox, Form, message } from "antd";
-import {
-  UserOutlined,
-  LockOutlined,
-  CheckCircleOutlined,
-} from "@ant-design/icons";
-import { loginUser } from "../../actions/auth/authActions";
-import "./login.css";
+import { Input, Button, Checkbox, Form, message, Typography } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { useLoginMutation } from "../../actions/authApi";
+
+const { Title, Text } = Typography;
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  // RTK Query mutation hook for login
+  const [login, { isLoading, error }] = useLoginMutation();
 
+  // Handle login on form submission
+  const handleLogin = async (values) => {
     setLoading(true);
 
-    const response = await loginUser({ username: email, password });
+    try {
+      const response = await login({
+        username: values.email,
+        password: values.password,
+      }).unwrap();
+      const token = response.token;
 
-    if (response.success) {
-      message.success("Logged in successfully!");
-      // You can redirect or perform other actions after login
-    } else {
-      message.error(response.error || "Login failed");
+      localStorage.setItem("token", token);
+
+      if (response) {
+        message.success("Logged in successfully!");
+        // Redirect or perform actions after login, for example:
+        // window.location.href = '/dashboard';
+      }
+    } catch (err) {
+      message.error(err?.message || "Login failed");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="login-container">
-      <div className="login-header">
-        <h2 className="login-title">Welcome Back to SilverScreeninSight</h2>
-        <i className="fas fa-times login-close"></i>
-      </div>
+    <div
+      style={{
+        maxWidth: 400,
+        margin: "0 auto",
+        padding: "40px 20px",
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+      }}
+    >
+      <Title level={3} style={{ textAlign: "center" }}>
+        Welcome Back to SilverScreen
+      </Title>
 
-      <Form onSubmitCapture={handleLogin} className="login-form">
-        <Form.Item label="Email Address">
+      {/* Form with onFinish handling the login */}
+      <Form onFinish={handleLogin}>
+        <Form.Item
+          label="Email Address"
+          name="email"
+          rules={[
+            {
+              required: true,
+              type: "email",
+              message: "Please input a valid email!",
+            },
+          ]}
+        >
           <Input
-            id="email"
             type="email"
-            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            prefix={<UserOutlined className="site-form-item-icon" />}
+            prefix={<UserOutlined />}
             placeholder="Enter your email"
           />
         </Form.Item>
 
-        <Form.Item label="Password">
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[{ required: true, message: "Please input your password!" }]}
+        >
           <Input.Password
-            id="password"
-            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            prefix={<LockOutlined className="site-form-item-icon" />}
+            prefix={<LockOutlined />}
             placeholder="Enter your password"
           />
         </Form.Item>
@@ -69,19 +96,19 @@ const Login = () => {
           <Button
             type="primary"
             htmlType="submit"
-            className="login-btn"
-            loading={loading}
+            block
+            loading={isLoading || loading}
           >
             Log In
           </Button>
         </Form.Item>
 
-        <p className="login-footer">
+        <Text style={{ textAlign: "center", display: "block" }}>
           Don't have an account?{" "}
-          <a href="/signup" className="login-signup-link">
+          <a href="/signup" style={{ fontWeight: "bold" }}>
             Sign up here
           </a>
-        </p>
+        </Text>
       </Form>
     </div>
   );
