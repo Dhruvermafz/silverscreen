@@ -1,27 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { List, Card, Button, Modal, Input, message } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import axios from "axios";
 
+import {
+  useGetListsQuery,
+  useCreateListMutation,
+  useDeleteListMutation,
+} from "../../actions/listApi";
 const { Meta } = Card;
 
 const ListComponent = () => {
-  const [lists, setLists] = useState([]);
+  const { data: lists = [], refetch } = useGetListsQuery();
+  const [createList] = useCreateListMutation();
+  const [deleteList] = useDeleteListMutation();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newListName, setNewListName] = useState("");
-
-  useEffect(() => {
-    fetchLists();
-  }, []);
-
-  const fetchLists = async () => {
-    try {
-      const response = await axios.get("/api/lists");
-      setLists(response.data);
-    } catch (error) {
-      message.error("Failed to fetch lists.");
-    }
-  };
 
   const handleCreateList = async () => {
     try {
@@ -29,10 +23,10 @@ const ListComponent = () => {
         message.warning("List name cannot be empty.");
         return;
       }
-      await axios.post("/api/lists", { name: newListName });
+      await createList({ name: newListName }).unwrap();
       setNewListName("");
       setIsModalVisible(false);
-      fetchLists();
+      refetch();
       message.success("List created successfully!");
     } catch (error) {
       message.error("Failed to create list.");
@@ -41,8 +35,8 @@ const ListComponent = () => {
 
   const handleDeleteList = async (id) => {
     try {
-      await axios.delete(`/api/lists/${id}`);
-      fetchLists();
+      await deleteList(id).unwrap();
+      refetch();
       message.success("List deleted successfully!");
     } catch (error) {
       message.error("Failed to delete list.");

@@ -1,28 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { List, Card, Avatar, Rate, Spin, message } from "antd";
-import axios from "axios";
+import { useGetAllMembersQuery } from "../../actions/userApi";
 
 const MembersWrapper = () => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: members = [], isLoading, isError } = useGetAllMembersQuery();
 
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  const fetchMembers = async () => {
-    try {
-      const response = await axios.get("/api/members");
-      setMembers(response.data);
-    } catch (error) {
-      message.error("Failed to load members.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading)
+  if (isLoading)
     return <Spin size="large" style={{ display: "block", margin: "auto" }} />;
+
+  if (isError) {
+    message.error("Failed to load members.");
+    return null;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
