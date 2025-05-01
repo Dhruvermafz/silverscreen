@@ -1,220 +1,237 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Upload, Form, Rate, Avatar, message, Tabs } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import axios from "axios"; // Axios to handle API requests
-
+import {
+  Avatar,
+  Typography,
+  Card,
+  List,
+  Rate,
+  message,
+  Spin,
+  Tabs,
+  Divider,
+} from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { useGetProfileQuery } from "../../actions/userApi";
 const { TabPane } = Tabs;
+const { Title, Paragraph, Text } = Typography;
 
 const ProfileWrapper = () => {
+  const { id } = useParams();
+  const {
+    data: authUser,
+    isLoading: authLoading,
+    error: authError,
+  } = useGetProfileQuery();
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [userData, setUserData] = useState({
+    _id: "",
     username: "",
-    email: "",
     bio: "",
     avatar: "",
     favoriteMovies: [],
     rating: 0,
   });
+  const [reviews, setReviews] = useState([]);
+  const [movieRequests, setMovieRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // State for form fields
-  const [bio, setBio] = useState(userData.bio);
-  const [avatar, setAvatar] = useState(userData.avatar);
-  const [favoriteMovies, setFavoriteMovies] = useState(userData.favoriteMovies);
-  const [rating, setRating] = useState(userData.rating);
-  const [password, setPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [email, setEmail] = useState("");
   useEffect(() => {
-    // Fetch the user profile (replace with actual API endpoint)
-    axios
-      .get("/api/user/profile")
-      .then((response) => {
-        setUserData(response.data);
-        setBio(response.data.bio);
-        setAvatar(response.data.avatar);
-        setFavoriteMovies(response.data.favoriteMovies);
-        setRating(response.data.rating);
-      })
-      .catch((err) => message.error("Failed to fetch user data"));
-  }, []);
+    const fetchProfile = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token || !authUser?._id) throw new Error("User not authenticated");
 
-  const handleUpdateProfile = () => {
-    const updatedUser = {
-      bio,
-      avatar,
-      favoriteMovies,
-      rating,
+        if (id === "me" || id === authUser._id) {
+          setIsOwnProfile(true);
+          setUserData(authUser);
+
+          const [reviewsRes, requestsRes] = await Promise.all([
+            axios.get(`/api/user/${authUser._id}/reviews`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`/api/user/${authUser._id}/requests`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
+
+          setReviews(reviewsRes.data);
+          setMovieRequests(requestsRes.data);
+        } else {
+          setIsOwnProfile(false);
+          const response = await axios.get(`/api/user/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUserData(response.data);
+        }
+      } catch (err) {
+        message.error(err.message || "Failed to fetch user data");
+      } finally {
+        setLoading(false);
+      }
     };
-    axios
-      .put("/api/user/profile", updatedUser)
-      .then((response) => {
-        setUserData(response.data);
-        message.success("Profile updated successfully");
-      })
-      .catch((err) => message.error("Failed to update profile"));
-  };
 
-  const handleUploadAvatar = (file) => {
-    const formData = new FormData();
-    formData.append("avatar", file);
-    axios
-      .post("/api/user/upload-avatar", formData)
-      .then((response) => {
-        setAvatar(response.data.avatar);
-        message.success("Avatar updated successfully");
-      })
-      .catch((err) => message.error("Failed to upload avatar"));
-    return false;
-  };
-
-  const handlePasswordChange = () => {
-    if (newPassword !== confirmPassword) {
-      return message.error("Passwords do not match");
+    if (!authLoading && authUser) {
+      fetchProfile();
     }
+  }, [id, authUser, authLoading]);
 
-    axios
-      .post("/api/user/change-password", { oldPassword: password, newPassword })
-      .then(() => {
-        message.success("Password changed successfully");
-      })
-      .catch((err) => message.error("Failed to change password"));
-  };
+  if (loading || authLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
-  const handleForgotPassword = (email) => {
-    axios
-      .post("/api/user/forgot-password", { email })
-      .then(() => message.success("Password reset link sent"))
-      .catch((err) => message.error("Failed to send reset link"));
-  };
+  if (authError) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Text type="danger">Authentication Error: {authError.message}</Text>
+      </div>
+    );
+  }
 
-  const handleDeleteAccount = () => {
-    axios
-      .delete("/api/user/delete-account")
-      .then(() => message.success("Account deleted successfully"))
-      .catch((err) => message.error("Failed to delete account"));
-  };
+  const isProfileIncomplete =
+    !userData.bio ||
+    userData.avatar === "" ||
+    userData.favoriteMovies.length === 0;
 
   return (
-    <div className="profile-wrapper" style={{ width: "600px", margin: "auto" }}>
-      <Tabs defaultActiveKey="1">
-        {/* Profile Tab */}
-        <TabPane tab="Profile" key="1">
-          <div className="profile-header" style={{ textAlign: "center" }}>
-            <Avatar
-              size={100}
-              src={avatar || "https://via.placeholder.com/100"}
+    <div
+      className="profile-wrapper"
+      style={{ width: "800px", margin: "auto", padding: "30px" }}
+    >
+      <Card style={{ borderRadius: 12, padding: 20 }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <Avatar
+            size={120}
+            src={userData.avatar || "https://via.placeholder.com/100"}
+            icon={<UserOutlined />}
+          />
+          <Title level={3} style={{ marginTop: 10 }}>
+            {userData.username}
+          </Title>
+          <Rate disabled value={userData.rating || 0} />
+        </div>
+
+        {isProfileIncomplete ? (
+          isOwnProfile ? (
+            <Card
+              type="inner"
+              style={{
+                marginTop: 20,
+                background: "#f6f6f6",
+                borderRadius: 10,
+                border: "1px dashed #ccc",
+              }}
+            >
+              <Paragraph style={{ textAlign: "center", fontSize: 16 }}>
+                <Text strong>Let your personality shine!</Text>
+                <br />
+                Complete your profile with a short bio, profile avatar, and some
+                of your favorite movies.
+              </Paragraph>
+              <div style={{ textAlign: "center", marginTop: 10 }}>
+                <a href="/edit-profile">
+                  <Typography.Link>Edit Your Profile</Typography.Link>
+                </a>
+              </div>
+            </Card>
+          ) : (
+            <Paragraph style={{ textAlign: "center", color: "#999" }}>
+              This user hasn’t added much to their profile yet.
+            </Paragraph>
+          )
+        ) : (
+          <Paragraph style={{ textAlign: "center", color: "#666" }}>
+            {userData.bio}
+          </Paragraph>
+        )}
+
+        {userData.favoriteMovies?.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <Text strong>Favorite Movies:</Text>
+            <List
+              dataSource={userData.favoriteMovies}
+              renderItem={(movie) => (
+                <List.Item>
+                  <Text>{movie}</Text>
+                </List.Item>
+              )}
+              bordered
+              style={{ marginTop: 10 }}
             />
-            <h2>{userData.username}</h2>
-            <p>{userData.email}</p>
-            <Rate disabled value={rating} />
           </div>
+        )}
+      </Card>
 
-          <Form layout="vertical" onFinish={handleUpdateProfile}>
-            <Form.Item label="Bio">
-              <Input.TextArea
-                rows={4}
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Enter your bio"
+      {isOwnProfile && (
+        <Tabs defaultActiveKey="1" style={{ marginTop: 20 }}>
+          <TabPane tab="Your Reviews" key="1">
+            {reviews.length > 0 ? (
+              <List
+                dataSource={reviews}
+                renderItem={(review) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <>
+                          <Text strong>{review.movieTitle}</Text> -{" "}
+                          <Rate disabled value={review.rating} />
+                        </>
+                      }
+                      description={
+                        <>
+                          <Paragraph>{review.comment}</Paragraph>
+                          <Text type="secondary">
+                            Posted on{" "}
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </Text>
+                        </>
+                      }
+                    />
+                  </List.Item>
+                )}
               />
-            </Form.Item>
+            ) : (
+              <Text>No reviews yet.</Text>
+            )}
+          </TabPane>
 
-            <Form.Item label="Avatar">
-              <Upload
-                name="avatar"
-                listType="picture"
-                showUploadList={false}
-                beforeUpload={handleUploadAvatar}
-                accept="image/*"
-              >
-                <Button icon={<UploadOutlined />}>Upload Avatar</Button>
-              </Upload>
-            </Form.Item>
-
-            <Form.Item label="Favorite Movies">
-              <Input
-                value={favoriteMovies.join(", ")}
-                onChange={(e) => setFavoriteMovies(e.target.value.split(", "))}
-                placeholder="Enter favorite movies separated by commas"
+          <TabPane tab="Your Movie Requests" key="2">
+            {movieRequests.length > 0 ? (
+              <List
+                dataSource={movieRequests}
+                renderItem={(request) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <Text strong>
+                          {request.title} ({request.status})
+                        </Text>
+                      }
+                      description={
+                        <>
+                          <Paragraph>{request.description}</Paragraph>
+                          <Text type="secondary">
+                            Submitted on{" "}
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </Text>
+                        </>
+                      }
+                    />
+                  </List.Item>
+                )}
               />
-            </Form.Item>
-
-            <Form.Item label="Rating">
-              <Rate value={rating} onChange={setRating} />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Update Profile
-              </Button>
-            </Form.Item>
-          </Form>
-        </TabPane>
-
-        {/* Password Tab */}
-        <TabPane tab="Password" key="2">
-          <Form layout="vertical" onFinish={handlePasswordChange}>
-            <Form.Item label="Current Password" required>
-              <Input.Password
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your current password"
-              />
-            </Form.Item>
-
-            <Form.Item label="New Password" required>
-              <Input.Password
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter your new password"
-              />
-            </Form.Item>
-
-            <Form.Item label="Confirm New Password" required>
-              <Input.Password
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your new password"
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Change Password
-              </Button>
-            </Form.Item>
-          </Form>
-        </TabPane>
-
-        {/* Forgot Password Tab */}
-        <TabPane tab="Forgot Password" key="3">
-          <Form
-            layout="vertical"
-            onFinish={(values) => handleForgotPassword(values.email)}
-          >
-            <Form.Item label="Email" required>
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Send Reset Link
-              </Button>
-            </Form.Item>
-          </Form>
-        </TabPane>
-
-        {/* Delete Account Tab */}
-        <TabPane tab="Delete Account" key="4">
-          <Button danger type="primary" block onClick={handleDeleteAccount}>
-            Delete My Account
-          </Button>
-        </TabPane>
-      </Tabs>
+            ) : (
+              <Text>No movie requests yet.</Text>
+            )}
+          </TabPane>
+        </Tabs>
+      )}
     </div>
   );
 };

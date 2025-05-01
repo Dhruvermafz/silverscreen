@@ -17,7 +17,7 @@ const Login = () => {
 
     try {
       const response = await login({
-        username: values.email, // Ensure this matches backend expectation
+        email: values.email, // Changed from username to email
         password: values.password,
       }).unwrap();
 
@@ -26,7 +26,7 @@ const Login = () => {
 
       message.success("Logged in successfully!");
       // Redirect to dashboard or perform other actions
-      // window.location.href = "/dashboard";
+      window.location.href = "/"; // Redirect to home (MembersWrapper)
     } catch (err) {
       message.error(err?.data?.error || "Login failed");
     }

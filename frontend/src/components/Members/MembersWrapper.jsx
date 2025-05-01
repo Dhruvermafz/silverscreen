@@ -10,6 +10,7 @@ import {
   Row,
   Col,
 } from "antd";
+import { Link } from "react-router-dom"; // Import Link from react-router-dom
 import { useGetAllMembersQuery } from "../../actions/userApi";
 
 const { Title, Paragraph, Text } = Typography;
@@ -60,7 +61,9 @@ const MembersWrapper = () => {
               </div>
 
               <Title level={4} style={{ textAlign: "center", marginBottom: 8 }}>
-                {user.username}
+                <Link to={`/u/${user._id}`} style={{ color: "#1890ff" }}>
+                  {user.username}
+                </Link>
               </Title>
 
               <Paragraph

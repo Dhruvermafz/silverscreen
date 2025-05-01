@@ -1,0 +1,4 @@
+{"details":null,"level":"warn","message":"Error response: Password must be at least 8 characters long and include lowercase, uppercase, number, and special character","status":400,"timestamp":"2025-05-01T07:07:53.065Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-05-01T07:08:30.910Z"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User registered successfully","timestamp":"2025-05-01T07:09:07.649Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-01T07:09:36.204Z","userId":"68131e1207af9fb1b048a138"}

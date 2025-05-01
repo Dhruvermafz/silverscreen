@@ -3,6 +3,7 @@ import { Form, Input, Button, Checkbox, notification, Typography } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useRegisterMutation } from "../../actions/authApi";
+
 const { Title, Text } = Typography;
 
 const Signup = () => {
@@ -18,24 +19,24 @@ const Signup = () => {
     const { email, username, password } = values;
 
     try {
-      const response = await register({ email, username, password }).unwrap(); // unwrap() is used to handle the result
+      const response = await register({ email, username, password }).unwrap();
       console.log("Registration Response:", response);
 
       if (response) {
         notification.success({
           message: "Registration Successful",
-          description: "You have successfully registered!",
+          description: "You have successfully registered! Please log in.",
         });
 
-        // Redirect after slight delay for user to read notification
+        // Redirect to /login after slight delay for user to read notification
         setTimeout(() => {
-          navigate("/"); // Navigate to the homepage after successful registration
+          navigate("/login"); // Changed from "/" to "/login"
         }, 1000);
       }
     } catch (err) {
       notification.error({
         message: "Registration Failed",
-        description: err?.message || "Unexpected error occurred!",
+        description: err?.data?.error || "Unexpected error occurred!",
       });
     }
 

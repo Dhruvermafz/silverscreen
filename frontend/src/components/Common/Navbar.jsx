@@ -17,13 +17,16 @@ import {
   ProfileOutlined,
   SearchOutlined,
   MenuOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useGetProfileQuery } from "../../actions/userApi";
+import SettingsWrapper from "./Settings";
 
 const { Title } = Typography;
 
 const Navbar = () => {
   const { data: user, isLoading, isError } = useGetProfileQuery();
+  console.log(user);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   useEffect(() => {
@@ -38,7 +41,10 @@ const Navbar = () => {
   const userMenu = (
     <Menu>
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
-        <a href="/profile">My Profile</a>
+        <a href={`/u/${user?._id}`}>My Profile</a>
+      </Menu.Item>
+      <Menu.Item key="settings" icon={<SettingOutlined />}>
+        <a href="/settings">Settings</a>
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />}>
         <a href="/logout">Logout</a>
@@ -74,9 +80,6 @@ const Navbar = () => {
           <Dropdown overlay={userMenu} placement="bottomRight">
             <Button icon={<UserOutlined />}>{user.username}</Button>
           </Dropdown>
-          <a href="/review">
-            <Button type="primary">Review</Button>
-          </a>
         </>
       )}
     </Space>
@@ -161,9 +164,6 @@ const Navbar = () => {
                 {user.username}
               </Button>
             </Dropdown>
-            <a href="/review">
-              <Button type="primary">Review</Button>
-            </a>
           </>
         )}
       </Space>

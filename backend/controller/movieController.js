@@ -1,5 +1,5 @@
-const Movie = require("../models/Movie");
-const MovieRequest = require("../models/MovieRequest");
+const Movie = require("../models/movies");
+const MovieRequest = require("../models/movieRequest");
 
 // GET: All movies from your DB
 const getAllMovies = async (req, res) => {

@@ -2,7 +2,16 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const userApi = createApi({
   reducerPath: "userApi", // Name for this slice
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Adjust to match your Express server's URL
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:5000/api",
+    prepareHeaders: (headers, { getState }) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }), // Adjust to match your Express server's URL
   endpoints: (builder) => ({
     // Fetch the logged-in user's profile
     getProfile: builder.query({

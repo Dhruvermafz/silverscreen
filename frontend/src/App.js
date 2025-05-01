@@ -13,6 +13,7 @@ import Contact from "./components/Common/Contact";
 import ProfileWrapper from "./components/Common/Profile";
 import AddMovieRequest from "./components/Movie/MovieRequest";
 import MoviePage from "./components/Movie/MoviePage";
+import SettingsWrapper from "./components/Common/Settings";
 function App() {
   return (
     <Router>
@@ -31,6 +32,7 @@ function App() {
             <Route path="/u/:id" element={<ProfileWrapper />} />
             <Route path="/submit-a-request" element={<AddMovieRequest />} />
             <Route path="/movies/:id" element={<MoviePage />} />
+            <Route path="/settings" element={<SettingsWrapper />} />
           </Routes>
         </main>
         <AppFooter />
