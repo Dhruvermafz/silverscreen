@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const userApi = createApi({
   reducerPath: "userApi", // Name for this slice
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api",
+    baseUrl: "https://silverscreen.onrender.com/api",
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("token");
       if (token) {

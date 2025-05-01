@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const baseUrl = "http://localhost:5000/api/auth/";
+const baseUrl = "https://silverscreen.onrender.com/api/auth/";
 
 export const authApi = createApi({
   reducerPath: "authApi",
