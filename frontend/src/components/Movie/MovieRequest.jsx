@@ -6,7 +6,7 @@ import { useSubmitMovieRequestMutation } from "../../actions/movieApi";
 const { Title } = Typography;
 const { Option } = Select;
 
-const AddMovieRequest = () => {
+const AddMovieRequest = ({ isVisible, onClose }) => {
   const [isRequestModalVisible, setIsRequestModalVisible] = useState(false);
   const [form] = Form.useForm();
 
@@ -26,22 +26,10 @@ const AddMovieRequest = () => {
 
   return (
     <div style={{ padding: 20 }}>
-      <Title level={2}>
-        Request New Movie <FileAddOutlined />
-      </Title>
-
-      <Button
-        type="primary"
-        icon={<FileAddOutlined />}
-        onClick={() => setIsRequestModalVisible(true)}
-      >
-        Add New Movie
-      </Button>
-
       <Modal
         title="Suggest a Movie Not in DB"
-        open={isRequestModalVisible}
-        onCancel={() => setIsRequestModalVisible(false)}
+        open={isVisible}
+        onCancel={onClose}
         footer={null}
       >
         <Form form={form} onFinish={handleSubmitRequest} layout="vertical">

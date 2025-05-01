@@ -1,16 +1,15 @@
 const mongoose = require("mongoose");
 
+const movieSchema = new mongoose.Schema({
+  movieId: Number,
+  title: String,
+  posterPath: String,
+});
+
 const listSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
-    movies: [
-      {
-        type: String, // You can replace String with a proper Movie model reference if you want later
-      },
-    ],
+    name: { type: String, required: true },
+    movies: [movieSchema],
   },
   { timestamps: true }
 );

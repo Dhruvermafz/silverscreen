@@ -30,7 +30,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/u/:id" element={<ProfileWrapper />} />
-            <Route path="/submit-a-request" element={<AddMovieRequest />} />
+
             <Route path="/movies/:id" element={<MoviePage />} />
             <Route path="/settings" element={<SettingsWrapper />} />
           </Routes>

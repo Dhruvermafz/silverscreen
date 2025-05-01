@@ -4,7 +4,16 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const movieApi = createApi({
   reducerPath: "movieApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/movies" }), // Adjust this base URL as needed
+  baseQuery: fetchBaseQuery({
+    baseUrl: "/api/movies",
+    prepareHeaders: (headers, { getState }) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }), // Adjust this base URL as needed
   tagTypes: ["Movies", "Requests"],
   endpoints: (builder) => ({
     // GET all movies

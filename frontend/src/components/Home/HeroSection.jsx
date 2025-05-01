@@ -1,72 +1,74 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Button, Typography, Row, Col } from "antd";
 import { UserAddOutlined } from "@ant-design/icons";
-import { AuthContext } from "../../context/AuthContext";
+import { useGetProfileQuery } from "../../actions/userApi"; // Make sure this is correct
+
 const { Title, Paragraph } = Typography;
 
 const HeroSection = () => {
-  const { user, isLoggedIn, login, logout } = useContext(AuthContext); // Using the AuthContext
+  const { data: user, isLoading, isError } = useGetProfileQuery();
+
+  const isLoggedIn = !isLoading && !isError && user && user.email;
 
   return (
     <div className="hero-section">
       <img
         src="https://i0.wp.com/cdn.bgr.com/2014/10/interstellar.jpeg"
-        alt="Interstellar movie scene with space background"
+        alt="Interstellar"
         className="hero-section-image"
       />
       <div className="hero-section-overlay">
         <Row justify="center" align="middle" style={{ height: "100%" }}>
           <Col>
-            <Title
-              level={1}
-              className="hero-title"
-              style={{ color: "#fff", textAlign: "center" }}
-            >
+            <Title level={1} style={{ color: "#fff", textAlign: "center" }}>
               Track films you’ve watched.
             </Title>
-            <Paragraph
-              className="hero-description"
-              style={{ color: "#fff", textAlign: "center" }}
-            >
+            <Paragraph style={{ color: "#fff", textAlign: "center" }}>
               Save those you want to see. Tell your friends what’s good.
             </Paragraph>
 
             {!isLoggedIn ? (
-              <div className="hero-action">
+              <div style={{ textAlign: "center" }}>
                 <Button
                   type="primary"
                   icon={<UserAddOutlined />}
                   size="large"
-                  className="hero-signup-button"
-                  onClick={() =>
-                    login({ name: "John Doe", email: "john@example.com" })
-                  } // Example login
+                  href="/login" // You can update this to your actual login route
                   style={{
                     fontWeight: 600,
                     borderRadius: "30px",
                     padding: "10px 30px",
                   }}
                 >
-                  Sign Up
+                  Sign Up / Login
                 </Button>
               </div>
             ) : (
-              <div className="logged-in-content">
-                <Title level={4} style={{ color: "#fff", textAlign: "center" }}>
-                  Welcome back, {user.name}!
+              <div style={{ textAlign: "center", color: "#fff" }}>
+                <Title level={4} style={{ color: "#fff" }}>
+                  Welcome back, {user.username.split("@")[0]}!
                 </Title>
-                <Button
-                  type="danger"
-                  size="large"
-                  onClick={logout} // Log out functionality
-                  style={{
-                    fontWeight: 600,
-                    borderRadius: "30px",
-                    padding: "10px 30px",
-                  }}
-                >
-                  Log Out
-                </Button>
+
+                <div style={{ marginTop: "20px" }}>
+                  <Title level={5} style={{ color: "#fff" }}>
+                    Your List
+                  </Title>
+                  {user.favoriteMovies.length === 0 ? (
+                    <p>No movies in your list yet.</p>
+                  ) : (
+                    <ul>
+                      {user.favoriteMovies.map((movie) => (
+                        <li key={movie._id}>{movie.title}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <Title level={5} style={{ color: "#fff", marginTop: "20px" }}>
+                    Just Added
+                  </Title>
+                  {/* You can fill this with actual recent additions from your backend */}
+                  <p>New feature coming soon...</p>
+                </div>
               </div>
             )}
           </Col>

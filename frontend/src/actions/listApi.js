@@ -2,7 +2,16 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const listApi = createApi({
   reducerPath: "listApi", // Defines the name for the slice in the Redux store
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Change this to your Express API base URL
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:5000/api",
+    prepareHeaders: (headers, { getState }) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }), // Change this to your Express API base URL
   endpoints: (builder) => ({
     // Fetch lists
     getLists: builder.query({
@@ -23,6 +32,13 @@ export const listApi = createApi({
         method: "DELETE",
       }),
     }),
+    addMovieToList: builder.mutation({
+      query: ({ listId, movie }) => ({
+        url: `/lists/${listId}/add`,
+        method: "POST",
+        body: { movie },
+      }),
+    }),
   }),
 });
 
@@ -30,4 +46,5 @@ export const {
   useGetListsQuery,
   useCreateListMutation,
   useDeleteListMutation,
+  useAddMovieToListMutation,
 } = listApi;

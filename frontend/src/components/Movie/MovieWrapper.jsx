@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, Row, Col, Pagination } from "antd";
 import { SearchOutlined, FileAddOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom"; // <-- Add this
 import MovieCard from "./MovieCard";
 import MovieFilter from "./MovieFilter";
 import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
-
+import AddMovieRequest from "./MovieRequest";
 const MovieWrapper = () => {
   const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -14,7 +13,8 @@ const MovieWrapper = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const navigate = useNavigate(); // <-- Initialize navigation
+
+  const [isRequestModalVisible, setIsRequestModalVisible] = useState(false); // 💡 Modal state
 
   useEffect(() => {
     fetchMovies();
@@ -65,7 +65,7 @@ const MovieWrapper = () => {
         <Button
           type="primary"
           icon={<FileAddOutlined />}
-          onClick={() => navigate("/submit-a-request")} // <-- Navigate to recommendation page
+          onClick={() => setIsRequestModalVisible(true)} // ✅ Show modal
         >
           Request a Movie
         </Button>
@@ -89,6 +89,12 @@ const MovieWrapper = () => {
         pageSize={10}
         onChange={handlePageChange}
         style={{ textAlign: "center", marginTop: "20px" }}
+      />
+
+      {/* ✅ Include modal and control via props */}
+      <AddMovieRequest
+        isVisible={isRequestModalVisible}
+        onClose={() => setIsRequestModalVisible(false)}
       />
     </div>
   );
