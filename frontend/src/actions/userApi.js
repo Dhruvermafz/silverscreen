@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const userApi = createApi({
   reducerPath: "userApi", // Name for this slice
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000" }), // Adjust to match your Express server's URL
+  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Adjust to match your Express server's URL
   endpoints: (builder) => ({
     // Fetch the logged-in user's profile
     getProfile: builder.query({
@@ -38,7 +38,7 @@ export const userApi = createApi({
 
     // Fetch all members (additional route)
     getAllMembers: builder.query({
-      query: () => "/users/members", // GET /users/members
+      query: () => "/users/", // GET /users/members
     }),
   }),
 });

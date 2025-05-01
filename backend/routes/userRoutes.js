@@ -10,7 +10,7 @@ router.get("/profile", protect, userController.getProfile);
 router.put("/profile", protect, userController.updateProfile);
 
 // GET all users
-router.get("/", protect, userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
 // GET user by ID
 router.get("/:id", protect, userController.getUserById);

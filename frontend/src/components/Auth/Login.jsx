@@ -10,29 +10,25 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // RTK Query mutation hook for login
   const [login, { isLoading, error }] = useLoginMutation();
 
-  // Handle login on form submission
   const handleLogin = async (values) => {
     setLoading(true);
 
     try {
       const response = await login({
-        username: values.email,
+        username: values.email, // Ensure this matches backend expectation
         password: values.password,
       }).unwrap();
-      const token = response.token;
 
+      const token = response.token;
       localStorage.setItem("token", token);
 
-      if (response) {
-        message.success("Logged in successfully!");
-        // Redirect or perform actions after login, for example:
-        // window.location.href = '/dashboard';
-      }
+      message.success("Logged in successfully!");
+      // Redirect to dashboard or perform other actions
+      // window.location.href = "/dashboard";
     } catch (err) {
-      message.error(err?.message || "Login failed");
+      message.error(err?.data?.error || "Login failed");
     }
 
     setLoading(false);
@@ -53,7 +49,6 @@ const Login = () => {
         Welcome Back to SilverScreen
       </Title>
 
-      {/* Form with onFinish handling the login */}
       <Form onFinish={handleLogin}>
         <Form.Item
           label="Email Address"

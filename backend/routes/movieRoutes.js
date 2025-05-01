@@ -1,8 +1,13 @@
-const router = require("express").Router();
-const { searchMovies, saveMovie } = require("../controller/movieController");
-const protect = require("../middleware/authMiddleware");
+const express = require("express");
+const router = express.Router();
+const movieController = require("../controllers/movieController");
 
-router.get("/search", searchMovies);
-router.post("/save", protect, saveMovie);
+router.get("/", movieController.getAllMovies);
+router.post("/", movieController.addMovie);
+router.put("/:id", movieController.updateMovie);
+router.delete("/:id", movieController.deleteMovie);
+
+router.post("/requests", movieController.addMovieRequest);
+router.delete("/requests/:id", movieController.deleteMovieRequest);
 
 module.exports = router;

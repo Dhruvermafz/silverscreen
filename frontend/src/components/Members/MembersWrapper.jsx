@@ -1,6 +1,18 @@
 import React from "react";
-import { List, Card, Avatar, Rate, Spin, message } from "antd";
+import {
+  List,
+  Card,
+  Typography,
+  Rate,
+  Spin,
+  message,
+  Image,
+  Row,
+  Col,
+} from "antd";
 import { useGetAllMembersQuery } from "../../actions/userApi";
+
+const { Title, Paragraph, Text } = Typography;
 
 const MembersWrapper = () => {
   const { data: members = [], isLoading, isError } = useGetAllMembersQuery();
@@ -14,45 +26,63 @@ const MembersWrapper = () => {
   }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <List
-        grid={{ gutter: 16, column: 4 }}
-        dataSource={members}
-        renderItem={(user) => (
-          <List.Item>
+    <div
+      style={{
+        padding: "30px 50px",
+        background: "#f7f9fb",
+        minHeight: "100vh",
+      }}
+    >
+      <Title level={2} style={{ textAlign: "center", marginBottom: 40 }}>
+        Community Members
+      </Title>
+
+      <Row gutter={[24, 24]}>
+        {members.map((user) => (
+          <Col key={user._id} xs={24} sm={12} md={8} lg={6} xl={6}>
             <Card
               hoverable
-              style={{ width: 300 }}
-              cover={
-                <Avatar
+              style={{ borderRadius: 12, overflow: "hidden" }}
+              bodyStyle={{ padding: 20 }}
+            >
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                <Image
                   src={
                     user.avatar ||
-                    "https://api.dicebear.com/7.x/miniavs/svg?seed=" +
-                      user.username
+                    `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
                   }
-                  size={100}
-                  style={{ margin: "20px auto" }}
+                  alt={user.username}
+                  width={80}
+                  height={80}
+                  preview={false}
+                  style={{ borderRadius: "50%", objectFit: "cover" }}
                 />
-              }
-            >
-              <Card.Meta
-                title={user.username}
-                description={
-                  <div>
-                    <p style={{ margin: "10px 0" }}>
-                      {user.bio || "No bio provided."}
-                    </p>
-                    <Rate disabled allowHalf value={user.rating} />
-                    <p style={{ marginTop: "10px" }}>
-                      Favorite Movies: {user.favoriteMovies?.length || 0}
-                    </p>
-                  </div>
-                }
-              />
+              </div>
+
+              <Title level={4} style={{ textAlign: "center", marginBottom: 8 }}>
+                {user.username}
+              </Title>
+
+              <Paragraph
+                style={{ fontSize: 13, textAlign: "center", color: "#666" }}
+              >
+                {user.bio || "No bio provided."}
+              </Paragraph>
+
+              <div style={{ textAlign: "center", margin: "12px 0" }}>
+                <Rate disabled allowHalf value={user.rating || 0} />
+              </div>
+
+              <Text
+                type="secondary"
+                style={{ display: "block", textAlign: "center" }}
+              >
+                Favorite Movies: {user.favoriteMovies?.length || 0}
+              </Text>
             </Card>
-          </List.Item>
-        )}
-      />
+          </Col>
+        ))}
+      </Row>
     </div>
   );
 };

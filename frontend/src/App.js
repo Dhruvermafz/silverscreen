@@ -11,6 +11,8 @@ import MembersWrapper from "./components/Members/MembersWrapper";
 import About from "./components/Common/About";
 import Contact from "./components/Common/Contact";
 import ProfileWrapper from "./components/Common/Profile";
+import AddMovieRequest from "./components/Movie/MovieRequest";
+import MoviePage from "./components/Movie/MoviePage";
 function App() {
   return (
     <Router>
@@ -27,6 +29,8 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/u/:id" element={<ProfileWrapper />} />
+            <Route path="/submit-a-request" element={<AddMovieRequest />} />
+            <Route path="/movies/:id" element={<MoviePage />} />
           </Routes>
         </main>
         <AppFooter />

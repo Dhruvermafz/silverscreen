@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const listApi = createApi({
   reducerPath: "listApi", // Defines the name for the slice in the Redux store
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000" }), // Change this to your Express API base URL
+  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Change this to your Express API base URL
   endpoints: (builder) => ({
     // Fetch lists
     getLists: builder.query({

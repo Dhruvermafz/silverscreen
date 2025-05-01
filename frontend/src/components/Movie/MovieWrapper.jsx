@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Row, Col, Card, Modal, Rate, Pagination } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { Input, Button, Row, Col, Pagination } from "antd";
+import { SearchOutlined, FileAddOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom"; // <-- Add this
 import MovieCard from "./MovieCard";
 import MovieFilter from "./MovieFilter";
 import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
-const { Meta } = Card;
 
 const MovieWrapper = () => {
   const [movies, setMovies] = useState([]);
@@ -14,6 +14,7 @@ const MovieWrapper = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const navigate = useNavigate(); // <-- Initialize navigation
 
   useEffect(() => {
     fetchMovies();
@@ -23,19 +24,19 @@ const MovieWrapper = () => {
     setLoading(true);
     const response = await getMoviesFromAPI(searchQuery, selectedFilter, page);
     setMovies(response.movies);
-    setTotal(response.totalResults); // Assuming the API returns the total number of results
+    setTotal(response.totalResults);
     setFilteredMovies(response.movies);
     setLoading(false);
   };
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
-    setPage(1); // Reset to the first page on search
+    setPage(1);
   };
 
   const handleFilterChange = (filters) => {
     setSelectedFilter(filters);
-    setPage(1); // Reset to the first page on filter change
+    setPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -44,7 +45,15 @@ const MovieWrapper = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
         <Input
           placeholder="Search movies"
           value={searchQuery}
@@ -53,9 +62,16 @@ const MovieWrapper = () => {
           style={{ width: "300px" }}
         />
         <MovieFilter onChange={handleFilterChange} />
+        <Button
+          type="primary"
+          icon={<FileAddOutlined />}
+          onClick={() => navigate("/submit-a-request")} // <-- Navigate to recommendation page
+        >
+          Request a Movie
+        </Button>
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
+      <Row gutter={[16, 16]}>
         {loading ? (
           <p>Loading...</p>
         ) : (

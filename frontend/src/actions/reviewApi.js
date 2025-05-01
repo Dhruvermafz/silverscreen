@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const reviewApi = createApi({
   reducerPath: "reviewApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000" }), // Adjust to match your Express server's URL
+  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:5000/api" }), // Adjust to match your Express server's URL
   endpoints: (builder) => ({
     // Add a review
     addReview: builder.mutation({

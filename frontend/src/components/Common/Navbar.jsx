@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Menu,
   Dropdown,
@@ -7,6 +7,8 @@ import {
   Space,
   Typography,
   notification,
+  Avatar,
+  Drawer,
 } from "antd";
 import {
   UserOutlined,
@@ -14,15 +16,16 @@ import {
   LogoutOutlined,
   ProfileOutlined,
   SearchOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import { useGetProfileQuery } from "../../actions/userApi";
+
 const { Title } = Typography;
 
 const Navbar = () => {
-  // Use the Redux hook to get user profile data
   const { data: user, isLoading, isError } = useGetProfileQuery();
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
-  // Show error message if profile fetching fails
   useEffect(() => {
     if (isError) {
       notification.error({
@@ -32,7 +35,7 @@ const Navbar = () => {
     }
   }, [isError]);
 
-  const menu = (
+  const userMenu = (
     <Menu>
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
         <a href="/profile">My Profile</a>
@@ -43,11 +46,47 @@ const Navbar = () => {
     </Menu>
   );
 
+  const navLinks = (
+    <Space size="large" direction="vertical" style={{ marginTop: 20 }}>
+      <a href="/films" style={{ fontWeight: 500 }}>
+        Films
+      </a>
+      <a href="/lists" style={{ fontWeight: 500 }}>
+        Lists
+      </a>
+      <a href="/members" style={{ fontWeight: 500 }}>
+        Members
+      </a>
+      {!isLoading && !user && (
+        <>
+          <a href="/login">
+            <Button icon={<LoginOutlined />}>Log In</Button>
+          </a>
+          <a href="/signup">
+            <Button type="primary" danger>
+              Sign Up
+            </Button>
+          </a>
+        </>
+      )}
+      {!isLoading && user && (
+        <>
+          <Dropdown overlay={userMenu} placement="bottomRight">
+            <Button icon={<UserOutlined />}>{user.username}</Button>
+          </Dropdown>
+          <a href="/review">
+            <Button type="primary">Review</Button>
+          </a>
+        </>
+      )}
+    </Space>
+  );
+
   return (
     <div
       style={{
         width: "100%",
-        background: "#ffffff",
+        background: "#fff",
         padding: "10px 30px",
         display: "flex",
         alignItems: "center",
@@ -58,13 +97,23 @@ const Navbar = () => {
         zIndex: 1000,
       }}
     >
-      {/* Logo */}
-      <Title level={4} style={{ margin: 0 }}>
-        SilverScreenInsight
-      </Title>
+      {/* Left Side: Logo & Menu Icon */}
+      <Space size="middle">
+        <Button
+          className="mobile-menu"
+          icon={<MenuOutlined />}
+          onClick={() => setDrawerVisible(true)}
+          style={{ display: "none" }}
+        />
+        <Title level={4} style={{ margin: 0 }}>
+          <a href="/" style={{ color: "black" }}>
+            SilverScreenInsight
+          </a>
+        </Title>
+      </Space>
 
-      {/* Menu */}
-      <Space size="large">
+      {/* Center Nav Links (Desktop) */}
+      <Space size="large" className="nav-links" style={{ display: "flex" }}>
         <a href="/films" style={{ color: "#555", fontWeight: 500 }}>
           Films
         </a>
@@ -76,20 +125,18 @@ const Navbar = () => {
         </a>
       </Space>
 
-      {/* Actions */}
+      {/* Right Side: Actions */}
       <Space size="middle">
-        <Input
+        <Input.Search
           placeholder="Search films..."
-          prefix={<SearchOutlined />}
+          enterButton={<SearchOutlined />}
           style={{ width: 250 }}
         />
 
         {!isLoading && !user && (
           <Space>
             <a href="/login">
-              <Button icon={<LoginOutlined />} type="default">
-                Log In
-              </Button>
+              <Button icon={<LoginOutlined />}>Log In</Button>
             </a>
             <a href="/signup">
               <Button type="primary" danger>
@@ -100,17 +147,50 @@ const Navbar = () => {
         )}
 
         {!isLoading && user && (
-          <Dropdown overlay={menu} placement="bottomRight">
-            <Button icon={<UserOutlined />}>{user.username}</Button>
-          </Dropdown>
-        )}
-
-        {!isLoading && user && (
-          <a href="/review">
-            <Button type="primary">Review</Button>
-          </a>
+          <>
+            <Dropdown overlay={userMenu} placement="bottomRight">
+              <Button
+                icon={
+                  user.avatarUrl ? (
+                    <Avatar src={user.avatarUrl} />
+                  ) : (
+                    <UserOutlined />
+                  )
+                }
+              >
+                {user.username}
+              </Button>
+            </Dropdown>
+            <a href="/review">
+              <Button type="primary">Review</Button>
+            </a>
+          </>
         )}
       </Space>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        title="Menu"
+        placement="left"
+        onClose={() => setDrawerVisible(false)}
+        visible={drawerVisible}
+      >
+        {navLinks}
+      </Drawer>
+
+      {/* Responsive Styles */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .nav-links {
+              display: none !important;
+            }
+            .mobile-menu {
+              display: inline-block !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
