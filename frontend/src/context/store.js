@@ -3,11 +3,13 @@ import { authApi } from "../actions/authApi";
 import { userApi } from "../actions/userApi";
 import { listApi } from "../actions/listApi";
 import { reviewApi } from "../actions/reviewApi";
+import { movieApi } from "../actions/movieApi";
 const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [listApi.reducerPath]: listApi.reducer,
+    [movieApi.reducerPath]: movieApi.reducer,
     [reviewApi.reducerPath]: reviewApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -15,7 +17,8 @@ const store = configureStore({
       authApi.middleware,
       userApi.middleware,
       listApi.middleware,
-      reviewApi.middleware
+      reviewApi.middleware,
+      movieApi.middleware
     ),
 });
 

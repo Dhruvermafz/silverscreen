@@ -1,6 +1,6 @@
 const Movie = require("../models/movies");
 const MovieRequest = require("../models/movieRequest");
-
+const User = require("../models/user");
 // GET: All movies from your DB
 const getAllMovies = async (req, res) => {
   try {
@@ -66,6 +66,75 @@ const deleteMovieRequest = async (req, res) => {
   }
 };
 
+const suggestMovieToUser = async (req, res) => {
+  const senderId = req.user.id;
+  const { receiverId } = req.params;
+  const { tmdbId, message } = req.body;
+
+  if (!tmdbId || !message) {
+    return res
+      .status(400)
+      .json({ error: "Movie ID and message are required." });
+  }
+
+  try {
+    const sender = await User.findById(senderId);
+    const receiver = await User.findById(receiverId);
+    const movie = await Movie.findOne({ tmdbId });
+
+    if (!sender || !receiver) {
+      return res.status(404).json({ error: "Sender or receiver not found." });
+    }
+
+    if (!movie) {
+      return res.status(404).json({ error: "Movie not found." });
+    }
+
+    // Save suggestion in receiver's document
+    receiver.suggestedMovies.push({
+      movieId: movie.tmdbId,
+      suggestedBy: sender._id,
+      message,
+    });
+
+    await receiver.save();
+
+    res.status(200).json({
+      message: `Movie "${movie.title}" suggested to ${receiver.username}`,
+      suggestion: {
+        from: sender.username,
+        to: receiver.username,
+        movie: {
+          id: movie.tmdbId,
+          title: movie.title,
+          posterPath: movie.posterPath,
+        },
+        note: message,
+      },
+    });
+  } catch (error) {
+    console.error("Error suggesting movie:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+const getSuggestionsForUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId)
+      .populate("suggestedMovies.suggestedBy", "username avatar")
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    res.status(200).json({ suggestions: user.suggestedMovies });
+  } catch (error) {
+    console.error("Error fetching suggestions:", error);
+    res.status(500).json({ error: "Failed to fetch suggestions" });
+  }
+};
+
 module.exports = {
   getAllMovies,
   addMovie,
@@ -73,4 +142,6 @@ module.exports = {
   deleteMovie,
   addMovieRequest,
   deleteMovieRequest,
+  suggestMovieToUser,
+  getSuggestionsForUser,
 };

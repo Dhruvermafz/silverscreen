@@ -9,11 +9,13 @@ import {
   Spin,
   Tabs,
   Divider,
+  Button,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { useGetProfileQuery } from "../../actions/userApi";
+import SuggestMovieModal from "../Movie/SuggestAMovie";
 const { TabPane } = Tabs;
 const { Title, Paragraph, Text } = Typography;
 
@@ -36,6 +38,7 @@ const ProfileWrapper = () => {
   const [reviews, setReviews] = useState([]);
   const [movieRequests, setMovieRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isSuggestModalOpen, setSuggestModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -141,9 +144,50 @@ const ProfileWrapper = () => {
               </div>
             </Card>
           ) : (
-            <Paragraph style={{ textAlign: "center", color: "#999" }}>
-              This user hasn’t added much to their profile yet.
-            </Paragraph>
+            <Tabs defaultActiveKey="1" style={{ marginTop: 30 }}>
+              <TabPane tab="Lists" key="1">
+                <Text>This user hasn't created any lists yet.</Text>
+              </TabPane>
+
+              <TabPane tab="Reviews" key="2">
+                <Text>This user hasn't posted any reviews yet.</Text>
+              </TabPane>
+
+              <TabPane tab="Genres They Like" key="3">
+                {userData.favoriteGenres?.length > 0 ? (
+                  <List
+                    dataSource={userData.favoriteGenres}
+                    renderItem={(genre) => <List.Item>{genre}</List.Item>}
+                    bordered
+                    style={{ marginTop: 10 }}
+                  />
+                ) : (
+                  <Text>No genre preferences shared.</Text>
+                )}
+              </TabPane>
+
+              <TabPane tab="Suggest a Movie" key="4">
+                {!isOwnProfile ? (
+                  <div style={{ padding: "10px 0" }}>
+                    <Text>Want to recommend something?</Text>
+                    <br />
+                    <Button
+                      type="primary"
+                      onClick={() => setSuggestModalOpen(true)}
+                    >
+                      Suggest a Movie
+                    </Button>
+                    <SuggestMovieModal
+                      visible={isSuggestModalOpen}
+                      onClose={() => setSuggestModalOpen(false)}
+                      receiverId={userData._id}
+                    />
+                  </div>
+                ) : (
+                  <Text>You can’t suggest a movie to yourself 😄</Text>
+                )}
+              </TabPane>
+            </Tabs>
           )
         ) : (
           <Paragraph style={{ textAlign: "center", color: "#666" }}>

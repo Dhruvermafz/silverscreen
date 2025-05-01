@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Select, Rate, Space } from "antd";
-
+import { getGenresFromAPI } from "../../actions/getMoviesFromAPI";
 const { Option } = Select;
 
 const MovieFilter = ({ onChange }) => {
+  const [genres, setGenres] = useState([]);
+
+  useEffect(() => {
+    getGenresFromAPI().then(setGenres);
+  }, []);
+
   const handleGenreChange = (value) => {
     onChange({ genre: value });
   };
@@ -19,14 +25,14 @@ const MovieFilter = ({ onChange }) => {
         onChange={handleGenreChange}
         style={{ width: 200 }}
       >
-        <Option value="Action">Action</Option>
-        <Option value="Comedy">Comedy</Option>
-        <Option value="Drama">Drama</Option>
-        <Option value="Horror">Horror</Option>
-        {/* Add more genres */}
+        {genres.map((g) => (
+          <Option key={g.id} value={g.id}>
+            {g.name}
+          </Option>
+        ))}
       </Select>
 
-      <Rate onChange={handleRatingChange} />
+      <Rate onChange={handleRatingChange} allowClear />
     </Space>
   );
 };

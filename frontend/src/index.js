@@ -5,6 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./context/AuthContext";
 import store from "./context/store";
+import "./index.css";
 // Get the root element
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -12,13 +13,7 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      {" "}
-      {/* Wrap your App component with the Provider */}
-      <AuthProvider>
-        {" "}
-        {/* Your existing AuthContext provider */}
-        <App />
-      </AuthProvider>
+      <App />
     </Provider>
   </React.StrictMode>
 );

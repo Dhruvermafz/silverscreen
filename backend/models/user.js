@@ -10,6 +10,14 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String, default: "" }, // Profile Picture
     favoriteMovies: [{ type: String }], // Simple array of movie names or IDs
     rating: { type: Number, default: 0 }, // Rating out of 5
+    suggestedMovies: [
+      {
+        movieId: { type: Number },
+        suggestedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        message: String,
+        suggestedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

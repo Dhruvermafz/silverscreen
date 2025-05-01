@@ -110,7 +110,7 @@ const Navbar = () => {
         />
         <Title level={4} style={{ margin: 0 }}>
           <a href="/" style={{ color: "black" }}>
-            SilverScreenInsight
+            SilverScreen
           </a>
         </Title>
       </Space>
@@ -130,12 +130,6 @@ const Navbar = () => {
 
       {/* Right Side: Actions */}
       <Space size="middle">
-        <Input.Search
-          placeholder="Search films..."
-          enterButton={<SearchOutlined />}
-          style={{ width: 250 }}
-        />
-
         {!isLoading && !user && (
           <Space>
             <a href="/login">

@@ -1,11 +1,12 @@
 // src/features/api/movieApi.js
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_URL } from "../context/config";
 
 export const movieApi = createApi({
   reducerPath: "movieApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://silverscreen.onrender.com/api/movies",
+    baseUrl: `${API_URL}/movies`,
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -69,6 +70,19 @@ export const movieApi = createApi({
       }),
       invalidatesTags: ["Requests"],
     }),
+
+    suggestMovie: builder.mutation({
+      query: ({ receiverId, tmdbId, message }) => ({
+        url: `/suggest/${receiverId}`,
+        method: "POST",
+        body: { tmdbId, message },
+      }),
+    }),
+
+    // Get all movie suggestions for the current user
+    getSuggestions: builder.query({
+      query: () => "/suggestions",
+    }),
   }),
 });
 
@@ -79,4 +93,6 @@ export const {
   useDeleteMovieMutation,
   useSubmitMovieRequestMutation,
   useDeleteMovieRequestMutation,
+  useSuggestMovieMutation,
+  useGetSuggestionsQuery,
 } = movieApi;
