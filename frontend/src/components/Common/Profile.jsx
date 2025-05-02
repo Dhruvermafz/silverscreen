@@ -4,7 +4,6 @@ import {
   Typography,
   Card,
   List,
-  Rate,
   message,
   Spin,
   Tabs,
@@ -13,9 +12,15 @@ import {
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-import { useGetProfileQuery } from "../../actions/userApi";
+import {
+  useGetProfileQuery,
+  useFollowUserMutation,
+  useGetUserByIdQuery,
+  useGetUserReviewsQuery,
+  useGetUserRequestsQuery,
+} from "../../actions/userApi"; // Updated import
 import SuggestMovieModal from "../Movie/SuggestAMovie";
+
 const { TabPane } = Tabs;
 const { Title, Paragraph, Text } = Typography;
 
@@ -26,62 +31,43 @@ const ProfileWrapper = () => {
     isLoading: authLoading,
     error: authError,
   } = useGetProfileQuery();
+  const [followUser] = useFollowUserMutation();
   const [isOwnProfile, setIsOwnProfile] = useState(false);
-  const [userData, setUserData] = useState({
-    _id: "",
-    username: "",
-    bio: "",
-    avatar: "",
-    favoriteMovies: [],
-    rating: 0,
+
+  // RTK Query hooks for fetching user data, reviews, and requests
+  const {
+    data: userData,
+    isLoading: userLoading,
+    error: userError,
+  } = useGetUserByIdQuery(id === "me" ? authUser?._id : id, {
+    skip: !authUser?._id || !id,
   });
-  const [reviews, setReviews] = useState([]);
-  const [movieRequests, setMovieRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  const {
+    data: reviews,
+    isLoading: reviewsLoading,
+    error: reviewsError,
+  } = useGetUserReviewsQuery(authUser?._id, {
+    skip: !isOwnProfile || !authUser?._id,
+  });
+
+  const {
+    data: movieRequests,
+    isLoading: requestsLoading,
+    error: requestsError,
+  } = useGetUserRequestsQuery(authUser?._id, {
+    skip: !isOwnProfile || !authUser?._id,
+  });
+
   const [isSuggestModalOpen, setSuggestModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token || !authUser?._id) throw new Error("User not authenticated");
-
-        if (id === "me" || id === authUser._id) {
-          setIsOwnProfile(true);
-          setUserData(authUser);
-
-          const [reviewsRes, requestsRes] = await Promise.all([
-            axios.get(`/api/user/${authUser._id}/reviews`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`/api/user/${authUser._id}/requests`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
-
-          setReviews(reviewsRes.data);
-          setMovieRequests(requestsRes.data);
-        } else {
-          setIsOwnProfile(false);
-          const response = await axios.get(`/api/user/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUserData(response.data);
-        }
-      } catch (err) {
-        message.error(err.message || "Failed to fetch user data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (!authLoading && authUser) {
-      fetchProfile();
+      setIsOwnProfile(id === "me" || id === authUser._id);
     }
   }, [id, authUser, authLoading]);
 
-  if (loading || authLoading) {
+  if (authLoading || userLoading || reviewsLoading || requestsLoading) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
         <Spin size="large" />
@@ -89,18 +75,30 @@ const ProfileWrapper = () => {
     );
   }
 
-  if (authError) {
+  if (authError || userError || reviewsError || requestsError) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
-        <Text type="danger">Authentication Error: {authError.message}</Text>
+        <Text type="danger">
+          Error:{" "}
+          {authError?.message || userError?.message || "An error occurred"}
+        </Text>
       </div>
     );
   }
 
   const isProfileIncomplete =
-    !userData.bio ||
-    userData.avatar === "" ||
-    userData.favoriteMovies.length === 0;
+    !userData?.bio ||
+    userData?.avatar === "" ||
+    userData?.favoriteMovies?.length === 0;
+
+  const handleFollow = async () => {
+    try {
+      await followUser(userData._id).unwrap();
+      message.success("You are now following this user");
+    } catch (err) {
+      message.error("Failed to follow user");
+    }
+  };
 
   return (
     <div
@@ -111,13 +109,17 @@ const ProfileWrapper = () => {
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <Avatar
             size={120}
-            src={userData.avatar || "https://via.placeholder.com/100"}
+            src={userData?.avatar || "https://via.placeholder.com/100"}
             icon={<UserOutlined />}
           />
           <Title level={3} style={{ marginTop: 10 }}>
-            {userData.username}
+            {userData?.username}
           </Title>
-          <Rate disabled value={userData.rating || 0} />
+          {!isOwnProfile && (
+            <Button type="primary" onClick={handleFollow}>
+              Follow
+            </Button>
+          )}
         </div>
 
         {isProfileIncomplete ? (
@@ -138,7 +140,7 @@ const ProfileWrapper = () => {
                 of your favorite movies.
               </Paragraph>
               <div style={{ textAlign: "center", marginTop: 10 }}>
-                <a href="/edit-profile">
+                <a href={`/u/${authUser._id}/edit`}>
                   <Typography.Link>Edit Your Profile</Typography.Link>
                 </a>
               </div>
@@ -154,7 +156,7 @@ const ProfileWrapper = () => {
               </TabPane>
 
               <TabPane tab="Genres They Like" key="3">
-                {userData.favoriteGenres?.length > 0 ? (
+                {userData?.favoriteGenres?.length > 0 ? (
                   <List
                     dataSource={userData.favoriteGenres}
                     renderItem={(genre) => <List.Item>{genre}</List.Item>}
@@ -180,7 +182,7 @@ const ProfileWrapper = () => {
                     <SuggestMovieModal
                       visible={isSuggestModalOpen}
                       onClose={() => setSuggestModalOpen(false)}
-                      receiverId={userData._id}
+                      receiverId={userData?._id}
                     />
                   </div>
                 ) : (
@@ -191,11 +193,11 @@ const ProfileWrapper = () => {
           )
         ) : (
           <Paragraph style={{ textAlign: "center", color: "#666" }}>
-            {userData.bio}
+            {userData?.bio}
           </Paragraph>
         )}
 
-        {userData.favoriteMovies?.length > 0 && (
+        {userData?.favoriteMovies?.length > 0 && (
           <div style={{ marginTop: 20 }}>
             <Text strong>Favorite Movies:</Text>
             <List
@@ -215,18 +217,13 @@ const ProfileWrapper = () => {
       {isOwnProfile && (
         <Tabs defaultActiveKey="1" style={{ marginTop: 20 }}>
           <TabPane tab="Your Reviews" key="1">
-            {reviews.length > 0 ? (
+            {reviews?.length > 0 ? (
               <List
                 dataSource={reviews}
                 renderItem={(review) => (
                   <List.Item>
                     <List.Item.Meta
-                      title={
-                        <>
-                          <Text strong>{review.movieTitle}</Text> -{" "}
-                          <Rate disabled value={review.rating} />
-                        </>
-                      }
+                      title={<Text strong>{review.movieTitle}</Text>}
                       description={
                         <>
                           <Paragraph>{review.comment}</Paragraph>
@@ -246,7 +243,7 @@ const ProfileWrapper = () => {
           </TabPane>
 
           <TabPane tab="Your Movie Requests" key="2">
-            {movieRequests.length > 0 ? (
+            {movieRequests?.length > 0 ? (
               <List
                 dataSource={movieRequests}
                 renderItem={(request) => (

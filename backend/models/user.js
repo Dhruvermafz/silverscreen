@@ -7,9 +7,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, unique: true },
     password: { type: String, required: true },
     bio: { type: String, default: "" },
-    avatar: { type: String, default: "" }, // Profile Picture
-    favoriteMovies: [{ type: String }], // Simple array of movie names or IDs
-    rating: { type: Number, default: 0 }, // Rating out of 5
+    avatar: { type: String, default: "" },
+    favoriteMovies: [{ type: String }],
+    rating: { type: Number, default: 0 },
     suggestedMovies: [
       {
         movieId: { type: Number },
@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema(
         suggestedAt: { type: Date, default: Date.now },
       },
     ],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

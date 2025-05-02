@@ -118,8 +118,9 @@ const MovieCard = ({ movie }) => {
       <AddToListModal
         open={isListModalVisible}
         onClose={() => setListModalVisible(false)}
-        movieId={movie.id}
+        movie={movie}
       />
+
       <RecommendToUserModal
         open={isRecommendModalVisible}
         onClose={() => setRecommendModalVisible(false)}

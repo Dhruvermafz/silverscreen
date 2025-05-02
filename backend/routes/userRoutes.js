@@ -18,5 +18,8 @@ router.get("/:id", protect, userController.getUserById);
 // DELETE user by ID
 router.delete("/:id", protect, userController.deleteUser);
 router.get("/members", userController.getAllMembers);
-
+router.post("/:id/follow", userController.followUser);
+router.post("/:id/unfollow", userController.unfollowUser);
+router.get("/:id/reviews", userController.getUserReviews);
+router.get("/:id/requests", userController.getUserRequests);
 module.exports = router;

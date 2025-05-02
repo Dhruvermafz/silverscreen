@@ -45,7 +45,25 @@ export const userApi = createApi({
         method: "DELETE",
       }),
     }),
-
+    followUser: builder.mutation({
+      query: (id) => ({
+        url: `/users/${id}/follow`,
+        method: "POST",
+      }),
+    }),
+    getUserReviews: builder.query({
+      query: (userId) => `/users/${userId}/reviews`,
+    }),
+    getUserRequests: builder.query({
+      query: (userId) => `/users/${userId}/requests`,
+    }),
+    // Unfollow user
+    unfollowUser: builder.mutation({
+      query: (id) => ({
+        url: `/users/${id}/unfollow`,
+        method: "POST",
+      }),
+    }),
     // Fetch all members (additional route)
     getAllMembers: builder.query({
       query: () => "/users/", // GET /users/members
@@ -60,4 +78,9 @@ export const {
   useGetUserByIdQuery,
   useDeleteUserMutation,
   useGetAllMembersQuery,
+  useFollowUserMutation,
+  useUnfollowUserMutation,
+  useGetUserRequestsQuery,
+  useGetUserReviewsQuery,
+  useGetUserProfileQuery,
 } = userApi;
