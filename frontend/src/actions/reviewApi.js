@@ -4,7 +4,7 @@ import { API_URL } from "../context/config";
 export const reviewApi = createApi({
   reducerPath: "reviewApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: { API_URL },
+    baseUrl: API_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("token");
       if (token) {

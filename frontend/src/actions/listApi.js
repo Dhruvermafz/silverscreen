@@ -4,7 +4,7 @@ import { API_URL } from "../context/config";
 export const listApi = createApi({
   reducerPath: "listApi", // Defines the name for the slice in the Redux store
   baseQuery: fetchBaseQuery({
-    baseUrl: { API_URL },
+    baseUrl: API_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = localStorage.getItem("token");
       if (token) {

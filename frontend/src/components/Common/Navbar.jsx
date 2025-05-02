@@ -78,7 +78,7 @@ const Navbar = () => {
       {!isLoading && user && (
         <>
           <Dropdown overlay={userMenu} placement="bottomRight">
-            <Button icon={<UserOutlined />}>{user.username}</Button>
+            <Button icon={<UserOutlined />}>{user?.username}</Button>
           </Dropdown>
         </>
       )}
@@ -149,7 +149,7 @@ const Navbar = () => {
               <Button
                 icon={
                   user.avatarUrl ? (
-                    <Avatar src={user.avatarUrl} />
+                    <Avatar src={user?.avatarUrl} />
                   ) : (
                     <UserOutlined />
                   )
