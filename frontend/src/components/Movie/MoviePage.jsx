@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Typography, Divider, Row, Col, Card } from "antd";
 import axios from "axios";
+import MovieReview from "./MovieReview";
 const { Title, Paragraph } = Typography;
 
 const MoviePage = () => {
@@ -73,6 +74,7 @@ const MoviePage = () => {
           <Paragraph>
             <strong>Rating:</strong> {movie.vote_average} / 10
           </Paragraph>
+          <MovieReview />
         </Col>
       </Row>
 

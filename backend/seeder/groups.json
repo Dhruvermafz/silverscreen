@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Bollywood Blockbusters",
+    "description": "A group for fans of Bollywood cinema to discuss movies and stars.",
+    "creator": "67ff26fba293ab7281627948",
+    "members": [
+      { "user": "67ff26fba293ab7281627948", "role": "creator" },
+      { "user": "67ff28f0a293ab728162794c", "role": "moderator" },
+      { "user": "67ff2a3ca293ab7281627950", "role": "member" },
+      { "user": "6813a75d031afd84f79deba5", "role": "member" }
+    ],
+    "rules": [
+      "No spoilers without warnings",
+      "Be respectful",
+      "Focus on Bollywood cinema"
+    ],
+    "isPrivate": false
+  },
+  {
+    "name": "Gokuldham Movie Club",
+    "description": "A private group for Gokuldham society members to share movie reviews.",
+    "creator": "680df604700980538bb42962",
+    "members": [
+      { "user": "680df604700980538bb42962", "role": "creator" },
+      { "user": "680e021c700980538bb42964", "role": "moderator" },
+      { "user": "68139dd9031afd84f79deb73", "role": "member" }
+    ],
+    "rules": [
+      "Only Gokuldham residents",
+      "No off-topic discussions",
+      "Keep it friendly"
+    ],
+    "isPrivate": true
+  },
+  {
+    "name": "Indie Cinema Enthusiasts",
+    "description": "Exploring independent films and hidden gems from around the world.",
+    "creator": "68131e1207af9fb1b048a138",
+    "members": [
+      { "user": "68131e1207af9fb1b048a138", "role": "creator" },
+      { "user": "6813a1b5031afd84f79deb86", "role": "moderator" },
+      { "user": "68139da5031afd84f79deb6f", "role": "member" },
+      { "user": "67ff2a3ca293ab7281627950", "role": "member" }
+    ],
+    "rules": [
+      "Support indie filmmakers",
+      "Provide constructive feedback",
+      "No mainstream movie posts"
+    ],
+    "isPrivate": false
+  }
+]

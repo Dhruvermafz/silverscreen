@@ -6,146 +6,96 @@ import {
   InstagramOutlined,
   MailOutlined,
 } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import "./footer.css"; // Import regular CSS file
 
 const { Footer } = Layout;
-const { Link, Text } = Typography;
+const { Text } = Typography;
+
+// Configuration for links and social media
+const quickLinks = [
+  { label: "Films", path: "/films" },
+  { label: "Lists", path: "/lists" },
+  { label: "Members", path: "/members" },
+  { label: "About", path: "/about" },
+  { label: "Contact", path: "/contact" },
+  { label: "Groups", path: "/groups" }, // Added to integrate with GroupsPage
+];
+
+const socialMedia = [
+  {
+    label: "GitHub",
+    icon: <GithubOutlined />,
+    url: "https://github.com/silverscreen-project", // Replace with actual URL
+  },
+  {
+    label: "Twitter",
+    icon: <TwitterOutlined />,
+    url: "https://twitter.com/silverscreen", // Replace with actual URL
+  },
+  {
+    label: "Instagram",
+    icon: <InstagramOutlined />,
+    url: "https://instagram.com/silverscreen", // Replace with actual URL
+  },
+  {
+    label: "Email",
+    icon: <MailOutlined />,
+    url: `mailto:${
+      process.env.REACT_APP_SUPPORT_EMAIL || "support@silverscreen.com"
+    }`,
+  },
+];
 
 const AppFooter = () => {
   return (
-    <Footer
-      style={{
-        backgroundColor: "#111827", // Dark gray background
-        color: "#fff",
-        padding: "40px 0",
-        marginTop: "80px",
-      }}
-    >
-      <Row
-        gutter={[16, 16]}
-        justify="space-between"
-        style={{ maxWidth: "1200px", margin: "0 auto" }}
-      >
-        {/* SilverScreeninSight Section */}
-        <Col xs={24} md={8}>
-          <Text
-            style={{
-              fontSize: "18px",
-              fontWeight: "600",
-              color: "#fff",
-            }}
-          >
-            SilverScreeninSight
-          </Text>
-          <p style={{ color: "#d1d5db", marginTop: "10px" }}>
+    <Footer className="footer">
+      <Row gutter={[16, 16]} justify="space-between" className="container">
+        {/* SilverScreen Section */}
+        <Col xs={24} sm={12} md={8}>
+          <Text className="title">Cinenotes</Text>
+          <p className="description">
             Discover, discuss, and review films with a passionate community.
           </p>
         </Col>
 
         {/* Quick Links Section */}
-        <Col xs={12} md={8}>
-          <Text
-            style={{
-              fontSize: "16px",
-              fontWeight: "500",
-              color: "#fff",
-            }}
-          >
-            Quick Links
-          </Text>
-          <ul style={{ marginTop: "10px", listStyle: "none", padding: "0" }}>
-            <li>
-              <Link
-                href="/films"
-                style={{ color: "#d1d5db", fontSize: "14px" }}
-              >
-                Films
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/lists"
-                style={{ color: "#d1d5db", fontSize: "14px" }}
-              >
-                Lists
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/members"
-                style={{ color: "#d1d5db", fontSize: "14px" }}
-              >
-                Members
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                style={{ color: "#d1d5db", fontSize: "14px" }}
-              >
-                About
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/contact"
-                style={{ color: "#d1d5db", fontSize: "14px" }}
-              >
-                Contact
-              </Link>
-            </li>
+        <Col xs={24} sm={12} md={8}>
+          <Text className="subtitle">Quick Links</Text>
+          <ul className="link-list">
+            {quickLinks.map((link) => (
+              <li key={link.path}>
+                <Link to={link.path} className="link">
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </Col>
 
         {/* Social Media Section */}
-        <Col xs={12} md={8}>
-          <Text
-            style={{
-              fontSize: "16px",
-              fontWeight: "500",
-              color: "#fff",
-            }}
-          >
-            Follow Us
-          </Text>
-          <Space size="middle" style={{ marginTop: "10px", fontSize: "20px" }}>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <GithubOutlined style={{ color: "#d1d5db" }} />
-            </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <TwitterOutlined style={{ color: "#d1d5db" }} />
-            </a>
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <InstagramOutlined style={{ color: "#d1d5db" }} />
-            </a>
-            <a href="mailto:support@silverscreeninsight.com">
-              <MailOutlined style={{ color: "#d1d5db" }} />
-            </a>
+        <Col xs={24} sm={12} md={8}>
+          <Text className="subtitle">Follow Us</Text>
+          <Space size="middle" className="social-icons">
+            {socialMedia.map((social) => (
+              <a
+                key={social.label}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="social-icon"
+                aria-label={`Follow us on ${social.label}`}
+              >
+                {social.icon}
+              </a>
+            ))}
           </Space>
         </Col>
       </Row>
 
       {/* Footer Bottom Section */}
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "40px",
-          color: "#6b7280",
-          fontSize: "14px",
-        }}
-      >
-        © {new Date().getFullYear()} SilverScreeninSight. All rights reserved.
+      <div className="bottom">
+        © {new Date().getFullYear()} Cinenotes. All rights reserved.
       </div>
     </Footer>
   );

@@ -14,6 +14,11 @@ import ProfileWrapper from "./components/Common/Profile";
 import AddMovieRequest from "./components/Movie/MovieRequest";
 import MoviePage from "./components/Movie/MoviePage";
 import SettingsWrapper from "./components/Common/Settings";
+import GroupsPage from "./components/Groups/GroupsPage";
+import GroupDetailPage from "./components/Groups/GroupDetailPage";
+import NewsroomDetailPage from "./components/NewsRooms/NewsroomDetailPage";
+import NewsroomPage from "./components/NewsRooms/NewsroomPage";
+
 function App() {
   return (
     <Router>
@@ -30,7 +35,14 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/u/:id" element={<ProfileWrapper />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/newsrooms" element={<NewsroomPage />} />
 
+            <Route path="/group/:groupId" element={<GroupDetailPage />} />
+            <Route
+              path="/newsrooms/:newsroomId"
+              element={<NewsroomDetailPage />}
+            />
             <Route path="/movies/:id" element={<MoviePage />} />
             <Route path="/settings" element={<SettingsWrapper />} />
           </Routes>

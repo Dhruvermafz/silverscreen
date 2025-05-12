@@ -110,7 +110,7 @@ const Navbar = () => {
         />
         <Title level={4} style={{ margin: 0 }}>
           <a href="/" style={{ color: "black" }}>
-            SilverScreen
+            Cinenotes
           </a>
         </Title>
       </Space>
@@ -125,6 +125,12 @@ const Navbar = () => {
         </a>
         <a href="/members" style={{ color: "#555", fontWeight: 500 }}>
           Members
+        </a>
+        <a href="/groups" style={{ color: "#555", fontWeight: 500 }}>
+          Groups
+        </a>
+        <a href="/newsrooms" style={{ color: "#555", fontWeight: 500 }}>
+          Newsrooms
         </a>
       </Space>
 

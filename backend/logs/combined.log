@@ -12,3 +12,13 @@
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-02T06:02:43.903Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-02T06:05:23.520Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-02T06:13:15.692Z","userId":"68131e1207af9fb1b048a138"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-05-11T08:06:18.273Z"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-05-11T08:06:23.574Z"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-05-11T08:06:33.635Z"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-05-11T08:06:39.631Z"}
+{"details":null,"level":"warn","message":"Error response: Password must be at least 8 characters long and include lowercase, uppercase, number, and special character","status":400,"timestamp":"2025-05-11T08:06:57.259Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-05-11T08:08:22.670Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-05-11T08:08:36.288Z"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-05-11T08:09:30.063Z"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-11T08:10:52.241Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-12T09:00:05.960Z","userId":"68131e1207af9fb1b048a138"}

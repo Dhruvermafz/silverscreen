@@ -1,119 +1,65 @@
-/* General Footer Styles */
-footer {
-  background-color: #1f1f1f; /* Dark background */
-  color: black; /* Light text */
+/* src/components/footer.css */
+.footer {
+  background-color: #111827;
+  color: #fff;
   padding: 40px 0;
-  margin-top: 48px; /* Space from the content above */
 }
 
-footer .ant-row {
-  padding-left: 16px;
-  padding-right: 16px;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-footer .ant-col {
-  display: flex;
-  flex-direction: column;
-}
-
-footer .ant-typography {
-  color: black;
-}
-
-footer .ant-typography a {
-  color: black; /* Light gray color for links */
-}
-
-footer .ant-typography a:hover {
-  color: black; /* White on hover */
-  text-decoration: underline;
-}
-
-/* Section Headers */
-footer .text-lg {
-  font-size: 1.25rem;
+.title {
+  font-size: 18px;
   font-weight: 600;
+  color: #fff;
 }
 
-footer .font-semibold {
-  font-weight: 600;
-}
-
-footer .font-medium {
+.subtitle {
+  font-size: 16px;
   font-weight: 500;
+  color: #fff;
 }
 
-/* Paragraph Styles */
-footer p {
-  margin-top: 8px;
-  color: black;
+.description {
+  color: #d1d5db;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
-/* Quick Links List Styles */
-footer ul {
+.link-list {
+  margin-top: 10px;
   list-style: none;
-  padding-left: 0;
+  padding: 0;
 }
 
-footer ul li {
-  margin-bottom: 8px;
-}
-
-footer ul li a {
-  color: black;
+.link {
+  color: #d1d5db;
+  font-size: 14px;
   text-decoration: none;
 }
 
-footer ul li a:hover {
-  color: black;
+.link:hover {
+  color: #fff;
 }
 
-/* Follow Us Section */
-footer .ant-space {
-  font-size: 1.5rem;
-  color: black;
+.social-icons {
+  margin-top: 10px;
+  font-size: 20px;
 }
 
-footer .ant-space a {
-  color: black;
+.social-icon {
+  color: #d1d5db;
 }
 
-footer .ant-space a:hover {
-  color: black;
+.social-icon:hover {
+  color: #fff;
 }
 
-/* Footer Bottom Text */
-footer .text-center {
-  color: #777;
-  font-size: 0.875rem;
-  margin-top: 32px;
-}
-
-footer .text-center a {
-  color: black;
-  text-decoration: none;
-}
-
-footer .text-center a:hover {
-  color: black;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  footer .ant-row {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  footer .ant-col {
-    margin-bottom: 16px;
-  }
-
-  footer .ant-col-xs-12 {
-    text-align: center;
-  }
-
-  footer .ant-space {
-    font-size: 1.25rem;
-  }
+.bottom {
+  text-align: center;
+  margin-top: 40px;
+  color: #6b7280;
+  font-size: 14px;
 }

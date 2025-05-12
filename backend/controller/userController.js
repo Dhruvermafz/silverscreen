@@ -1,5 +1,8 @@
 const User = require("../models/user");
 const Reviews = require("../models/reviews");
+const MovieRequest = require("../models/movieRequest");
+const mongoose = require("mongoose");
+// Ensure this model exists
 // GET /api/users/profile
 exports.getProfile = async (req, res) => {
   try {
@@ -137,11 +140,25 @@ exports.unfollowUser = async (req, res) => {
   }
 };
 // Get user movie requests
+
 exports.getUserRequests = async (req, res) => {
-  const requests = await MovieRequest.find({ user: req.params.id }).sort({
-    createdAt: -1,
-  });
-  res.json(requests);
+  try {
+    const userId = req.params.id;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const requests = await MovieRequest.find({ user: userId }).sort({
+      createdAt: -1,
+    });
+
+    res.json(requests);
+  } catch (err) {
+    console.error("Error in getUserRequests:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 exports.getUserReviews = async (req, res) => {
   const reviews = await Reviews.find({ user: req.params.id })
