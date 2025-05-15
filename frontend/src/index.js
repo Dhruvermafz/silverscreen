@@ -5,7 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./context/AuthContext";
 import store from "./context/store";
-import "./index.css";
+
 // Get the root element
 const root = ReactDOM.createRoot(document.getElementById("root"));
 

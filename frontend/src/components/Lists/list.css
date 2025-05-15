@@ -1,0 +1,32 @@
+/* src/styles/ListComponent.css */
+.list-component {
+  padding: 16px;
+  background-color: #f5f5f5;
+}
+
+.list-component .ant-card {
+  border-radius: 8px;
+}
+
+.list-component .ant-card-cover img {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.list-component .ant-list-item {
+  padding: 8px;
+}
+
+@media (max-width: 768px) {
+  .list-component {
+    padding: 8px;
+  }
+
+  .list-component .ant-card {
+    margin-bottom: 8px;
+  }
+
+  .list-component .ant-list-item {
+    padding: 4px;
+  }
+}
