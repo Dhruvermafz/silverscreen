@@ -1,0 +1,27 @@
+.list-component.section {
+  padding: 40px 0;
+  background: #f8f9fa;
+}
+.card {
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+}
+.card:hover .card-img-overlay {
+  opacity: 1;
+}
+.list-group-item-action:hover {
+  background: #e9ecef;
+}
+.modal.show {
+  display: block;
+}
