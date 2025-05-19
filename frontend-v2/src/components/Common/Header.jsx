@@ -224,7 +224,7 @@ const Header = ({
                     </button>
                     <ul className="dropdown-menu dropdown-menu-end header__dropdown-menu header__dropdown-menu--user">
                       <li>
-                        <Link to="/u">
+                        <Link to={`/u/${user?._id}`}>
                           <FiUser /> Profile
                         </Link>
                       </li>
@@ -247,8 +247,8 @@ const Header = ({
                   </div>
                 ) : (
                   <div className="header__auth-links">
-                    <Link to="/signin" className="header__sign-in">
-                      Sign In
+                    <Link to="/login" className="header__sign-in">
+                      Login
                     </Link>
                     <Link to="/signup" className="header__sign-in">
                       Sign Up

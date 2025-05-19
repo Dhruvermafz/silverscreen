@@ -1,4 +1,10 @@
 /* General styles */
+/* In your global CSS or App.css */
+
+footer.footer {
+  margin-top: auto;
+}
+
 .home__title,
 .section__title {
   font-size: 24px;
@@ -163,29 +169,4 @@
 
 .splide__arrow--next {
   right: 10px;
-}
-.profile {
-  background: #f8f9fa;
-}
-
-.profile .card {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.profile .nav-tabs .nav-link {
-  color: #495057;
-}
-
-.profile .nav-tabs .nav-link.active {
-  color: #007bff;
-  font-weight: bold;
-}
-
-.profile .table th {
-  font-size: 0.9rem;
-}
-
-.profile .card-img-top {
-  height: 300px;
-  object-fit: cover;
 }

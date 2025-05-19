@@ -13,7 +13,7 @@ import {
   useGetUserByIdQuery,
   useGetUserReviewsQuery,
   useGetUserRequestsQuery,
-} from "../../actions/userApi"; // Adjust path as needed
+} from "../../actions/userApi";
 
 const Profile = () => {
   const { id } = useParams();
@@ -22,15 +22,16 @@ const Profile = () => {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [fileList, setFileList] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // Start at page 1
-  const [totalPages, setTotalPages] = useState(1); // Initialize with 1
-  const itemsPerPage = 20; // Adjust as needed
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 20;
 
   const {
     data: authUser,
     isLoading: authLoading,
     error: authError,
   } = useGetProfileQuery();
+
   const [followUser] = useFollowUserMutation();
   const [updateProfile] = useUpdateProfileMutation();
 
@@ -58,7 +59,14 @@ const Profile = () => {
     skip: !isOwnProfile || !authUser?._id,
   });
 
-  // Calculate totalPages when userData is available
+  // Debug userData
+  useEffect(() => {
+    console.log("userData:", userData);
+    console.log("authUser:", authUser);
+    console.log("id:", id);
+  }, [userData, authUser, id]);
+
+  // Calculate totalPages
   useEffect(() => {
     if (userData) {
       const pages =
@@ -67,6 +75,7 @@ const Profile = () => {
     }
   }, [userData, itemsPerPage]);
 
+  // Set profile ownership and following status
   useEffect(() => {
     if (!authLoading && authUser && userData) {
       setIsOwnProfile(id === "me" || id === authUser._id);
@@ -108,25 +117,6 @@ const Profile = () => {
     setCurrentPage(page);
   };
 
-  if (authLoading || userLoading || reviewsLoading || requestsLoading) {
-    return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <div>Loading...</div>
-      </div>
-    );
-  }
-
-  if (authError || userError || reviewsError || requestsError) {
-    return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        <span style={{ color: "red" }}>
-          Error:{" "}
-          {authError?.message || userError?.message || "An error occurred"}
-        </span>
-      </div>
-    );
-  }
-
   // Calculate paginated favorite movies
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedFavoriteMovies = (userData?.favoriteMovies || []).slice(
@@ -141,59 +131,74 @@ const Profile = () => {
         setActiveTab={setActiveTab}
         handleLogout={handleLogout}
         userData={userData}
+        isLoading={authLoading || userLoading}
       />
-      <div className="container">
-        <div className="tab-content">
-          {activeTab === "tab-1" && (
-            <div
-              className="tab-pane fade show active"
-              id="tab-1"
-              role="tabpanel"
-              aria-labelledby="1-tab"
-              tabIndex="0"
-            >
-              <ProfileStats userData={userData} reviews={reviews} />
-              <div className="row">
-                <div className="col-12 col-xl-6">
-                  <MoviesForYou
-                    suggestedMovies={userData?.suggestedMovies || []}
-                  />
-                </div>
-                <div className="col-12 col-xl-6">
-                  <LatestReviews reviews={reviews || []} />
+      {authLoading || userLoading || reviewsLoading || requestsLoading ? (
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <div>Loading...</div>
+        </div>
+      ) : authError || userError || reviewsError || requestsError ? (
+        <div style={{ textAlign: "center", padding: "50px" }}>
+          <span style={{ color: "red" }}>
+            Error:{" "}
+            {authError?.message || userError?.message || "An error occurred"}
+          </span>
+        </div>
+      ) : (
+        <div className="container">
+          <div className="tab-content">
+            {activeTab === "tab-1" && (
+              <div
+                className="tab-pane fade show active"
+                id="tab-1"
+                role="tabpanel"
+                aria-labelledby="1-tab"
+                tabIndex="0"
+              >
+                <ProfileStats userData={userData} reviews={reviews} />
+                <div className="row">
+                  <div className="col-12 col-xl-6">
+                    <MoviesForYou
+                      suggestedMovies={userData?.suggestedMovies || []}
+                    />
+                  </div>
+                  <div className="col-12 col-xl-6">
+                    <LatestReviews reviews={reviews || []} />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          {activeTab === "tab-2" && (
-            <div
-              className="tab-pane fade show active"
-              id="tab-2"
-              role="tabpanel"
-              aria-labelledby="2-tab"
-              tabIndex="0"
-            >
-              <p>Subscriptions content goes here.</p>
-            </div>
-          )}
-          {activeTab === "tab-3" && (
-            <FavoritesList
-              favoriteMovies={paginatedFavoriteMovies}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
-          {activeTab === "tab-4" && (
-            <ProfileSettings
-              userData={userData}
-              handleEditProfile={handleEditProfile}
-              fileList={fileList}
-              setFileList={setFileList}
-            />
-          )}
+            )}
+            {activeTab === "tab-2" && (
+              <div
+                className="tab-pane fade show active"
+                id="tab-2"
+                role="tabpanel"
+                aria-labelledby="2-tab"
+                tabIndex="0"
+              >
+                <p>Subscriptions content goes here.</p>
+              </div>
+            )}
+            {activeTab === "tab-3" && (
+              <FavoritesList
+                favoriteMovies={paginatedFavoriteMovies}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+            {activeTab === "tab-4" && (
+              <ProfileSettings
+                userData={userData}
+                handleEditProfile={handleEditProfile}
+                fileList={fileList}
+                setFileList={setFileList}
+                isOwnProfile={isOwnProfile}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

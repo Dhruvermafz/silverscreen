@@ -5,12 +5,9 @@ import { Container, Row, Col, Nav, Button } from "react-bootstrap";
 import { FaArrowUp } from "react-icons/fa";
 import logo from "../../img/logo.png";
 const quickLinks = [
-  { label: "Films", path: "/films" },
-  { label: "Lists", path: "/lists" },
-  { label: "Members", path: "/members" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
-  { label: "Groups", path: "/groups" },
+  { label: "Privacy", path: "/privacy" },
 ];
 
 const Footer = ({
@@ -18,8 +15,8 @@ const Footer = ({
   logoAlt = "Cinenotes Logo",
   copyrightText = `© ${new Date().getFullYear()} Cinenotes. All rights reserved.`,
   author = {
-    name: "Dmitry Volkov",
-    url: "https://themeforest.net/user/dmitryvolkov/portfolio",
+    name: "Dhruv Verma",
+    url: "https://dhruvermafz.in/",
   },
 }) => {
   const scrollToTop = () => {

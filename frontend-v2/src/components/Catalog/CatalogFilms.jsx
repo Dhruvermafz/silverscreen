@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Import Link
 import { toast } from "react-toastify";
 import Filter from "./Filter";
 import {
@@ -8,7 +9,7 @@ import {
 
 const CatalogFilms = () => {
   const [movies, setMovies] = useState([]);
-  const [genres, setGenres] = useState([]); // Added for genre names
+  const [genres, setGenres] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -134,12 +135,9 @@ const CatalogFilms = () => {
                   <div className="item">
                     <div className="item__cover">
                       <img src={movie.posterUrl} alt={movie.title} />
-                      <a
-                        href={`details.html?id=${movie.id}`}
-                        className="item__play"
-                      >
+                      <Link to={`/film/${movie.id}`} className="item__play">
                         <i className="ti ti-player-play-filled"></i>
-                      </a>
+                      </Link>
                       <span
                         className={`item__rate item__rate--${
                           movie.rating >= 7 ? "green" : "yellow"
@@ -153,9 +151,7 @@ const CatalogFilms = () => {
                     </div>
                     <div className="item__content">
                       <h3 className="item__title">
-                        <a href={`details.html?id=${movie.id}`}>
-                          {movie.title}
-                        </a>
+                        <Link to={`/film/${movie.id}`}>{movie.title}</Link>
                       </h3>
                       <span className="item__category">
                         {movie.genre?.split(", ").map((genreId, index) => {
@@ -163,9 +159,9 @@ const CatalogFilms = () => {
                             genres.find((g) => g.id === parseInt(genreId))
                               ?.name || genreId;
                           return (
-                            <a key={index} href={`#genre-${genreId}`}>
+                            <Link key={index} to={`/films?genre=${genreId}`}>
                               {genreName}
-                            </a>
+                            </Link>
                           );
                         })}
                       </span>

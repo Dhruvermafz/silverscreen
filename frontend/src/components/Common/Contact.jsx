@@ -1,15 +1,22 @@
 import React from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
-
+import { useCreateContactMutation } from "../../actions/contactApi";
 const { Title, Paragraph } = Typography;
 
 const Contact = () => {
   const [form] = Form.useForm();
+  const [createContact, { isLoading }] = useCreateContactMutation();
 
-  const onFinish = (values) => {
-    console.log("Received values: ", values);
-    message.success("Your message has been sent successfully!");
-    form.resetFields();
+  const onFinish = async (values) => {
+    try {
+      await createContact(values).unwrap();
+      message.success("Your message has been sent successfully!");
+      form.resetFields();
+    } catch (error) {
+      message.error(
+        "Failed to send message: " + (error?.data?.message || "Unknown error")
+      );
+    }
   };
 
   return (
@@ -52,8 +59,13 @@ const Contact = () => {
           </Form.Item>
 
           <Form.Item style={{ textAlign: "center" }}>
-            <Button type="primary" htmlType="submit" size="large">
-              Send Message
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={isLoading}
+            >
+              {isLoading ? "Sending..." : "Send Message"}
             </Button>
           </Form.Item>
         </Form>

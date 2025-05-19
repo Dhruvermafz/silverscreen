@@ -6,6 +6,7 @@ import { reviewApi } from "../actions/reviewApi";
 import { movieApi } from "../actions/movieApi";
 import { newsroomApi } from "../actions/newsroomApi";
 import { groupApi } from "../actions/groupApi";
+import { contactApi } from "../actions/contactApi";
 const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
@@ -15,6 +16,7 @@ const store = configureStore({
     [reviewApi.reducerPath]: reviewApi.reducer,
     [groupApi.reducerPath]: groupApi.reducer,
     [newsroomApi.reducerPath]: newsroomApi.reducer,
+    [contactApi.reducerPath]: contactApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -24,7 +26,8 @@ const store = configureStore({
       reviewApi.middleware,
       movieApi.middleware,
       groupApi.middleware,
-      newsroomApi.middleware
+      newsroomApi.middleware,
+      contactApi.middleware
     ),
 });
 
