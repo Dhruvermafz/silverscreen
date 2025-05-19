@@ -10,13 +10,6 @@ const ProfileHeader = ({
   userData,
   isLoading,
 }) => {
-  const tabs = [
-    { id: "tab-1", label: "Profile" },
-    { id: "tab-2", label: "Subscriptions" },
-    { id: "tab-3", label: "Favorites" },
-    { id: "tab-4", label: "Settings" },
-  ];
-
   return (
     <div className="profile">
       <div className="container">
