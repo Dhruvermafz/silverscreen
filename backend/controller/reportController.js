@@ -95,11 +95,9 @@ const reviewFlaggedContent = async (req, res) => {
     // Check if user is a moderator or admin
     const user = await User.findById(userId);
     if (!user || !["Moderator", "Admin"].includes(user.role)) {
-      return res
-        .status(403)
-        .json({
-          message: "Unauthorized: Only moderators or admins can review reports",
-        });
+      return res.status(403).json({
+        message: "Unauthorized: Only moderators or admins can review reports",
+      });
     }
 
     const reports = await Report.find({ status: "Pending" })
@@ -135,11 +133,9 @@ const banUser = async (req, res) => {
     // Check if moderator is authorized
     const moderator = await User.findById(moderatorId);
     if (!moderator || !["Moderator", "Admin"].includes(moderator.role)) {
-      return res
-        .status(403)
-        .json({
-          message: "Unauthorized: Only moderators or admins can ban users",
-        });
+      return res.status(403).json({
+        message: "Unauthorized: Only moderators or admins can ban users",
+      });
     }
 
     // Find target user
@@ -198,11 +194,9 @@ const warnUser = async (req, res) => {
     // Check if moderator is authorized
     const moderator = await User.findById(moderatorId);
     if (!moderator || !["Moderator", "Admin"].includes(moderator.role)) {
-      return res
-        .status(403)
-        .json({
-          message: "Unauthorized: Only moderators or admins can warn users",
-        });
+      return res.status(403).json({
+        message: "Unauthorized: Only moderators or admins can warn users",
+      });
     }
 
     // Find target user
@@ -237,11 +231,9 @@ const getReports = async (req, res) => {
     // Check if user is a moderator or admin
     const user = await User.findById(userId);
     if (!user || !["Moderator", "Admin"].includes(user.role)) {
-      return res
-        .status(403)
-        .json({
-          message: "Unauthorized: Only moderators or admins can view reports",
-        });
+      return res.status(403).json({
+        message: "Unauthorized: Only moderators or admins can view reports",
+      });
     }
 
     const reports = await Report.find()
@@ -283,12 +275,9 @@ const resolveReport = async (req, res) => {
     // Check if moderator is authorized
     const moderator = await User.findById(moderatorId);
     if (!moderator || !["Moderator", "Admin"].includes(moderator.role)) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Unauthorized: Only moderators or admins can resolve reports",
-        });
+      return res.status(403).json({
+        message: "Unauthorized: Only moderators or admins can resolve reports",
+      });
     }
 
     // Find report

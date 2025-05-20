@@ -1,16 +1,11 @@
-@import url("./css/photoswipe.css");
-@import url("./css/default-skin.css");
-@import url("./css/main.css");
-@import url("./webfont/tabler-icons.min.css");
-@import url("./css/bootstrap.min.css");
-@import url("./css/slimselect.css");
-@import url("./css/slimselect.css");
-@import url("./css/plyr.css");
 /* General styles */
-/* In your global CSS or App.css */
-
-footer.footer {
-  margin-top: auto;
+.home__title,
+.section__title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #fff; /* Assuming a dark theme, adjust as needed */
 }
 
 /* Banner section (full-width carousel) */
@@ -53,7 +48,7 @@ footer.footer {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 48px;
-  color: black;
+  color: white;
   background: rgba(0, 0, 0, 0.7);
   padding: 15px;
   border-radius: 50%;
@@ -91,7 +86,7 @@ footer.footer {
   background: none;
   border: none;
   font-size: 24px;
-  color: black;
+  color: white;
   cursor: pointer;
 }
 
@@ -99,21 +94,21 @@ footer.footer {
   position: absolute;
   bottom: 20px;
   left: 20px;
-  color: black;
+  color: white;
   background: rgba(0, 0, 0, 0.7);
   padding: 10px;
   border-radius: 4px;
 }
 
 .item__title a {
-  color: black;
+  color: white;
   text-decoration: none;
   font-size: 24px;
   font-weight: bold;
 }
 
 .item__category a {
-  color: #000;
+  color: #ccc;
   margin-right: 10px;
   text-decoration: none;
   font-size: 14px;
@@ -168,4 +163,29 @@ footer.footer {
 
 .splide__arrow--next {
   right: 10px;
+}
+.profile {
+  background: #f8f9fa;
+}
+
+.profile .card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile .nav-tabs .nav-link {
+  color: #495057;
+}
+
+.profile .nav-tabs .nav-link.active {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.profile .table th {
+  font-size: 0.9rem;
+}
+
+.profile .card-img-top {
+  height: 300px;
+  object-fit: cover;
 }
