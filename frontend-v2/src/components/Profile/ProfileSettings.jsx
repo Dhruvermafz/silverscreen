@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 
 const ProfileSettings = ({
   userData,
@@ -46,180 +47,140 @@ const ProfileSettings = ({
   };
 
   return (
-    <div
-      className="tab-pane fade"
-      id="tab-4"
-      role="tabpanel"
-      aria-labelledby="4-tab"
-      tabIndex="0"
-    >
-      <div className="row">
-        <div className="col-12 col-lg-6">
-          <form
-            className="sign__form sign__form--full"
-            onSubmit={handleSubmitProfile}
-          >
-            <div className="row">
-              <div className="col-12">
-                <h4 className="sign__title">Profile details</h4>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="username">
-                    Username
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    name="username"
-                    className="sign__input"
-                    placeholder="User 123"
-                    value={formData.username}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="email">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="text"
-                    name="email"
-                    className="sign__input"
-                    placeholder="email@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="fname">
-                    Name
-                  </label>
-                  <input
-                    id="fname"
-                    type="text"
-                    name="fname"
-                    className="sign__input"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="sign__gallery-upload">
-                    Avatar
-                  </label>
-                  <div className="sign__gallery">
-                    <label htmlFor="sign__gallery-upload">Upload (40x40)</label>
-                    <input
-                      id="sign__gallery-upload"
-                      name="gallery"
-                      className="sign__gallery-upload"
-                      type="file"
-                      accept=".png, .jpg, .jpeg"
-                      onChange={handleFileChange}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="col-12">
-                <button className="sign__btn sign__btn--small" type="submit">
-                  Save
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div className="col-12 col-lg-6">
-          <form
-            className="sign__form sign__form--full"
-            onSubmit={handleSubmitPassword}
-          >
-            <div className="row">
-              <div className="col-12">
-                <h4 className="sign__title">Change password</h4>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="oldpass">
-                    Old password
-                  </label>
-                  <input
-                    id="oldpass"
-                    type="password"
-                    name="oldpass"
-                    className="sign__input"
-                    value={formData.oldpass}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="newpass">
-                    New password
-                  </label>
-                  <input
-                    id="newpass"
-                    type="password"
-                    name="newpass"
-                    className="sign__input"
-                    value={formData.newpass}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="confirmpass">
-                    Confirm new password
-                  </label>
-                  <input
-                    id="confirmpass"
-                    type="password"
-                    name="confirmpass"
-                    className="sign__input"
-                    value={formData.confirmpass}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-              <div className="col-12 col-md-6 col-lg-12 col-xl-6">
-                <div className="sign__group">
-                  <label className="sign__label" htmlFor="select">
-                    Select
-                  </label>
-                  <select
-                    name="select"
-                    id="select"
-                    className="sign__select"
-                    value={formData.select}
-                    onChange={handleChange}
-                  >
-                    <option value="0">Option</option>
-                    <option value="1">Option 2</option>
-                    <option value="2">Option 3</option>
-                    <option value="3">Option 4</option>
-                  </select>
-                </div>
-              </div>
-              <div className="col-12">
-                <button className="sign__btn sign__btn--small" type="submit">
-                  Change
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    <Container>
+      <Row>
+        <Col xs={12} lg={6}>
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title as="h4" className="mb-4">
+                Profile Details
+              </Card.Title>
+              <Form onSubmit={handleSubmitProfile}>
+                <Row>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="username">
+                      <Form.Label>Username</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="username"
+                        placeholder="User 123"
+                        value={formData.username}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="email">
+                      <Form.Label>Email</Form.Label>
+                      <Form.Control
+                        type="email"
+                        name="email"
+                        placeholder="email@email.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="name">
+                      <Form.Label>Name</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="name"
+                        placeholder="John Doe"
+                        value={formData.name}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="avatar">
+                      <Form.Label>Avatar (40x40)</Form.Label>
+                      <Form.Control
+                        type="file"
+                        accept=".png, .jpg, .jpeg"
+                        onChange={handleFileChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12}>
+                    <Button variant="primary" type="submit" size="sm">
+                      Save
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col xs={12} lg={6}>
+          <Card className="mb-4">
+            <Card.Body>
+              <Card.Title as="h4" className="mb-4">
+                Change Password
+              </Card.Title>
+              <Form onSubmit={handleSubmitPassword}>
+                <Row>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="oldpass">
+                      <Form.Label>Old Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        name="oldpass"
+                        value={formData.oldpass}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="newpass">
+                      <Form.Label>New Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        name="newpass"
+                        value={formData.newpass}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="confirmpass">
+                      <Form.Label>Confirm New Password</Form.Label>
+                      <Form.Control
+                        type="password"
+                        name="confirmpass"
+                        value={formData.confirmpass}
+                        onChange={handleChange}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12} md={6} xl={6}>
+                    <Form.Group className="mb-3" controlId="select">
+                      <Form.Label>Select</Form.Label>
+                      <Form.Select
+                        name="select"
+                        value={formData.select}
+                        onChange={handleChange}
+                      >
+                        <option value="0">Option</option>
+                        <option value="1">Option 2</option>
+                        <option value="2">Option 3</option>
+                        <option value="3">Option 4</option>
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col xs={12}>
+                    <Button variant="primary" type="submit" size="sm">
+                      Change
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

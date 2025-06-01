@@ -289,7 +289,7 @@ const postToGroup = async (req, res) => {
     }
 
     // Check if user is a member
-    if (!group.members.some((m) => m.user.toString() === userId)) {
+    if (!group.members.some((m) => m.user && m.user.toString() === userId)) {
       return res
         .status(403)
         .json({ message: "You must be a member to post in this group" });

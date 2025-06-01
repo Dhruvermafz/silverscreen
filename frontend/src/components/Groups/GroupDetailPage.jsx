@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
   Form,
@@ -11,23 +11,12 @@ import {
   Card,
   Tabs,
   Select,
-  Divider,
   Row,
   Col,
   Space,
-  Dropdown,
-  Menu,
   message,
 } from "antd";
-import {
-  UserAddOutlined,
-  UserDeleteOutlined,
-  StarOutlined,
-  ShareAltOutlined,
-  FlagOutlined,
-  CalendarOutlined,
-  SortAscendingOutlined,
-} from "@ant-design/icons";
+import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons";
 import PostCard from "../PostCard";
 import BoxOfficeWidget from "../BoxOfficeWdget";
 import {
@@ -45,6 +34,7 @@ const { Option } = Select;
 
 const GroupDetailPage = () => {
   const { groupId } = useParams();
+  const navigate = useNavigate();
   const { data: group, isLoading: groupLoading } =
     useGetGroupByIdQuery(groupId);
   const { data: posts = [], refetch: refetchPosts } =
@@ -54,9 +44,7 @@ const GroupDetailPage = () => {
   const [promoteToModerator] = usePromoteToModeratorMutation();
   const [banUserFromGroup] = useBanUserFromGroupMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [form] = Form.useForm();
-  const [eventForm] = Form.useForm();
   const [sortBy, setSortBy] = useState("new");
   const [isMember, setIsMember] = useState(false); // Mock membership status
 
@@ -69,7 +57,6 @@ const GroupDetailPage = () => {
       message.success("Post created successfully");
     } catch (error) {
       message.error("Failed to create post");
-      console.error("Failed to post:", error);
     }
   };
 
@@ -80,7 +67,6 @@ const GroupDetailPage = () => {
       message.success("Comment added");
     } catch (error) {
       message.error("Failed to comment");
-      console.error("Failed to comment:", error);
     }
   };
 
@@ -96,7 +82,6 @@ const GroupDetailPage = () => {
       }
     } catch (error) {
       message.error(`Failed to ${action} user`);
-      console.error(`Failed to ${action} user:`, error);
     }
   };
 
@@ -110,33 +95,9 @@ const GroupDetailPage = () => {
     message.success("Left group successfully");
   };
 
-  const flagContent = async (contentId, type) => {
-    message.info(`Flagged ${type}: ${contentId}`);
-    console.log(`Flagging ${type}:`, contentId);
-  };
-
-  const handleShare = (postId) => {
-    message.info("Share link copied!");
-    console.log("Sharing post:", postId);
-  };
-
-  const handleCreateEvent = async (values) => {
-    try {
-      // Mock event creation (replace with actual API)
-      console.log("Creating event:", values);
-      setIsEventModalOpen(false);
-      eventForm.resetFields();
-      message.success("Event created successfully");
-    } catch (error) {
-      message.error("Failed to create event");
-      console.error("Failed to create event:", error);
-    }
-  };
-
   const sortedPosts = [...posts].sort((a, b) => {
     if (sortBy === "new") return new Date(b.createdAt) - new Date(a.createdAt);
     if (sortBy === "hot") return b.comments.length - a.comments.length;
-    if (sortBy === "top") return b.likes - a.likes;
     return 0;
   });
 
@@ -148,102 +109,103 @@ const GroupDetailPage = () => {
   const isAdmin =
     group.userRole === "creator" || group.userRole === "moderator";
 
-  const dropdownMenu = (post) => (
-    <Menu>
-      <Menu.Item key="flag" onClick={() => flagContent(post.id, "post")}>
-        <FlagOutlined /> Flag Post
-      </Menu.Item>
-      <Menu.Item key="share" onClick={() => handleShare(post.id)}>
-        <ShareAltOutlined /> Share Post
-      </Menu.Item>
-      {isAdmin && (
-        <Menu.Item key="pin" onClick={() => console.log("Pin post:", post.id)}>
-          <StarOutlined /> {post.isPinned ? "Unpin" : "Pin"} Post
-        </Menu.Item>
-      )}
-    </Menu>
-  );
-
   return (
-    <div className="group-page">
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={16}>
+    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} md={18}>
           {/* Group Header */}
           <Card
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            }}
             cover={
               <img
                 alt="Group cover"
-                src={group.coverImage || "https://via.placeholder.com/1200x300"}
-                style={{ height: 200, objectFit: "cover" }}
+                src={group.coverImage || "https://via.placeholder.com/1200x200"}
+                style={{
+                  height: 150,
+                  objectFit: "cover",
+                  borderRadius: "8px 8px 0 0",
+                }}
               />
             }
           >
-            <Title level={2}>{group.name}</Title>
-            <Paragraph>{group.description}</Paragraph>
-            <Space>
-              <Text strong>Privacy: </Text>
+            <Title level={3} style={{ margin: 0, fontWeight: 500 }}>
+              {group.name}
+            </Title>
+            <Paragraph style={{ margin: "8px 0" }}>
+              {group.description}
+            </Paragraph>
+            <Space style={{ marginBottom: 16 }}>
+              <Text>{group.members.length} Members</Text>
               <Text>{group.isPrivate ? "Private" : "Public"}</Text>
-              <Text strong>Members: </Text>
-              <Text>{group.members.length}</Text>
             </Space>
-            <div style={{ marginTop: 16 }}>
+            <Space>
               {isMember ? (
-                <Button onClick={handleLeaveGroup}>Leave Group</Button>
+                <Button
+                  onClick={handleLeaveGroup}
+                  icon={<UserDeleteOutlined />}
+                >
+                  Leave Group
+                </Button>
               ) : (
-                <Button type="primary" onClick={handleJoinGroup}>
+                <Button
+                  type="primary"
+                  onClick={handleJoinGroup}
+                  icon={<UserAddOutlined />}
+                >
                   Join Group
                 </Button>
               )}
               {isAdmin && (
-                <Button
-                  style={{ marginLeft: 8 }}
-                  onClick={() => console.log("Invite members")}
-                >
+                <Button onClick={() => navigate(`/groups/${groupId}/invite`)}>
                   Invite Members
                 </Button>
               )}
-            </div>
+            </Space>
           </Card>
 
           {/* Tabs for Content */}
-          <Tabs defaultActiveKey="posts">
+          <Tabs defaultActiveKey="posts" style={{ marginTop: "24px" }}>
             <TabPane tab="Posts" key="posts">
-              <Space style={{ marginBottom: 16 }}>
+              <Space
+                style={{
+                  marginBottom: "16px",
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Select
-                  defaultValue="new"
+                  value={sortBy}
                   style={{ width: 120 }}
                   onChange={setSortBy}
+                  bordered={false}
                 >
                   <Option value="new">New</Option>
                   <Option value="hot">Hot</Option>
-                  <Option value="top">Top</Option>
                 </Select>
-                <Button type="primary" onClick={() => setIsModalOpen(true)}>
-                  luckycharms Create Post
-                </Button>
+                {isMember && (
+                  <Button type="primary" onClick={() => setIsModalOpen(true)}>
+                    Create Post
+                  </Button>
+                )}
               </Space>
 
               {/* Pinned Posts */}
               {pinnedPosts.length > 0 && (
                 <>
-                  <Title level={4}>Pinned Posts</Title>
+                  <Title level={4} style={{ fontWeight: 500 }}>
+                    Pinned Posts
+                  </Title>
                   {pinnedPosts.map((post) => (
                     <PostCard
                       key={post.id}
                       post={{ ...post, isPinned: true }}
                       onComment={handleComment}
-                      onLike={() => console.log("Like post:", post.id)}
-                      extra={
-                        <Dropdown
-                          overlay={dropdownMenu(post)}
-                          trigger={["click"]}
-                        >
-                          <Button>More</Button>
-                        </Dropdown>
-                      }
+                      style={{ marginBottom: "16px", borderRadius: "8px" }}
                     />
                   ))}
-                  <Divider />
                 </>
               )}
 
@@ -253,35 +215,9 @@ const GroupDetailPage = () => {
                   key={post.id}
                   post={post}
                   onComment={handleComment}
-                  onLike={() => console.log("Like post:", post.id)}
-                  extra={
-                    <Dropdown overlay={dropdownMenu(post)} trigger={["click"]}>
-                      <Button>More</Button>
-                    </Dropdown>
-                  }
+                  style={{ marginBottom: "16px", borderRadius: "8px" }}
                 />
               ))}
-            </TabPane>
-            <TabPane tab="Events" key="events">
-              <Button
-                type="primary"
-                onClick={() => setIsEventModalOpen(true)}
-                style={{ marginBottom: 16 }}
-              >
-                Create Event
-              </Button>
-              <List
-                dataSource={group.events || []}
-                renderItem={(event) => (
-                  <List.Item>
-                    <List.Item.Meta
-                      avatar={<CalendarOutlined />}
-                      title={event.title}
-                      description={`${event.date} - ${event.description}`}
-                    />
-                  </List.Item>
-                )}
-              />
             </TabPane>
             <TabPane tab="Members" key="members">
               <List
@@ -293,6 +229,7 @@ const GroupDetailPage = () => {
                         ? [
                             <Button
                               key="promote"
+                              size="small"
                               onClick={() =>
                                 handleModerate(member.id, "promote")
                               }
@@ -301,6 +238,7 @@ const GroupDetailPage = () => {
                             </Button>,
                             <Button
                               key="ban"
+                              size="small"
                               danger
                               onClick={() => handleModerate(member.id, "ban")}
                             >
@@ -321,41 +259,44 @@ const GroupDetailPage = () => {
             </TabPane>
           </Tabs>
         </Col>
-        <Col xs={24} md={8}>
-          {/* Sidebar */}
-          <Card title="About" style={{ marginBottom: 16 }}>
+
+        {/* Sidebar */}
+        <Col xs={24} md={6}>
+          <Card
+            title="About"
+            style={{
+              marginBottom: "16px",
+              borderRadius: "8px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            }}
+          >
             <Paragraph>{group.description}</Paragraph>
-            <p>
-              <Text strong>Created: </Text>
-              {new Date(group.createdAt).toLocaleDateString()}
-            </p>
-            <p>
-              <Text strong>Privacy: </Text>
-              {group.isPrivate ? "Private" : "Public"}
-            </p>
+            <Text strong>Created: </Text>
+            <Text>{new Date(group.createdAt).toLocaleDateString()}</Text>
+            <br />
+            <Text strong>Privacy: </Text>
+            <Text>{group.isPrivate ? "Private" : "Public"}</Text>
           </Card>
           {group.rules && group.rules.length > 0 && (
-            <Card title="Group Rules" style={{ marginBottom: 16 }}>
+            <Card
+              title="Rules"
+              style={{
+                marginBottom: "16px",
+                borderRadius: "8px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              }}
+            >
               <List
                 dataSource={group.rules}
                 renderItem={(rule, index) => (
-                  <List.Item>
+                  <List.Item style={{ padding: "8px 0" }}>
                     {index + 1}. {rule}
                   </List.Item>
                 )}
               />
             </Card>
           )}
-          <Card title="Quick Links">
-            <Menu mode="vertical">
-              <Menu.Item key="info">Group Info</Menu.Item>
-              <Menu.Item key="rules">Rules</Menu.Item>
-              <Menu.Item key="members">Members</Menu.Item>
-              <Menu.Item key="events">Events</Menu.Item>
-              <Menu.Item key="related">Related Groups</Menu.Item>
-            </Menu>
-          </Card>
-          <BoxOfficeWidget style={{ marginTop: 16 }} />
+          <BoxOfficeWidget />
         </Col>
       </Row>
 
@@ -365,50 +306,16 @@ const GroupDetailPage = () => {
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         onOk={() => form.submit()}
+        okText="Post"
+        cancelText="Cancel"
+        width={400}
       >
-        <Form form={form} onFinish={handlePost}>
-          <Form.Item
-            name="title"
-            rules={[{ required: true, message: "Please enter a title" }]}
-          >
-            <Input placeholder="Post Title" />
-          </Form.Item>
+        <Form form={form} onFinish={handlePost} layout="vertical">
           <Form.Item
             name="content"
             rules={[{ required: true, message: "Please enter content" }]}
           >
-            <Input.TextArea placeholder="Content" rows={4} />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Event Creation Modal */}
-      <Modal
-        title="Create Event"
-        open={isEventModalOpen}
-        onCancel={() => setIsEventModalOpen(false)}
-        onOk={() => eventForm.submit()}
-      >
-        <Form form={eventForm} onFinish={handleCreateEvent}>
-          <Form.Item
-            name="title"
-            rules={[{ required: true, message: "Please enter event title" }]}
-          >
-            <Input placeholder="Event Title" />
-          </Form.Item>
-          <Form.Item
-            name="date"
-            rules={[{ required: true, message: "Please enter event date" }]}
-          >
-            <Input type="date" />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            rules={[
-              { required: true, message: "Please enter event description" },
-            ]}
-          >
-            <Input.TextArea placeholder="Event Description" rows={4} />
+            <Input.TextArea placeholder="What's on your mind?" rows={4} />
           </Form.Item>
         </Form>
       </Modal>

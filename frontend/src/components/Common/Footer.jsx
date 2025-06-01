@@ -7,42 +7,39 @@ import {
   MailOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import "./footer.css"; // Import regular CSS file
+import "./footer.css";
 
 const { Footer } = Layout;
 const { Text } = Typography;
 
-// Configuration for links and social media
 const quickLinks = [
   { label: "Films", path: "/films" },
-  { label: "Lists", path: "/lists" },
-  { label: "Members", path: "/members" },
+  { label: "Groups", path: "/groups" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
-  { label: "Groups", path: "/groups" }, // Added to integrate with GroupsPage
 ];
 
 const socialMedia = [
   {
     label: "GitHub",
     icon: <GithubOutlined />,
-    url: "https://github.com/silverscreen-project", // Replace with actual URL
+    url: "https://github.com/silverscreen-project",
   },
   {
     label: "Twitter",
     icon: <TwitterOutlined />,
-    url: "https://twitter.com/silverscreen", // Replace with actual URL
+    url: "https://twitter.com/silverscreen",
   },
   {
     label: "Instagram",
     icon: <InstagramOutlined />,
-    url: "https://instagram.com/silverscreen", // Replace with actual URL
+    url: "https://instagram.com/silverscreen",
   },
   {
     label: "Email",
     icon: <MailOutlined />,
     url: `mailto:${
-      process.env.REACT_APP_SUPPORT_EMAIL || "support@silverscreen.com"
+      process.env.REACT_APP_SUPPORT_EMAIL || "support@cinenotes.com"
     }`,
   },
 ];
@@ -50,40 +47,38 @@ const socialMedia = [
 const AppFooter = () => {
   return (
     <Footer className="footer">
-      <Row gutter={[16, 16]} justify="space-between" className="container">
-        {/* SilverScreen Section */}
+      <Row gutter={[16, 16]} className="container">
+        {/* Cinenotes Section */}
         <Col xs={24} sm={12} md={8}>
-          <Text className="title">Cinenotes</Text>
-          <p className="description">
-            Discover, discuss, and review films with a passionate community.
-          </p>
+          <Text className="footer-title">Cinenotes</Text>
+          <Text className="footer-description">
+            Discover and discuss films with our community.
+          </Text>
         </Col>
 
         {/* Quick Links Section */}
         <Col xs={24} sm={12} md={8}>
-          <Text className="subtitle">Quick Links</Text>
-          <ul className="link-list">
+          <Text className="footer-subtitle">Quick Links</Text>
+          <Space direction="vertical" size="small">
             {quickLinks.map((link) => (
-              <li key={link.path}>
-                <Link to={link.path} className="link">
-                  {link.label}
-                </Link>
-              </li>
+              <Link key={link.path} to={link.path} className="footer-link">
+                {link.label}
+              </Link>
             ))}
-          </ul>
+          </Space>
         </Col>
 
         {/* Social Media Section */}
         <Col xs={24} sm={12} md={8}>
-          <Text className="subtitle">Follow Us</Text>
-          <Space size="middle" className="social-icons">
+          <Text className="footer-subtitle">Follow Us</Text>
+          <Space size="middle">
             {socialMedia.map((social) => (
               <a
                 key={social.label}
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-icon"
+                className="footer-social-icon"
                 aria-label={`Follow us on ${social.label}`}
               >
                 {social.icon}
@@ -94,9 +89,9 @@ const AppFooter = () => {
       </Row>
 
       {/* Footer Bottom Section */}
-      <div className="bottom">
+      <Text className="footer-bottom">
         © {new Date().getFullYear()} Cinenotes. All rights reserved.
-      </div>
+      </Text>
     </Footer>
   );
 };

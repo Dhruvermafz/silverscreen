@@ -26,13 +26,11 @@ const MainContent = () => {
     const fetchGenresAndMovies = async () => {
       setLoading(true);
       try {
-        // Fetch genres dynamically
         const fetchedGenres = await getGenresFromAPI();
-        const paginatedGenres = fetchedGenres.slice(0, page * 3); // Load 3 genres per page
+        const paginatedGenres = fetchedGenres.slice(0, page * 2); // Load 2 genres per page
         setGenres(paginatedGenres);
         setHasMoreGenres(fetchedGenres.length > paginatedGenres.length);
 
-        // Fetch trending movies
         const trendingData = await getMoviesFromAPI(
           "",
           { sort: "popularity.desc" },
@@ -40,17 +38,16 @@ const MainContent = () => {
         );
         setTrendingMovies(trendingData.movies || []);
 
-        // Fetch movies for each genre
         const moviesData = {};
         await Promise.all(
           paginatedGenres.map(async (genre) => {
             const data = await getMoviesFromAPI("", { genre: genre.id }, 1);
-            moviesData[genre.id] = data.movies || [];
+            moviesData[genre.id] = data.movies.slice(0, 10) || []; // Limit to 10 movies per genre
           })
         );
         setMoviesByGenre(moviesData);
       } catch (error) {
-        toast.error("Failed to load content", {
+        toast.error("Failed to load movies", {
           position: "top-right",
           autoClose: 2000,
         });
@@ -68,18 +65,18 @@ const MainContent = () => {
           setPage((prev) => prev + 1);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.5 }
     );
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
   }, [hasMoreGenres, loading]);
 
   const sliderSettings = {
-    dots: true,
+    dots: false,
     infinite: false,
     speed: 500,
-    slidesToShow: 5,
-    slidesToScroll: 3,
+    slidesToShow: 4,
+    slidesToScroll: 2,
     arrows: true,
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 2 } },
@@ -91,68 +88,76 @@ const MainContent = () => {
   return (
     <div className="main-content">
       {loading && !genres.length ? (
-        <div className="loading-spinner">
+        <div className="main-content-loading">
           <Spin size="large" />
         </div>
       ) : (
-        <>
+        <Row gutter={[16, 24]}>
           {/* Trending Movies Section */}
-          <div className="genre-section">
-            <Title level={3} className="genre-title">
+          <Col span={24}>
+            <Title level={3} className="main-content-title">
               Trending Movies
             </Title>
             {trendingMovies.length > 0 ? (
-              <Slider {...sliderSettings}>
-                {trendingMovies.map((movie) => (
-                  <div key={movie.id} className="movie-slide">
-                    <MovieCard movie={movie} isCompact />
-                  </div>
-                ))}
-              </Slider>
-            ) : (
-              <Text className="no-movies">No trending movies found</Text>
-            )}
-            <Button
-              type="link"
-              href="/movies/trending"
-              style={{ marginTop: 8 }}
-              aria-label="View all trending movies"
-            >
-              View All
-            </Button>
-          </div>
-
-          {/* Genre Sections */}
-          {genres.map((genre) => (
-            <div key={genre.id} className="genre-section">
-              <Title level={3} className="genre-title">
-                {genre.name}
-              </Title>
-              {moviesByGenre[genre.id] && moviesByGenre[genre.id].length > 0 ? (
-                <Slider {...sliderSettings}>
-                  {moviesByGenre[genre.id].map((movie) => (
-                    <div key={movie.id} className="movie-slide">
+              <>
+                <Slider {...sliderSettings} className="main-content-slider">
+                  {trendingMovies.map((movie) => (
+                    <div key={movie.id} className="main-content-slide">
                       <MovieCard movie={movie} isCompact />
                     </div>
                   ))}
                 </Slider>
+                <Button
+                  type="link"
+                  href="/movies/trending"
+                  className="main-content-view-all"
+                  aria-label="View all trending movies"
+                >
+                  View All
+                </Button>
+              </>
+            ) : (
+              <Text className="main-content-empty">
+                No trending movies found
+              </Text>
+            )}
+          </Col>
+
+          {/* Genre Sections */}
+          {genres.map((genre) => (
+            <Col span={24} key={genre.id}>
+              <Title level={3} className="main-content-title">
+                {genre.name}
+              </Title>
+              {moviesByGenre[genre.id]?.length > 0 ? (
+                <>
+                  <Slider {...sliderSettings} className="main-content-slider">
+                    {moviesByGenre[genre.id].map((movie) => (
+                      <div key={movie.id} className="main-content-slide">
+                        <MovieCard movie={movie} isCompact />
+                      </div>
+                    ))}
+                  </Slider>
+                  <Button
+                    type="link"
+                    href={`/movies/genre/${genre.id}`}
+                    className="main-content-view-all"
+                    aria-label={`View all ${genre.name} movies`}
+                  >
+                    View All
+                  </Button>
+                </>
               ) : (
-                <Text className="no-movies">
+                <Text className="main-content-empty">
                   No movies found for {genre.name}
                 </Text>
               )}
-              <Button
-                type="link"
-                href={`/movies/genre/${genre.id}`}
-                style={{ marginTop: 8 }}
-                aria-label={`View all ${genre.name} movies`}
-              >
-                View All
-              </Button>
-            </div>
+            </Col>
           ))}
-          <div ref={loaderRef} style={{ height: 20 }} />
-        </>
+          <Col span={24}>
+            <div ref={loaderRef} className="main-content-loader" />
+          </Col>
+        </Row>
       )}
     </div>
   );

@@ -1,83 +1,97 @@
-/* src/components/MainContent.css */
 .main-content {
-  padding: 1rem;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  color: #ffffff;
 }
 
-.loading-spinner {
+.main-content-loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 150px;
+  min-height: 400px;
 }
 
-.genre-section {
-  margin-bottom: 1rem;
+.main-content-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
-.genre-title {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
+.main-content-slider {
+  margin-bottom: 16px;
 }
 
-.no-movies {
-  font-size: 0.9rem;
-  text-align: center;
+.main-content-slide {
+  padding: 0 8px;
 }
 
-/* Slider styles */
-.slick-slider {
-  margin: 0;
+.main-content-empty {
+  font-size: 14px;
+  opacity: 0.8;
+  display: block;
+  margin-bottom: 16px;
 }
 
-.slick-slide {
-  padding: 0;
+.main-content-view-all {
+  font-size: 14px;
+  color: #1890ff;
 }
 
-.slick-arrow {
-  width: 30px;
-  height: 30px;
+.main-content-view-all:hover {
+  text-decoration: underline;
 }
 
-.slick-prev {
-  left: 5px;
+.main-content-loader {
+  height: 20px;
 }
 
-.slick-next {
-  right: 5px;
+/* Custom slider arrows */
+.main-content-slider .slick-prev,
+.main-content-slider .slick-next {
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
 }
 
-.slick-prev:before,
-.slick-next:before {
-  font-size: 16px;
+.main-content-slider .slick-prev:before,
+.main-content-slider .slick-next:before {
+  color: #ffffff;
 }
 
-.slick-dots {
-  bottom: -20px;
+.main-content-slider .slick-prev {
+  left: -40px;
 }
 
-.slick-dots li button:before {
-  font-size: 8px;
+.main-content-slider .slick-next {
+  right: -40px;
 }
 
-/* Compact Movie Card */
-.movie-card.compact {
-  width: 100%;
-  max-width: 150px;
-}
+@media (max-width: 768px) {
+  .main-content {
+    padding: 16px;
+  }
 
-.movie-card.compact img {
-  height: 200px;
-}
+  .main-content-title {
+    font-size: 18px;
+  }
 
-.movie-card.compact .movie-card-info {
-  padding: 0.5rem;
-}
+  .main-content-empty {
+    font-size: 12px;
+  }
 
-.movie-card.compact h3 {
-  font-size: 1rem;
-  margin-bottom: 0.2rem;
-}
+  .main-content-view-all {
+    font-size: 12px;
+  }
 
-.movie-card.compact .rating {
-  font-size: 0.8rem;
+  .main-content-slider .slick-prev {
+    left: -20px;
+  }
+
+  .main-content-slider .slick-next {
+    right: -20px;
+  }
 }

@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Nav,
+  Tabs,
+  Button,
+  Image,
+  Tab,
+} from "react-bootstrap"; // React-Bootstrap components
 import ProfileStats from "./ProfileStats";
 import MoviesForYou from "./MoviesForYou";
 import LatestReviews from "./LatestReviews";
@@ -14,8 +24,8 @@ import {
   useGetUserRequestsQuery,
 } from "../../actions/userApi";
 import { FiLogOut } from "react-icons/fi";
-import { Link } from "react-router-dom";
 import userAvatar from "../../img/gallery/project-1.jpg"; // Default avatar
+
 const Profile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -117,12 +127,14 @@ const Profile = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+
   const tabs = [
     { id: "tab-1", label: "Profile" },
     { id: "tab-2", label: "Subscriptions" },
     { id: "tab-3", label: "Favorites" },
     { id: "tab-4", label: "Settings" },
   ];
+
   // Calculate paginated favorite movies
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedFavoriteMovies = (userData?.favoriteMovies || []).slice(
@@ -132,137 +144,121 @@ const Profile = () => {
 
   return (
     <div className="content">
-      <div className="profile">
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <div className="profile__content">
-                {authLoading || userLoading ? (
-                  <div className="profile__user">
-                    <div className="profile__avatar">
-                      <img src={userAvatar} alt="Loading avatar" />
-                    </div>
-                    <div className="profile__meta">
-                      <h3>Loading...</h3>
-                      <span>HOTFLIX ID: Loading...</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="profile__user">
-                    <div className="profile__avatar">
-                      <img
-                        src={userData?.avatar || userAvatar}
-                        alt={userData?.username || "User avatar"}
-                      />
-                    </div>
-                    <div className="profile__meta">
-                      <h3>{userData?.username || "Unknown User"}</h3>
-                      <span>HOTFLIX ID: {userData?._id || "N/A"}</span>
-                    </div>
-                  </div>
-                )}
-                <ul
-                  className="nav nav-tabs content__tabs content__tabs--profile"
-                  role="tablist"
-                >
-                  {tabs.map((tab) => (
-                    <li className="nav-item" role="presentation" key={tab.id}>
-                      <button
-                        className={`nav-link ${
-                          activeTab === tab.id ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab(tab.id)}
-                        type="button"
-                        role="tab"
-                        aria-controls={tab.id}
-                        aria-selected={activeTab === tab.id}
-                      >
-                        {tab.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className="profile__logout"
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={authLoading} // Use authLoading here
-                >
-                  <FiLogOut />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {authLoading || userLoading || reviewsLoading || requestsLoading ? (
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          <div>Loading...</div>
-        </div>
-      ) : authError || userError || reviewsError || requestsError ? (
-        <div style={{ textAlign: "center", padding: "50px" }}>
-          <span style={{ color: "red" }}>
-            Error:{" "}
-            {authError?.message || userError?.message || "An error occurred"}
-          </span>
-        </div>
-      ) : (
-        <div className="container">
-          <div className="tab-content">
-            {activeTab === "tab-1" && (
-              <div
-                className="tab-pane fade show active"
-                id="tab-1"
-                role="tabpanel"
-                aria-labelledby="1-tab"
-                tabIndex="0"
-              >
-                <ProfileStats userData={userData} reviews={reviews} />
-                <div className="row">
-                  <div className="col-12 col-xl-6">
-                    <MoviesForYou
-                      suggestedMovies={userData?.suggestedMovies || []}
-                    />
-                  </div>
-                  <div className="col-12 col-xl-6">
-                    <LatestReviews reviews={reviews || []} />
+      <Container>
+        <Row>
+          <Col xs={12}>
+            <div className="profile__content d-flex flex-column align-items-center">
+              {authLoading || userLoading ? (
+                <div className="profile__user d-flex align-items-center">
+                  <Image
+                    src={userAvatar}
+                    alt="Loading avatar"
+                    roundedCircle
+                    width={100}
+                    height={100}
+                    className="me-3"
+                  />
+                  <div className="profile__meta">
+                    <h3>Loading...</h3>
+                    <span>HOTFLIX ID: Loading...</span>
                   </div>
                 </div>
-              </div>
-            )}
-            {activeTab === "tab-2" && (
-              <div
-                className="tab-pane fade show active"
-                id="tab-2"
-                role="tabpanel"
-                aria-labelledby="2-tab"
-                tabIndex="0"
+              ) : (
+                <div className="profile__user d-flex align-items-center">
+                  <Image
+                    src={userData?.avatar || userAvatar}
+                    alt={userData?.username || "User avatar"}
+                    roundedCircle
+                    width={100}
+                    height={100}
+                    className="me-3"
+                  />
+                  <div className="profile__meta">
+                    <h3>{userData?.username || "Unknown User"}</h3>
+                    <span>HOTFLIX ID: {userData?._id || "N/A"}</span>
+                  </div>
+                </div>
+              )}
+
+              <Nav
+                variant="tabs"
+                activeKey={activeTab}
+                onSelect={(selectedKey) => setActiveTab(selectedKey)}
+                className="my-3"
               >
-                <p>Subscriptions content goes here.</p>
-              </div>
-            )}
-            {activeTab === "tab-3" && (
-              <FavoritesList
-                favoriteMovies={paginatedFavoriteMovies}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
-            {activeTab === "tab-4" && (
-              <ProfileSettings
-                userData={userData}
-                handleEditProfile={handleEditProfile}
-                fileList={fileList}
-                setFileList={setFileList}
-                isOwnProfile={isOwnProfile}
-              />
-            )}
+                {tabs.map((tab) => (
+                  <Nav.Item key={tab.id}>
+                    <Nav.Link eventKey={tab.id}>{tab.label}</Nav.Link>
+                  </Nav.Item>
+                ))}
+              </Nav>
+
+              <Button
+                variant="outline-danger"
+                onClick={handleLogout}
+                disabled={authLoading}
+                className="mt-2"
+              >
+                <FiLogOut className="me-1" />
+                Logout
+              </Button>
+            </div>
+          </Col>
+        </Row>
+
+        {authLoading || userLoading || reviewsLoading || requestsLoading ? (
+          <div className="text-center py-5">
+            <div>Loading...</div>
           </div>
-        </div>
-      )}
+        ) : authError || userError || reviewsError || requestsError ? (
+          <div className="text-center py-5">
+            <span className="text-danger">
+              Error:{" "}
+              {authError?.message || userError?.message || "An error occurred"}
+            </span>
+          </div>
+        ) : (
+          <Row>
+            <Col xs={12}>
+              <Tabs activeKey={activeTab} id="profile-tabs" className="mb-3">
+                <Tab eventKey="tab-1" title="">
+                  <ProfileStats userData={userData} reviews={reviews} />
+                  <Row>
+                    <Col xs={12} xl={6}>
+                      <MoviesForYou
+                        suggestedMovies={userData?.suggestedMovies || []}
+                      />
+                    </Col>
+                    <Col xs={12} xl={6}>
+                      <LatestReviews reviews={reviews || []} />
+                    </Col>
+                  </Row>
+                </Tab>
+                <Tab eventKey="tab-2" title="">
+                  <p>Subscriptions content goes here.</p>
+                </Tab>
+                <Tab eventKey="tab-3" title="">
+                  <FavoritesList
+                    favoriteMovies={paginatedFavoriteMovies}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </Tab>
+                <Tab eventKey="tab-4" title="">
+                  <ProfileSettings
+                    userData={userData}
+                    handleEditProfile={handleEditProfile}
+                    fileList={fileList}
+                    setFileList={setFileList}
+                    isOwnProfile={isOwnProfile}
+                  />
+                </Tab>
+              </Tabs>
+            </Col>
+          </Row>
+        )}
+      </Container>
     </div>
   );
 };

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
-  Menu,
-  Dropdown,
   Button,
   Space,
   Typography,
   Avatar,
   Drawer,
-  Tooltip,
   Input,
   Switch,
+  Dropdown,
+  Menu,
 } from "antd";
 import {
   UserOutlined,
@@ -19,16 +18,12 @@ import {
   SettingOutlined,
   MenuOutlined,
   SearchOutlined,
-  DashboardOutlined,
-  MessageOutlined,
-  StarOutlined,
-  CalendarOutlined,
   BulbOutlined,
 } from "@ant-design/icons";
 import { useGetProfileQuery } from "../../actions/userApi";
-import { toast } from "react-toastify"; // Import react-toastify
-import "react-toastify/dist/ReactToastify.css"; // Import react-toastify CSS
-import "./navbar.css"; // Custom styles for navbar
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "./navbar.css";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -36,7 +31,7 @@ const { Search } = Input;
 const Navbar = () => {
   const { data: user, isLoading, isError } = useGetProfileQuery();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false); // Mock theme state
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
     if (isError) {
@@ -49,7 +44,6 @@ const Navbar = () => {
 
   const handleSearch = (value) => {
     if (value) {
-      // Mock search (replace with actual search logic)
       toast.info(`Searching for "${value}"`, {
         position: "top-right",
         autoClose: 2000,
@@ -58,7 +52,6 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    // Mock logout (replace with actual logout logic)
     localStorage.removeItem("token");
     toast.success("Logged out successfully", {
       position: "top-right",
@@ -69,7 +62,6 @@ const Navbar = () => {
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    // Mock theme toggle (replace with actual theme logic)
     document.body.className = isDarkMode ? "light-theme" : "dark-theme";
     toast.info(`Switched to ${isDarkMode ? "Light" : "Dark"} mode`, {
       position: "top-right",
@@ -78,25 +70,10 @@ const Navbar = () => {
   };
 
   const userMenu = (
-    <Menu className="user-menu">
+    <Menu className="navbar-user-menu">
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
         <a href={`/u/${user?._id}`} aria-label="My Profile">
-          My Profile
-        </a>
-      </Menu.Item>
-      <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
-        <a href="/dashboard" aria-label="Dashboard">
-          Dashboard
-        </a>
-      </Menu.Item>
-      <Menu.Item key="messages" icon={<MessageOutlined />}>
-        <a href="/messages" aria-label="Messages">
-          Messages
-        </a>
-      </Menu.Item>
-      <Menu.Item key="watchlist" icon={<StarOutlined />}>
-        <a href="/watchlist" aria-label="Watchlist">
-          Watchlist
+          Profile
         </a>
       </Menu.Item>
       <Menu.Item key="settings" icon={<SettingOutlined />}>
@@ -112,191 +89,172 @@ const Navbar = () => {
 
   const navLinks = (
     <Space
-      size="large"
+      size="middle"
       direction={drawerVisible ? "vertical" : "horizontal"}
-      className="nav-links"
+      className="navbar-links"
     >
-      <Tooltip title="Browse movies">
-        <a href="/films" className="nav-link" aria-label="Films">
-          <i className="fas fa-film" /> Films
-        </a>
-      </Tooltip>
-      <Tooltip title="Explore movie lists">
-        <a href="/lists" className="nav-link" aria-label="Lists">
-          <i className="fas fa-list" /> Lists
-        </a>
-      </Tooltip>
-      <Tooltip title="Connect with members">
-        <a href="/members" className="nav-link" aria-label="Members">
-          <i className="fas fa-users" /> Members
-        </a>
-      </Tooltip>
-      <Tooltip title="Join discussion groups">
-        <a href="/groups" className="nav-link" aria-label="Groups">
-          <i className="fas fa-user-group" /> Groups
-        </a>
-      </Tooltip>
-      <Tooltip title="View upcoming events">
-        <a href="/events" className="nav-link" aria-label="Events">
-          <i className="fas fa-calendar" /> Events
-        </a>
-      </Tooltip>
-      <Tooltip title="Read newsroom posts">
-        <a href="/newsrooms" className="nav-link" aria-label="Newsrooms">
-          <i className="fas fa-newspaper" /> News
-        </a>
-      </Tooltip>
-      {drawerVisible && (
-        <>
-          <Search
-            placeholder="Search movies, groups, users..."
-            onSearch={handleSearch}
-            style={{ width: "100%", margin: "8px 0" }}
-            aria-label="Search"
-          />
-          <Space direction="vertical" style={{ width: "100%" }}>
-            {!isLoading && !user && (
-              <>
-                <Tooltip title="Log in to your account">
-                  <a href="/login" className="nav-link" aria-label="Log In">
-                    <Button
-                      icon={<LoginOutlined />}
-                      className="nav-button login"
-                      block
-                    >
-                      Log In
-                    </Button>
-                  </a>
-                </Tooltip>
-                <Tooltip title="Create a new account">
-                  <a href="/signup" className="nav-link" aria-label="Sign Up">
-                    <Button type="primary" className="nav-button signup" block>
-                      Sign Up
-                    </Button>
-                  </a>
-                </Tooltip>
-              </>
-            )}
-            {!isLoading && user && (
-              <Dropdown overlay={userMenu} placement="bottomRight">
-                <Button
-                  icon={
-                    user.avatarUrl ? (
-                      <Avatar src={user.avatarUrl} />
-                    ) : (
-                      <UserOutlined />
-                    )
-                  }
-                  className="nav-button user"
-                  block
-                  aria-label={`User: ${user.username}`}
-                >
-                  {user.username}
-                </Button>
-              </Dropdown>
-            )}
-          </Space>
-        </>
-      )}
+      <a href="/films" className="navbar-link" aria-label="Films">
+        Films
+      </a>
+      <a href="/groups" className="navbar-link" aria-label="Groups">
+        Groups
+      </a>
+      <a href="/about" className="navbar-link" aria-label="About">
+        About
+      </a>
     </Space>
   );
 
   return (
     <div className={`navbar ${isDarkMode ? "dark" : "light"}`}>
-      {/* Left Side: Logo & Menu Icon */}
+      {/* Left: Logo & Menu Icon */}
       <Space size="middle" className="navbar-left">
         <Button
-          className="mobile-menu"
+          className="navbar-mobile-menu"
           icon={<MenuOutlined />}
           onClick={() => setDrawerVisible(true)}
           aria-label="Open menu"
         />
-        <Title level={4} className="logo">
-          <Tooltip title="Go to homepage">
-            <a href="/" aria-label="Cinenotes Homepage">
-              Cinenotes
-            </a>
-          </Tooltip>
+        <Title level={4} className="navbar-logo">
+          <a href="/" aria-label="Cinenotes Homepage">
+            Cinenotes
+          </a>
         </Title>
       </Space>
 
-      {/* Center: Search Bar & Nav Links (Desktop) */}
+      {/* Center: Search & Nav Links */}
       <Space size="middle" className="navbar-center">
         <Search
-          placeholder="Search movies, groups, users..."
+          placeholder="Search..."
           onSearch={handleSearch}
-          style={{ width: 200 }}
-          aria-label="Search"
+          className="navbar-search"
+          aria-label="Search movies, groups, users"
         />
         {navLinks}
       </Space>
 
-      {/* Right Side: Actions */}
-      <Space size="middle" className="nav-actions">
-        <Tooltip title="Toggle theme">
-          <Switch
-            checked={isDarkMode}
-            onChange={toggleTheme}
-            checkedChildren={<BulbOutlined />}
-            unCheckedChildren={<BulbOutlined />}
-            aria-label="Toggle theme"
-          />
-        </Tooltip>
+      {/* Right: Actions */}
+      <Space size="middle" className="navbar-actions">
+        <Switch
+          checked={isDarkMode}
+          onChange={toggleTheme}
+          checkedChildren={<BulbOutlined />}
+          unCheckedChildren={<BulbOutlined />}
+          aria-label="Toggle theme"
+        />
         {!isLoading && !user && (
           <>
-            <Tooltip title="Log in to your account">
-              <a href="/login" className="nav-link" aria-label="Log In">
-                <Button icon={<LoginOutlined />} className="nav-button login">
-                  Log In
-                </Button>
-              </a>
-            </Tooltip>
-            <Tooltip title="Create a new account">
-              <a href="/signup" className="nav-link" aria-label="Sign Up">
-                <Button type="primary" className="nav-button signup">
-                  Sign Up
-                </Button>
-              </a>
-            </Tooltip>
+            <Button
+              href="/login"
+              icon={<LoginOutlined />}
+              className="navbar-button"
+              aria-label="Log In"
+            >
+              Log In
+            </Button>
+            <Button
+              href="/signup"
+              type="primary"
+              className="navbar-button"
+              aria-label="Sign Up"
+            >
+              Sign Up
+            </Button>
           </>
         )}
         {!isLoading && user && (
-          <Tooltip title="Manage your account">
-            <Dropdown overlay={userMenu} placement="bottomRight">
-              <Button
-                icon={
-                  user.avatarUrl ? (
-                    <Avatar src={user.avatarUrl} />
-                  ) : (
-                    <UserOutlined />
-                  )
-                }
-                className="nav-button user"
-                aria-label={`User: ${user.username}`}
-              >
-                {user.username}
-              </Button>
-            </Dropdown>
-          </Tooltip>
+          <Dropdown overlay={userMenu} placement="bottomRight">
+            <Button
+              icon={
+                user.avatarUrl ? (
+                  <Avatar src={user.avatarUrl} />
+                ) : (
+                  <UserOutlined />
+                )
+              }
+              className="navbar-button navbar-user"
+              aria-label={`User: ${user.username}`}
+            >
+              {user.username}
+            </Button>
+          </Dropdown>
         )}
       </Space>
 
       {/* Mobile Drawer */}
       <Drawer
-        title="Cinenotes Menu"
+        title="Cinenotes"
         placement="left"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        className="mobile-drawer"
+        className="navbar-drawer"
       >
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <Search
+            placeholder="Search..."
+            onSearch={handleSearch}
+            className="navbar-search"
+            aria-label="Search movies, groups, users"
+          />
           {navLinks}
+          {!isLoading && !user && (
+            <>
+              <Button
+                href="/login"
+                icon={<LoginOutlined />}
+                className="navbar-button"
+                block
+                aria-label="Log In"
+              >
+                Log In
+              </Button>
+              <Button
+                href="/signup"
+                type="primary"
+                className="navbar-button"
+                block
+                aria-label="Sign Up"
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
+          {!isLoading && user && (
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Button
+                href={`/u/${user?._id}`}
+                icon={<ProfileOutlined />}
+                className="navbar-button"
+                block
+                aria-label="Profile"
+              >
+                Profile
+              </Button>
+              <Button
+                href="/settings"
+                icon={<SettingOutlined />}
+                className="navbar-button"
+                block
+                aria-label="Settings"
+              >
+                Settings
+              </Button>
+              <Button
+                icon={<LogoutOutlined />}
+                className="navbar-button"
+                block
+                onClick={handleLogout}
+                aria-label="Logout"
+              >
+                Logout
+              </Button>
+            </Space>
+          )}
           <Switch
             checked={isDarkMode}
             onChange={toggleTheme}
             checkedChildren="Dark"
             unCheckedChildren="Light"
-            style={{ marginTop: 8 }}
             aria-label="Toggle theme"
           />
         </Space>

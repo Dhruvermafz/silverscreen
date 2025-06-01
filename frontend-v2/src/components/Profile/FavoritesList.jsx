@@ -1,8 +1,10 @@
 import React from "react";
 import { FiPlay, FiBookmark } from "react-icons/fi";
-// Adjust path to your Pagination component
+import { Container, Row, Col, Card, Button, Image } from "react-bootstrap";
+import { Link } from "react-router-dom"; // For client-side routing
 import coverImage from "../../img/covers/cover.jpg"; // Adjust path as needed
-import Pagination from "../Common/Pagination";
+import Pagination from "../Common/Pagination"; // Adjust path as needed
+
 const FavoritesList = ({
   favoriteMovies,
   currentPage,
@@ -10,60 +12,80 @@ const FavoritesList = ({
   onPageChange,
 }) => {
   return (
-    <div
-      className="tab-pane fade"
-      id="tab-3"
-      role="tabpanel"
-      aria-labelledby="3-tab"
-      tabIndex="0"
-    >
-      <div className="row">
+    <Container>
+      <Row>
         {Array.isArray(favoriteMovies) && favoriteMovies.length > 0 ? (
           favoriteMovies.map((item) => (
-            <div className="col-6 col-sm-4 col-lg-3 col-xl-2" key={item.id}>
-              <div className="item">
-                <div className="item__cover">
-                  <img src={item.poster || coverImage} alt={item.title} />
-                  <a href={`details.html?id=${item.id}`} className="item__play">
-                    <FiPlay />
-                  </a>
-                  <span className="item__rate item__rate--green">
+            <Col xs={6} sm={4} lg={3} xl={2} key={item.id} className="mb-4">
+              <Card className="h-100">
+                <div className="position-relative">
+                  <Card.Img
+                    variant="top"
+                    src={item.poster || coverImage}
+                    alt={item.title}
+                  />
+                  <Link
+                    to={`/details/${item.id}`}
+                    className="position-absolute top-50 start-50 translate-middle"
+                  >
+                    <Button variant="light" className="rounded-circle p-2">
+                      <FiPlay size={24} />
+                    </Button>
+                  </Link>
+                  <span
+                    className="position-absolute top-0 end-0 bg-success text-white p-1 rounded m-2"
+                    style={{ fontSize: "0.9rem" }}
+                  >
                     {item.rating || "N/A"}
                   </span>
-                  <button
-                    className="item__favorite item__favorite--active"
-                    type="button"
+                  <Button
+                    variant="link"
+                    className="position-absolute bottom-0 end-0 p-2"
+                    style={{ color: "#fff" }}
                   >
-                    <FiBookmark />
-                  </button>
+                    <FiBookmark size={20} />
+                  </Button>
                 </div>
-                <div className="item__content">
-                  <h3 className="item__title">
-                    <a href={`details.html?id=${item.id}`}>{item.title}</a>
-                  </h3>
-                  <span className="item__category">
+                <Card.Body>
+                  <Card.Title as="h3" className="mb-2">
+                    <Link
+                      to={`/details/${item.id}`}
+                      className="text-decoration-none"
+                    >
+                      {item.title}
+                    </Link>
+                  </Card.Title>
+                  <div className="text-muted">
                     {(item.categories || []).map((category, index) => (
-                      <a href="#" key={index}>
+                      <Link
+                        to={`/category/${category.toLowerCase()}`}
+                        key={index}
+                        className="text-muted me-2 text-decoration-none"
+                      >
                         {category}
-                      </a>
+                      </Link>
                     ))}
-                  </span>
-                </div>
-              </div>
-            </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
           ))
         ) : (
-          <div className="col-12">
-            <p>No favorite movies available</p>
-          </div>
+          <Col xs={12}>
+            <p className="text-center">No favorite movies available</p>
+          </Col>
         )}
-      </div>
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </div>
+      </Row>
+      <Row>
+        <Col xs={12} className="d-flex justify-content-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { FiFilm, FiMessageCircle, FiStar } from "react-icons/fi";
+import { Container, Row, Col, Card } from "react-bootstrap";
 
 const ProfileStats = ({ userData, reviews }) => {
   const stats = [
@@ -13,17 +14,25 @@ const ProfileStats = ({ userData, reviews }) => {
   ];
 
   return (
-    <div className="row">
-      {stats.map((stat, index) => (
-        <div className="col-12 col-md-6 col-xl-3" key={index}>
-          <div className="stats">
-            <span>{stat.label}</span>
-            <p>{stat.value}</p>
-            {stat.icon}
-          </div>
-        </div>
-      ))}
-    </div>
+    <Container>
+      <Row>
+        {stats.map((stat, index) => (
+          <Col xs={12} md={6} xl={3} key={index} className="mb-4">
+            <Card className="h-100 text-center">
+              <Card.Body className="d-flex flex-column align-items-center justify-content-center">
+                <div className="mb-2" style={{ fontSize: "1.5rem" }}>
+                  {stat.icon}
+                </div>
+                <Card.Title as="h5" className="mb-1">
+                  {stat.value}
+                </Card.Title>
+                <Card.Text className="text-muted">{stat.label}</Card.Text>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
 };
 

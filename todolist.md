@@ -249,3 +249,13 @@
 - **Shadowban repeat offenders** (flagged 5+ times in a week)
 - **Auto-warn** on first violation, **auto-mute** on second, **auto-ban** on third (configurable)
 - **AI-based moderation\***(optional later)\* to detect hate speech, political rhetoric, or off-topic content
+
+leading digital media platform dedicated to Indian cinema, offering a rich blend of film news, in-depth reviews, interviews, and cultural commentary. Known for its sharp editorial voice and regional inclusivity, the platform covers a broad spectrum of Indian film industries including Tamil, Telugu, Malayalam, Kannada, and Hindi cinema.
+
+Founded with the vision of creating an independent, trustworthy space for cinema journalism, SilverScreen.in emphasizes quality storytelling over clickbait. The website’s team of writers, critics, and journalists deliver timely updates on movie releases, industry trends, celebrity interviews, and film festival reports, while also focusing on socially relevant narratives in the world of entertainment.
+
+leading digital media platform dedicated to Indian cinema, offering a rich blend of film news, in-depth reviews, interviews, and cultural commentary. Known for its sharp editorial voice and regional inclusivity, the platform covers a broad spectrum of Indian film industries including Tamil, Telugu, Malayalam, Kannada, and Hindi cinema.
+
+Founded with the vision of creating an independent, trustworthy space for cinema journalism, ]
+
+emphasizes quality storytelling over clickbait. The website’s team of writers, critics, and journalists deliver timely updates on movie releases, industry trends, celebrity interviews, and film festival reports, while also focusing on socially relevant narratives in the world of entertainment.

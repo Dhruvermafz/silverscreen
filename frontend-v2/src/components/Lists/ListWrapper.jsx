@@ -17,7 +17,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import placehold from "../../img/covers/cover.jpg";
-
+import "./list.css";
 const ListComponent = () => {
   const { data: lists = [], refetch } = useGetListsQuery();
   const [createList] = useCreateListMutation();

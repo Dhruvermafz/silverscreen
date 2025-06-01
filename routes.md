@@ -1,7 +1,3 @@
-Absolutely! Here's a breakdown of each **frontend page**, describing its **purpose**, **key components**, and **user interactions** based on your backend controller structure and permissions:
-
----
-
 ## 🔐 **1. Auth Pages**
 
 ### 1.1. **Login Page**
@@ -248,7 +244,3 @@ Absolutely! Here's a breakdown of each **frontend page**, describing its **purpo
 ### ⚙️ **Settings Page** (`/settings`)
 
 - Account, password, notification preferences.
-
----
-
-Would you like me to group these into **components**, **routes**, and **navigation structure** next?
