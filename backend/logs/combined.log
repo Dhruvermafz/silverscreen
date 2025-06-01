@@ -33,3 +33,5 @@
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-20T07:32:18.172Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-20T07:36:45.161Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-30T07:00:20.402Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-01T08:57:20.033Z","userId":"68131e1207af9fb1b048a138"}
+{"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-06-01T12:37:54.397Z"}

@@ -54,17 +54,6 @@ const HeroSection = () => {
 
   return (
     <div className="hero-section">
-      <Carousel autoplay effect="fade" dots={false} className="hero-carousel">
-        {featuredImages.map((image) => (
-          <div key={image.title}>
-            <img
-              src={image.src}
-              alt={image.alt}
-              className="hero-section-image"
-            />
-          </div>
-        ))}
-      </Carousel>
       <div className="hero-section-overlay">
         <Row justify="center" align="middle" className="hero-content">
           <Col xs={22} sm={20} md={16}>
