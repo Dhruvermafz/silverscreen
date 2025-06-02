@@ -6,8 +6,10 @@ import { reviewApi } from "../actions/reviewApi";
 import { movieApi } from "../actions/movieApi";
 import { newsroomApi } from "../actions/newsroomApi";
 import { groupApi } from "../actions/groupApi";
+import authReducer from "../actions/slices/authSlices";
 const store = configureStore({
   reducer: {
+    auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [listApi.reducerPath]: listApi.reducer,

@@ -14,7 +14,8 @@ router.get("/", userController.getAllUsers);
 
 // GET user by ID
 router.get("/:id", protect, userController.getUserById);
-
+router.put("/users/:userId/preferences", userController.updateUserPreferences);
+router.put("/users/:userId/role", userController.updateUserRole);
 // DELETE user by ID
 router.delete("/:id", protect, userController.deleteUser);
 router.get("/members", userController.getAllMembers);
@@ -22,4 +23,5 @@ router.post("/:id/follow", userController.followUser);
 router.post("/:id/unfollow", userController.unfollowUser);
 router.get("/:id/reviews", userController.getUserReviews);
 router.get("/:id/requests", userController.getUserRequests);
+router.put("/users/:userId/onboarding", userController.completeOnboarding); // New route
 module.exports = router;

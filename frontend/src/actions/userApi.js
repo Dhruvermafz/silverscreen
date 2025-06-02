@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_URL } from "../context/config";
 
 export const userApi = createApi({
-  reducerPath: "userApi", // Name for this slice
+  reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
     prepareHeaders: (headers, { getState }) => {
@@ -12,36 +12,46 @@ export const userApi = createApi({
       }
       return headers;
     },
-  }), // Adjust to match your Express server's URL
+  }),
   endpoints: (builder) => ({
     // Fetch the logged-in user's profile
     getProfile: builder.query({
-      query: () => "/users/profile", // GET /profile
+      query: () => "/users/profile",
     }),
-
+    updatePreferences: builder.mutation({
+      query: ({ userId, preferences }) => ({
+        url: `/users/${userId}/preferences`,
+        method: "PUT",
+        body: preferences,
+      }),
+    }),
+    updateRole: builder.mutation({
+      query: ({ userId, role }) => ({
+        url: `/users/${userId}/role`,
+        method: "PUT",
+        body: { role },
+      }),
+    }),
     // Update the logged-in user's profile
     updateProfile: builder.mutation({
       query: (updatedData) => ({
-        url: "/users/profile", // PUT /profile
+        url: "/users/profile",
         method: "PUT",
-        body: updatedData, // Send the updated profile data
+        body: updatedData,
       }),
     }),
-
     // Fetch all users
     getAllUsers: builder.query({
-      query: () => "/users", // GET /users
+      query: () => "/users",
     }),
-
     // Fetch a user by ID
     getUserById: builder.query({
-      query: (id) => `/users/${id}`, // GET /users/:id
+      query: (id) => `/users/${id}`,
     }),
-
     // Delete a user by ID
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/users/${id}`, // DELETE /users/:id
+        url: `/users/${id}`,
         method: "DELETE",
       }),
     }),
@@ -64,9 +74,17 @@ export const userApi = createApi({
         method: "POST",
       }),
     }),
-    // Fetch all members (additional route)
+    // Fetch all members
     getAllMembers: builder.query({
-      query: () => "/users/", // GET /users/members
+      query: () => "/users/",
+    }),
+    // Complete onboarding
+    completeOnboarding: builder.mutation({
+      query: ({ userId, isNewUser }) => ({
+        url: `/users/${userId}/onboarding`,
+        method: "PUT",
+        body: { isNewUser },
+      }),
     }),
   }),
 });
@@ -82,5 +100,7 @@ export const {
   useUnfollowUserMutation,
   useGetUserRequestsQuery,
   useGetUserReviewsQuery,
-  useGetUserProfileQuery,
+  useUpdatePreferencesMutation,
+  useUpdateRoleMutation,
+  useCompleteOnboardingMutation, // Export new hook
 } = userApi;

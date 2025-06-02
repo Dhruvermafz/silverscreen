@@ -35,3 +35,12 @@
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-05-30T07:00:20.402Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-01T08:57:20.033Z","userId":"68131e1207af9fb1b048a138"}
 {"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-06-01T12:37:54.397Z"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-02T06:42:35.594Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-02T07:58:28.439Z","userId":"68131e1207af9fb1b048a138"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:04.400Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:05.406Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:08.596Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:09.948Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:27.589Z"}
+{"email":"madhavi@gokuldham.in","level":"info","message":"User registered successfully","timestamp":"2025-06-02T09:51:17.104Z","userId":"683d7414677bab9482345971"}
+{"email":"madhavi@gokuldham.in","level":"info","message":"User logged in successfully","timestamp":"2025-06-02T09:51:32.712Z","userId":"683d7414677bab9482345971"}

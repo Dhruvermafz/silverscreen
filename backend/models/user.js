@@ -18,6 +18,23 @@ const userSchema = new mongoose.Schema(
         suggestedAt: { type: Date, default: Date.now },
       },
     ],
+    role: {
+      type: String,
+      enum: ["viewer", "filmmaker", "reviewer"],
+      default: "viewer",
+    },
+    preferences: {
+      genres: [String],
+      cinemas: [String],
+      watchingHabits: String,
+      contentPreferences: [String],
+      languages: [String],
+    },
+    reviewerStatus: {
+      reviewsThisMonth: { type: Number, default: 0 },
+      lastReviewDate: Date,
+      warnings: [{ message: String, date: Date }],
+    },
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
