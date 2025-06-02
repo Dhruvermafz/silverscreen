@@ -1,594 +1,386 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Card, Table, Button, Typography, Space, Spin } from "antd";
+import {
+  PlusOutlined,
+  ReloadOutlined,
+  EyeOutlined,
+  StarOutlined,
+  UserOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Sidebar from "./Common/Sidebar";
+
+const { Title } = Typography;
 
 const AdminWrapper = () => {
-  return (
-    <main class="main">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            <div class="main__title">
-              <h2>Dashboard</h2>
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    subscriptions: { value: 1678, change: "+15" },
+    itemsAdded: { value: 376, change: "-44" },
+    views: { value: 509573, change: "+3.1%" },
+    reviews: { value: 642, change: "+8" },
+  });
+  const [topItems, setTopItems] = useState([]);
+  const [latestItems, setLatestItems] = useState([]);
+  const [latestUsers, setLatestUsers] = useState([]);
+  const [latestReviews, setLatestReviews] = useState([]);
 
-              <a href="add-item.html" class="main__title-link">
-                add item
-              </a>
-            </div>
-          </div>
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stats">
-              <span>Subscriptions this month</span>
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Mock API calls (replace with actual API)
+      setTopItems([
+        { id: 241, title: "The Lost City", category: "Movie", rating: 9.2 },
+        { id: 825, title: "Undercurrents", category: "Movie", rating: 9.1 },
+        {
+          id: 9271,
+          title: "Tales from the Underworld",
+          category: "TV Series",
+          rating: 9.0,
+        },
+      ]);
+      setLatestItems([
+        {
+          id: 824,
+          title: "I Dream in Another Language",
+          category: "TV Series",
+          rating: 7.2,
+        },
+        { id: 602, title: "Benched", category: "Movie", rating: 6.3 },
+        { id: 538, title: "Whitney", category: "TV Show", rating: 8.4 },
+      ]);
+      setLatestUsers([
+        {
+          id: 23,
+          fullName: "Brian Cranston",
+          email: "bcxwz@email.com",
+          username: "BrianXWZ",
+        },
+        {
+          id: 22,
+          fullName: "Jesse Plemons",
+          email: "jess@email.com",
+          username: "Jesse.P",
+        },
+        {
+          id: 21,
+          fullName: "Matt Jones",
+          email: "matt@email.com",
+          username: "Matty",
+        },
+      ]);
+      setLatestReviews([
+        {
+          id: 824,
+          item: "I Dream in Another Language",
+          author: "Eliza Josceline",
+          rating: 7.2,
+        },
+        { id: 602, item: "Benched", author: "Ketut", rating: 6.3 },
+        { id: 538, item: "Whitney", author: "Brian Cranston", rating: 8.4 },
+      ]);
+    } catch (error) {
+      toast.error("Failed to load dashboard data", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-              <p>
-                1 678 <b class="green">+15</b>
-              </p>
-              <i class="ti ti-diamond"></i>
-            </div>
-          </div>
+  const handleRefresh = (section) => {
+    toast.info(`Refreshing ${section}...`, {
+      position: "top-right",
+      autoClose: 2000,
+    });
+    fetchDashboardData();
+  };
 
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stats">
-              <span>Items added this month</span>
-              <p>
-                376 <b class="red">-44</b>
-              </p>
-              <i class="ti ti-movie"></i>
-            </div>
-          </div>
+  const statCards = [
+    {
+      title: "Subscriptions",
+      value: stats.subscriptions.value,
+      change: stats.subscriptions.change,
+      changeClass: "green",
+      icon: <UserOutlined />,
+    },
+    {
+      title: "Items Added",
+      value: stats.itemsAdded.value,
+      change: stats.itemsAdded.change,
+      changeClass: "red",
+      icon: <VideoCameraOutlined />,
+    },
+    {
+      title: "Views",
+      value: stats.views.value.toLocaleString(),
+      change: stats.views.change,
+      changeClass: "green",
+      icon: <EyeOutlined />,
+    },
+    {
+      title: "Reviews",
+      value: stats.reviews.value,
+      change: stats.reviews.change,
+      changeClass: "green",
+      icon: <StarOutlined />,
+    },
+  ];
 
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stats">
-              <span>Views this month</span>
-              <p>
-                509 573 <b class="green">+3.1%</b>
-              </p>
-              <i class="ti ti-eye"></i>
-            </div>
-          </div>
+  const topItemsColumns = [
+    { title: "ID", dataIndex: "id", key: "id" },
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      render: (text) => <a>{text}</a>,
+    },
+    { title: "Category", dataIndex: "category", key: "category" },
+    {
+      title: "Rating",
+      dataIndex: "rating",
+      key: "rating",
+      render: (rating) => (
+        <span>
+          <StarOutlined /> {rating}
+        </span>
+      ),
+    },
+  ];
 
-          <div class="col-12 col-sm-6 col-xl-3">
-            <div class="stats">
-              <span>Reviews this month</span>
-              <p>
-                642 <b class="green">+8</b>
-              </p>
-              <i class="ti ti-star-half-filled"></i>
-            </div>
-          </div>
-        </div>
+  const latestItemsColumns = topItemsColumns;
+  const latestUsersColumns = [
+    { title: "ID", dataIndex: "id", key: "id" },
+    {
+      title: "Name",
+      dataIndex: "fullName",
+      key: "fullName",
+      render: (text) => <a>{text}</a>,
+    },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Username", dataIndex: "username", key: "username" },
+  ];
+  const latestReviewsColumns = [
+    { title: "ID", dataIndex: "id", key: "id" },
+    {
+      title: "Item",
+      dataIndex: "item",
+      key: "item",
+      render: (text) => <a>{text}</a>,
+    },
+    { title: "Author", dataIndex: "author", key: "author" },
+    {
+      title: "Rating",
+      dataIndex: "rating",
+      key: "rating",
+      render: (rating) => (
+        <span>
+          <StarOutlined /> {rating}
+        </span>
+      ),
+    },
+  ];
 
-        <div class="row">
-          <div class="col-12 col-xl-6">
-            <div class="dashbox">
-              <div class="dashbox__title">
-                <h3>
-                  <i class="ti ti-trophy"></i> Top items
-                </h3>
-
-                <div class="dashbox__wrap">
-                  <a class="dashbox__refresh" href="#">
-                    <i class="ti ti-refresh"></i>
-                  </a>
-                  <a class="dashbox__more" href="catalog.html">
-                    View All
-                  </a>
-                </div>
-              </div>
-
-              <div class="dashbox__table-wrap dashbox__table-wrap--1">
-                <table class="dashbox__table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>TITLE</th>
-                      <th>CATEGORY</th>
-                      <th>RATING</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          241
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">The Lost City</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Movie</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 9.2
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          825
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Undercurrents</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Movie</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 9.1
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          9271
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Tales from the Underworld</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">TV Series</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 9.0
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          635
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">The Unseen World</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">TV Series</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 8.9
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          825
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Redemption Road</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">TV Series</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 8.9
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-xl-6">
-            <div class="dashbox">
-              <div class="dashbox__title">
-                <h3>
-                  <i class="ti ti-movie"></i> Latest items
-                </h3>
-
-                <div class="dashbox__wrap">
-                  <a class="dashbox__refresh" href="#">
-                    <i class="ti ti-refresh"></i>
-                  </a>
-                  <a class="dashbox__more" href="catalog.html">
-                    View All
-                  </a>
-                </div>
-              </div>
-
-              <div class="dashbox__table-wrap dashbox__table-wrap--2">
-                <table class="dashbox__table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>ITEM</th>
-                      <th>CATEGORY</th>
-                      <th>RATING</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          824
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">I Dream in Another Language</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">TV Series</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 7.2
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          602
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Benched</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Movie</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 6.3
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          538
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Whitney</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">TV Show</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 8.4
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          129
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Blindspotting</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Anime</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 9.0
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          360
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Another</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Movie</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 7.7
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-xl-6">
-            <div class="dashbox">
-              <div class="dashbox__title">
-                <h3>
-                  <i class="ti ti-users"></i> Latest users
-                </h3>
-
-                <div class="dashbox__wrap">
-                  <a class="dashbox__refresh" href="#">
-                    <i class="ti ti-refresh"></i>
-                  </a>
-                  <a class="dashbox__more" href="users.html">
-                    View All
-                  </a>
-                </div>
-              </div>
-
-              <div class="dashbox__table-wrap dashbox__table-wrap--3">
-                <table class="dashbox__table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>FULL NAME</th>
-                      <th>EMAIL</th>
-                      <th>USERNAME</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text">23</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Brian Cranston</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          bcxwz@email.com
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">BrianXWZ</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text">22</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Jesse Plemons</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          jess@email.com
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Jesse.P</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text">21</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Matt Jones</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          matt@email.com
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Matty</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text">20</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Tess Harper</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          harper@email.com
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Harper123</div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text">19</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Jonathan Banks</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          bank@email.com
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Jonathan</div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-xl-6">
-            <div class="dashbox">
-              <div class="dashbox__title">
-                <h3>
-                  <i class="ti ti-star-half-filled"></i> Latest reviews
-                </h3>
-
-                <div class="dashbox__wrap">
-                  <a class="dashbox__refresh" href="#">
-                    <i class="ti ti-refresh"></i>
-                  </a>
-                  <a class="dashbox__more" href="reviews.html">
-                    View All
-                  </a>
-                </div>
-              </div>
-
-              <div class="dashbox__table-wrap dashbox__table-wrap--4">
-                <table class="dashbox__table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>ITEM</th>
-                      <th>AUTHOR</th>
-                      <th>RATING</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          824
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">I Dream in Another Language</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Eliza Josceline</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 7.2
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          602
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Benched</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Ketut</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 6.3
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          538
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Whitney</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Brian Cranston</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 8.4
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          129
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Blindspotting</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Quang</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 9.0
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--grey">
-                          360
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">
-                          <a href="#">Another</a>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text">Jackson Brown</div>
-                      </td>
-                      <td>
-                        <div class="dashbox__table-text dashbox__table-text--rate">
-                          <i class="ti ti-star"></i> 7.7
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+  if (loading) {
+    return (
+      <div className="admin-wrapper-loading">
+        <Spin size="large" />
       </div>
-    </main>
+    );
+  }
+
+  return (
+    <>
+      <Sidebar />
+      <div className="admin-wrapper">
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <div className="admin-wrapper-header">
+              <Title level={3} className="admin-wrapper-title">
+                Dashboard
+              </Title>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate("/admin/add-item")}
+                aria-label="Add new item"
+              >
+                Add Item
+              </Button>
+            </div>
+          </Col>
+
+          {/* Stats Cards */}
+          {statCards.map((stat) => (
+            <Col xs={24} sm={12} xl={6} key={stat.title}>
+              <Card className="admin-wrapper-stat">
+                <Space direction="vertical" size="small">
+                  <p className="admin-wrapper-stat-title">{stat.title}</p>
+                  <Space>
+                    <p className="admin-wrapper-stat-value">{stat.value}</p>
+                    <p
+                      className={`admin-wrapper-stat-change ${stat.changeClass}`}
+                    >
+                      {stat.change}
+                    </p>
+                  </Space>
+                  <div className="admin-wrapper-stat-icon">{stat.icon}</div>
+                </Space>
+              </Card>
+            </Col>
+          ))}
+
+          {/* Top Items */}
+          <Col xs={24} xl={12}>
+            <Card
+              title={
+                <Space>
+                  <StarOutlined />
+                  Top Items
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleRefresh("top items")}
+                    aria-label="Refresh top items"
+                  />
+                  <Button href="/catalog" aria-label="View all items">
+                    View All
+                  </Button>
+                </Space>
+              }
+              className="admin-wrapper-table"
+            >
+              <Table
+                columns={topItemsColumns}
+                dataSource={topItems}
+                pagination={{ pageSize: 3 }}
+                rowKey="id"
+                onRow={(record) => ({
+                  onClick: () => navigate(`/movies/${record.id}`),
+                })}
+              />
+            </Card>
+          </Col>
+
+          {/* Latest Items */}
+          <Col xs={24} xl={12}>
+            <Card
+              title={
+                <Space>
+                  <VideoCameraOutlined />
+                  Latest Items
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleRefresh("latest items")}
+                    aria-label="Refresh latest items"
+                  />
+                  <Button href="/catalog" aria-label="View all items">
+                    View All
+                  </Button>
+                </Space>
+              }
+              className="admin-wrapper-table"
+            >
+              <Table
+                columns={latestItemsColumns}
+                dataSource={latestItems}
+                pagination={{ pageSize: 3 }}
+                rowKey="id"
+                onRow={(record) => ({
+                  onClick: () => navigate(`/movies/${record.id}`),
+                })}
+              />
+            </Card>
+          </Col>
+
+          {/* Latest Users */}
+          <Col xs={24} xl={12}>
+            <Card
+              title={
+                <Space>
+                  <UserOutlined />
+                  Latest Users
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleRefresh("latest users")}
+                    aria-label="Refresh latest users"
+                  />
+                  <Button href="/users" aria-label="View all users">
+                    View All
+                  </Button>
+                </Space>
+              }
+              className="admin-wrapper-table"
+            >
+              <Table
+                columns={latestUsersColumns}
+                dataSource={latestUsers}
+                pagination={{ pageSize: 3 }}
+                rowKey="id"
+                onRow={(record) => ({
+                  onClick: () => navigate(`/users/${record.id}`),
+                })}
+              />
+            </Card>
+          </Col>
+
+          {/* Latest Reviews */}
+          <Col xs={24} xl={12}>
+            <Card
+              title={
+                <Space>
+                  <StarOutlined />
+                  Latest Reviews
+                </Space>
+              }
+              extra={
+                <Space>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={() => handleRefresh("latest reviews")}
+                    aria-label="Refresh latest reviews"
+                  />
+                  <Button href="/reviews" aria-label="View all reviews">
+                    View All
+                  </Button>
+                </Space>
+              }
+              className="admin-wrapper-table"
+            >
+              <Table
+                columns={latestReviewsColumns}
+                dataSource={latestReviews}
+                pagination={{ pageSize: 3 }}
+                rowKey="id"
+                onRow={(record) => ({
+                  onClick: () => navigate(`/movies/${record.id}`),
+                })}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    </>
   );
 };
 

@@ -18,6 +18,7 @@ import GroupsPage from "./components/Groups/GroupsPage";
 import GroupDetailPage from "./components/Groups/GroupDetailPage";
 import NewsroomDetailPage from "./components/NewsRooms/NewsroomDetailPage";
 import NewsroomPage from "./components/NewsRooms/NewsroomPage";
+import AdminWrapper from "./components/admin/AdminWrapper";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
             />
             <Route path="/movies/:id" element={<MoviePage />} />
             <Route path="/settings" element={<SettingsWrapper />} />
+            <Route path="/admin/dashboard" element={<AdminWrapper />} />
           </Routes>
         </main>
         <AppFooter />

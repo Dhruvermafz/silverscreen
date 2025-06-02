@@ -7,7 +7,7 @@ const About = () => {
   return (
     <div style={{ padding: "40px", maxWidth: "900px", margin: "0 auto" }}>
       <Card bordered={false} style={{ textAlign: "center", padding: "30px" }}>
-        <Title level={2}>Welcome to SilverScreen 🎬</Title>
+        <Title level={2}>Welcome to Cinenotes 🎬</Title>
         <Paragraph style={{ marginTop: "20px", fontSize: "16px" }}>
           SilverScreen is your ultimate destination for sharing, reviewing, and
           discovering movies and cinematic gems. Whether you're a casual viewer

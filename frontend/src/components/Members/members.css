@@ -1,0 +1,300 @@
+/* MembersWrapper.css */
+.members-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: "Arial", sans-serif;
+  color: #2c3e50;
+}
+
+.members-container {
+  margin: 0;
+}
+
+/* Loading and Error States */
+.members-loading,
+.members-error {
+  text-align: center;
+  padding: 3rem;
+}
+
+.members-error {
+  color: #d32f2f;
+  font-size: 1rem;
+}
+
+/* Title */
+.members-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+}
+
+/* Filters */
+.members-filters {
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+}
+
+.members-search {
+  max-width: 250px;
+}
+
+.members-search .ant-input {
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #2c3e50;
+  border: 1px solid #ccc;
+}
+
+.members-search .ant-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 4px rgba(52, 152, 219, 0.5);
+}
+
+.members-search .ant-btn {
+  border-radius: 4px;
+  background: #3498db;
+  border-color: #3498db;
+  color: #ffffff;
+}
+
+.members-search .ant-btn:hover {
+  background: #2980b9;
+  border-color: #2980b9;
+}
+
+.members-select {
+  min-width: 120px;
+}
+
+.members-select .ant-select-selector {
+  border-radius: 4px !important;
+  background: #f5f5f5 !important;
+  color: #2c3e50 !important;
+  border: 1px solid #ccc !important;
+}
+
+.members-select .ant-select-selector:focus {
+  border-color: #3498db !important;
+  box-shadow: 0 0 4px rgba(52, 152, 219, 0.5) !important;
+}
+
+/* Member Grid */
+.members-grid {
+  margin-top: 1rem;
+}
+
+.member-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.member-card-content {
+  text-align: center;
+  padding: 1rem;
+}
+
+.member-avatar {
+  margin-bottom: 0.5rem;
+}
+
+.member-username {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.member-username-link {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.member-username-link:hover {
+  color: #2980b9;
+}
+
+.member-username-link:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+.member-role-tag {
+  font-size: 0.85rem;
+}
+
+.member-bio {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.member-stats {
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.member-stats .ant-typography {
+  font-size: 0.9rem;
+}
+
+.member-rating {
+  font-size: 0.8rem;
+}
+
+.member-action-button {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.member-action-button:hover {
+  background: #3498db;
+  color: #ffffff;
+  border-color: #3498db;
+}
+
+.member-action-button:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+.members-empty-text {
+  color: #666;
+  font-size: 1rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Sidebar */
+.members-sidebar-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  background: #ffffff;
+}
+
+.members-sidebar-card .ant-card-head {
+  background: #f5f5f5;
+  border-radius: 8px 8px 0 0;
+}
+
+.members-stats-list {
+  padding: 1rem;
+}
+
+.members-stats-list .ant-typography {
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.members-contributor-item {
+  padding: 0.5rem 0;
+}
+
+.members-contributor-link {
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.members-contributor-link:hover {
+  color: #2980b9;
+}
+
+.members-contributor-link:focus {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+.members-contributor-bio {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.members-follow-button {
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.members-follow-button:hover {
+  background: #3498db;
+  color: #ffffff;
+  border-color: #3498db;
+}
+
+/* Dropdown Menu */
+.members-dropdown-menu .ant-menu-item {
+  color: #2c3e50;
+}
+
+.members-dropdown-menu .ant-menu-item:hover {
+  background: #f5f5f5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .members-page {
+    padding: 1rem;
+  }
+
+  .members-title {
+    font-size: 1.5rem;
+  }
+
+  .members-search {
+    max-width: 100%;
+  }
+
+  .members-select {
+    min-width: 100px;
+  }
+
+  .member-username {
+    font-size: 1.1rem;
+  }
+
+  .member-bio,
+  .member-stats .ant-typography {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .members-page {
+    padding: 0.5rem;
+  }
+
+  .members-title {
+    font-size: 1.25rem;
+  }
+
+  .members-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .members-search,
+  .members-select {
+    width: 100% !important;
+  }
+
+  .member-card-content {
+    padding: 0.5rem;
+  }
+
+  .member-action-button {
+    font-size: 0.85rem;
+  }
+}

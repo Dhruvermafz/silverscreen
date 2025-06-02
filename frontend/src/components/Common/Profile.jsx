@@ -37,6 +37,7 @@ import {
   useUpdateProfileMutation,
 } from "../../actions/userApi";
 import SuggestMovieModal from "../Movie/SuggestAMovie";
+import "./profile.css";
 
 const { TabPane } = Tabs;
 const { Title, Paragraph, Text } = Typography;
@@ -104,6 +105,12 @@ const ProfileWrapper = () => {
       const profileData = {
         ...values,
         avatar: fileList.length > 0 ? fileList[0].url : userData?.avatar,
+        favoriteMovies: values.favoriteMovies
+          ? values.favoriteMovies.split("\n").filter((m) => m.trim())
+          : [],
+        favoriteGenres: values.favoriteGenres
+          ? values.favoriteGenres.split("\n").filter((g) => g.trim())
+          : [],
       };
       await updateProfile(profileData).unwrap();
       setIsEditModalOpen(false);
@@ -127,6 +134,7 @@ const ProfileWrapper = () => {
   };
 
   const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
     message.info("Profile link copied!");
     console.log("Sharing profile:", userData._id);
   };
@@ -136,14 +144,14 @@ const ProfileWrapper = () => {
       setFileList(fileList.filter((item) => item.uid !== file.uid));
     },
     beforeUpload: (file) => {
-      setFileList([...fileList, { ...file, url: URL.createObjectURL(file) }]);
+      setFileList([{ ...file, url: URL.createObjectURL(file) }]);
       return false;
     },
     fileList,
   };
 
   const dropdownMenu = (
-    <Menu>
+    <Menu className="profile-dropdown-menu">
       <Menu.Item key="message" onClick={handleMessage}>
         <MessageOutlined /> Message
       </Menu.Item>
@@ -158,7 +166,7 @@ const ProfileWrapper = () => {
 
   if (authLoading || userLoading || reviewsLoading || requestsLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="profile-loading">
         <Spin size="large" />
       </div>
     );
@@ -166,7 +174,7 @@ const ProfileWrapper = () => {
 
   if (authError || userError || reviewsError || requestsError) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="profile-error">
         <Text type="danger">
           Error:{" "}
           {authError?.message || userError?.message || "An error occurred"}
@@ -181,34 +189,35 @@ const ProfileWrapper = () => {
     userData?.favoriteMovies?.length === 0;
 
   return (
-    <div className="profile-page">
-      <Row gutter={[16, 16]}>
+    <section className="profile-page" aria-label="User profile">
+      <Row gutter={[24, 24]} className="profile-container">
         <Col xs={24} md={16}>
           {/* Profile Header */}
           <Card
             cover={
               <img
-                alt="Cover"
+                alt="Profile cover"
                 src={
                   userData?.coverImage || "https://via.placeholder.com/800x200"
                 }
-                style={{ height: 200, objectFit: "cover" }}
+                className="profile-cover-image"
               />
             }
-            style={{ borderRadius: 8 }}
+            className="profile-header-card"
           >
-            <div style={{ textAlign: "center", marginTop: -60 }}>
+            <div className="profile-header-content">
               <Avatar
                 size={120}
-                src={userData?.avatar || "https://via.placeholder.com/100"}
+                src={userData?.avatar}
                 icon={<UserOutlined />}
-                style={{ border: "2px solid #fff" }}
+                className="profile-avatar"
+                alt={`Avatar of ${userData?.username}`}
               />
-              <Title level={3} style={{ marginTop: 10 }}>
+              <Title level={3} className="profile-username">
                 {userData?.username}
                 {userData?.role && (
                   <Tag
-                    style={{ marginLeft: 8 }}
+                    className="profile-role-tag"
                     color={
                       userData.role === "creator"
                         ? "gold"
@@ -222,12 +231,10 @@ const ProfileWrapper = () => {
                   </Tag>
                 )}
               </Title>
-              <Paragraph
-                style={{ color: "#666", maxWidth: 600, margin: "auto" }}
-              >
+              <Paragraph className="profile-bio">
                 {userData?.bio || "No bio provided."}
               </Paragraph>
-              <Space style={{ margin: "10px 0" }}>
+              <Space className="profile-stats">
                 <Text>
                   <strong>{userData?.followers?.length || 0}</strong> Followers
                 </Text>
@@ -238,11 +245,13 @@ const ProfileWrapper = () => {
                   <strong>{userData?.postCount || 0}</strong> Posts
                 </Text>
               </Space>
-              <Space>
+              <Space className="profile-actions">
                 {isOwnProfile ? (
                   <Button
                     icon={<EditOutlined />}
                     onClick={() => setIsEditModalOpen(true)}
+                    className="profile-action-button"
+                    aria-label="Edit profile"
                   >
                     Edit Profile
                   </Button>
@@ -251,11 +260,22 @@ const ProfileWrapper = () => {
                     <Button
                       type={isFollowing ? "default" : "primary"}
                       onClick={handleFollow}
+                      className="profile-action-button"
+                      aria-label={isFollowing ? "Unfollow user" : "Follow user"}
                     >
                       {isFollowing ? "Unfollow" : "Follow"}
                     </Button>
-                    <Dropdown overlay={dropdownMenu} trigger={["click"]}>
-                      <Button>More</Button>
+                    <Dropdown
+                      overlay={dropdownMenu}
+                      trigger={["click"]}
+                      overlayClassName="profile-dropdown"
+                    >
+                      <Button
+                        className="profile-action-button"
+                        aria-label="More actions"
+                      >
+                        More
+                      </Button>
                     </Dropdown>
                   </>
                 )}
@@ -264,7 +284,7 @@ const ProfileWrapper = () => {
           </Card>
 
           {/* Profile Content Tabs */}
-          <Tabs defaultActiveKey="1" style={{ marginTop: 16 }}>
+          <Tabs defaultActiveKey="1" className="profile-tabs">
             <TabPane tab="Lists" key="1">
               {userData?.favoriteMovies?.length > 0 ? (
                 <List
@@ -272,14 +292,16 @@ const ProfileWrapper = () => {
                   dataSource={userData.favoriteMovies}
                   renderItem={(movie) => (
                     <List.Item>
-                      <Card>
+                      <Card className="profile-list-card">
                         <Text>{movie}</Text>
                       </Card>
                     </List.Item>
                   )}
                 />
               ) : (
-                <Text>No favorite movies listed.</Text>
+                <Text className="profile-empty-text">
+                  No favorite movies listed.
+                </Text>
               )}
             </TabPane>
             <TabPane tab="Reviews" key="2">
@@ -287,12 +309,15 @@ const ProfileWrapper = () => {
                 <List
                   dataSource={reviews}
                   renderItem={(review) => (
-                    <List.Item>
+                    <List.Item className="profile-review-item">
                       <List.Item.Meta
                         title={<Text strong>{review.movieTitle}</Text>}
                         description={
                           <>
-                            <Paragraph ellipsis={{ rows: 2 }}>
+                            <Paragraph
+                              ellipsis={{ rows: 2 }}
+                              className="profile-review-comment"
+                            >
                               {review.comment}
                             </Paragraph>
                             <Text type="secondary">
@@ -306,7 +331,9 @@ const ProfileWrapper = () => {
                   )}
                 />
               ) : (
-                <Text>No reviews posted yet.</Text>
+                <Text className="profile-empty-text">
+                  No reviews posted yet.
+                </Text>
               )}
             </TabPane>
             <TabPane tab="Groups" key="3">
@@ -314,13 +341,15 @@ const ProfileWrapper = () => {
                 <List
                   dataSource={userData.groups}
                   renderItem={(group) => (
-                    <List.Item>
+                    <List.Item className="profile-group-item">
                       <List.Item.Meta
                         title={
                           <Text
                             strong
                             onClick={() => navigate(`/groups/${group.id}`)}
-                            style={{ cursor: "pointer" }}
+                            className="profile-group-link"
+                            role="link"
+                            aria-label={`View ${group.name} group`}
                           >
                             {group.name}
                           </Text>
@@ -331,7 +360,9 @@ const ProfileWrapper = () => {
                   )}
                 />
               ) : (
-                <Text>Not a member of any groups.</Text>
+                <Text className="profile-empty-text">
+                  Not a member of any groups.
+                </Text>
               )}
             </TabPane>
             <TabPane tab="Activity" key="4">
@@ -339,7 +370,7 @@ const ProfileWrapper = () => {
                 <List
                   dataSource={userData.activity}
                   renderItem={(activity) => (
-                    <List.Item>
+                    <List.Item className="profile-activity-item">
                       <Text>
                         {activity.type === "post"
                           ? `Posted: ${activity.content}`
@@ -355,17 +386,18 @@ const ProfileWrapper = () => {
                   )}
                 />
               ) : (
-                <Text>No recent activity.</Text>
+                <Text className="profile-empty-text">No recent activity.</Text>
               )}
             </TabPane>
             <TabPane tab="Suggest a Movie" key="5">
               {!isOwnProfile ? (
-                <div style={{ padding: "10px 0" }}>
+                <div className="profile-suggest-movie">
                   <Text>Want to recommend something?</Text>
                   <Button
                     type="primary"
                     onClick={() => setSuggestModalOpen(true)}
-                    style={{ marginLeft: 8 }}
+                    className="profile-suggest-button"
+                    aria-label="Suggest a movie"
                   >
                     Suggest a Movie
                   </Button>
@@ -376,7 +408,9 @@ const ProfileWrapper = () => {
                   />
                 </div>
               ) : (
-                <Text>You can’t suggest a movie to yourself 😄</Text>
+                <Text className="profile-empty-text">
+                  You can’t suggest a movie to yourself 😄
+                </Text>
               )}
             </TabPane>
             {isOwnProfile && (
@@ -385,16 +419,25 @@ const ProfileWrapper = () => {
                   <List
                     dataSource={movieRequests}
                     renderItem={(request) => (
-                      <List.Item>
+                      <List.Item className="profile-request-item">
                         <List.Item.Meta
                           title={
                             <Text strong>
-                              {request.title} ({request.status})
+                              {request.title} (
+                              <span
+                                className={`status-${request.status.toLowerCase()}`}
+                              >
+                                {request.status}
+                              </span>
+                              )
                             </Text>
                           }
                           description={
                             <>
-                              <Paragraph ellipsis={{ rows: 2 }}>
+                              <Paragraph
+                                ellipsis={{ rows: 2 }}
+                                className="profile-request-description"
+                              >
                                 {request.description}
                               </Paragraph>
                               <Text type="secondary">
@@ -410,7 +453,9 @@ const ProfileWrapper = () => {
                     )}
                   />
                 ) : (
-                  <Text>No movie requests yet.</Text>
+                  <Text className="profile-empty-text">
+                    No movie requests yet.
+                  </Text>
                 )}
               </TabPane>
             )}
@@ -418,8 +463,12 @@ const ProfileWrapper = () => {
         </Col>
         <Col xs={24} md={8}>
           {/* Sidebar */}
-          <Card title="Profile Stats" style={{ marginBottom: 16 }}>
-            <Space direction="vertical">
+          <Card
+            title="Profile Stats"
+            className="profile-sidebar-card"
+            aria-label="Profile statistics"
+          >
+            <Space direction="vertical" className="profile-stats-list">
               <Text>
                 Joined: {new Date(userData?.joinedAt).toLocaleDateString()}
               </Text>
@@ -432,25 +481,41 @@ const ProfileWrapper = () => {
               </Text>
             </Space>
           </Card>
-          <Card title="Suggested Users">
+          <Card
+            title="Suggested Users"
+            className="profile-sidebar-card"
+            aria-label="Suggested users"
+          >
             <List
               dataSource={userData?.suggestedUsers || []}
               renderItem={(user) => (
                 <List.Item
+                  className="profile-suggested-user"
                   actions={[
                     <Button
                       key="follow"
                       size="small"
                       onClick={() => handleFollow(user._id)}
+                      className="profile-follow-button"
+                      aria-label={`Follow ${user.username}`}
                     >
                       Follow
                     </Button>,
                   ]}
                 >
                   <List.Item.Meta
-                    avatar={<Avatar src={user.avatar} />}
+                    avatar={
+                      <Avatar
+                        src={user.avatar}
+                        alt={`Avatar of ${user.username}`}
+                      />
+                    }
                     title={<Text>{user.username}</Text>}
-                    description={<Text ellipsis>{user.bio}</Text>}
+                    description={
+                      <Text ellipsis className="profile-user-bio">
+                        {user.bio}
+                      </Text>
+                    }
                   />
                 </List.Item>
               )}
@@ -469,6 +534,8 @@ const ProfileWrapper = () => {
           form.resetFields();
         }}
         onOk={() => form.submit()}
+        className="profile-edit-modal"
+        aria-label="Edit profile modal"
       >
         <Form
           form={form}
@@ -478,24 +545,64 @@ const ProfileWrapper = () => {
             favoriteMovies: userData?.favoriteMovies?.join("\n"),
             favoriteGenres: userData?.favoriteGenres?.join("\n"),
           }}
+          layout="vertical"
         >
-          <Form.Item name="bio" label="Bio">
-            <TextArea placeholder="Tell us about yourself" rows={4} />
+          <Form.Item
+            name="bio"
+            label="Bio"
+            rules={[{ required: false, message: "Please enter a bio" }]}
+          >
+            <TextArea
+              placeholder="Tell us about yourself"
+              rows={4}
+              className="profile-form-input"
+            />
           </Form.Item>
           <Form.Item name="avatar" label="Avatar">
-            <Upload {...uploadProps} accept="image/*">
-              <Button icon={<UploadOutlined />}>Upload Avatar</Button>
+            <Upload
+              {...uploadProps}
+              accept="image/*"
+              listType="picture"
+              maxCount={1}
+              className="profile-upload"
+            >
+              <Button
+                icon={<UploadOutlined />}
+                className="profile-upload-button"
+              >
+                Upload Avatar
+              </Button>
             </Upload>
           </Form.Item>
-          <Form.Item name="favoriteMovies" label="Favorite Movies">
-            <TextArea placeholder="Enter one movie per line" rows={4} />
+          <Form.Item
+            name="favoriteMovies"
+            label="Favorite Movies"
+            rules={[
+              { required: false, message: "Please enter favorite movies" },
+            ]}
+          >
+            <TextArea
+              placeholder="Enter one movie per line"
+              rows={4}
+              className="profile-form-input"
+            />
           </Form.Item>
-          <Form.Item name="favoriteGenres" label="Favorite Genres">
-            <TextArea placeholder="Enter one genre per line" rows={4} />
+          <Form.Item
+            name="favoriteGenres"
+            label="Favorite Genres"
+            rules={[
+              { required: false, message: "Please enter favorite genres" },
+            ]}
+          >
+            <TextArea
+              placeholder="Enter one genre per line"
+              rows={4}
+              className="profile-form-input"
+            />
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </section>
   );
 };
 

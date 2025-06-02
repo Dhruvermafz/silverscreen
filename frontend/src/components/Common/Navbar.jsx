@@ -42,6 +42,11 @@ const Navbar = () => {
     }
   }, [isError]);
 
+  useEffect(() => {
+    // Apply theme to body on mount and update
+    document.body.className = isDarkMode ? "dark-theme" : "light-theme";
+  }, [isDarkMode]);
+
   const handleSearch = (value) => {
     if (value) {
       toast.info(`Searching for "${value}"`, {
@@ -62,8 +67,7 @@ const Navbar = () => {
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    document.body.className = isDarkMode ? "light-theme" : "dark-theme";
-    toast.info(`Switched to ${isDarkMode ? "Light" : "Dark"} mode`, {
+    toast.info(`Switched to ${!isDarkMode ? "Dark" : "Light"} mode`, {
       position: "top-right",
       autoClose: 2000,
     });
@@ -72,12 +76,12 @@ const Navbar = () => {
   const userMenu = (
     <Menu className="navbar-user-menu">
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
-        <a href={`/u/${user?._id}`} aria-label="My Profile">
+        <a href={`/u/${user?._id}`} aria-label="View my profile">
           Profile
         </a>
       </Menu.Item>
       <Menu.Item key="settings" icon={<SettingOutlined />}>
-        <a href="/settings" aria-label="Settings">
+        <a href="/settings" aria-label="Account settings">
           Settings
         </a>
       </Menu.Item>
@@ -89,31 +93,37 @@ const Navbar = () => {
 
   const navLinks = (
     <Space
-      size="middle"
+      size="large"
       direction={drawerVisible ? "vertical" : "horizontal"}
       className="navbar-links"
     >
-      <a href="/films" className="navbar-link" aria-label="Films">
+      <a href="/films" className="navbar-link" aria-label="Films page">
         Films
       </a>
-      <a href="/groups" className="navbar-link" aria-label="Groups">
+      <a href="/groups" className="navbar-link" aria-label="Groups page">
         Groups
       </a>
-      <a href="/about" className="navbar-link" aria-label="About">
+      <a href="/about" className="navbar-link" aria-label="About page">
         About
+      </a>
+      <a href="/contact" className="navbar-link" aria-label="Contact page">
+        Contact
       </a>
     </Space>
   );
 
   return (
-    <div className={`navbar ${isDarkMode ? "dark" : "light"}`}>
+    <nav
+      className={`navbar ${isDarkMode ? "dark" : "light"}`}
+      aria-label="Main navigation"
+    >
       {/* Left: Logo & Menu Icon */}
       <Space size="middle" className="navbar-left">
         <Button
           className="navbar-mobile-menu"
           icon={<MenuOutlined />}
           onClick={() => setDrawerVisible(true)}
-          aria-label="Open menu"
+          aria-label="Open navigation menu"
         />
         <Title level={4} className="navbar-logo">
           <a href="/" aria-label="Cinenotes Homepage">
@@ -123,14 +133,15 @@ const Navbar = () => {
       </Space>
 
       {/* Center: Search & Nav Links */}
-      <Space size="middle" className="navbar-center">
+      <Space size="large" className="navbar-center">
+        {navLinks}
         <Search
-          placeholder="Search..."
+          placeholder="Search movies, groups, users..."
           onSearch={handleSearch}
           className="navbar-search"
-          aria-label="Search movies, groups, users"
+          aria-label="Search movies, groups, or users"
+          enterButton={<SearchOutlined />}
         />
-        {navLinks}
       </Space>
 
       {/* Right: Actions */}
@@ -140,7 +151,7 @@ const Navbar = () => {
           onChange={toggleTheme}
           checkedChildren={<BulbOutlined />}
           unCheckedChildren={<BulbOutlined />}
-          aria-label="Toggle theme"
+          aria-label={`Toggle ${isDarkMode ? "light" : "dark"} theme`}
         />
         {!isLoading && !user && (
           <>
@@ -148,7 +159,7 @@ const Navbar = () => {
               href="/login"
               icon={<LoginOutlined />}
               className="navbar-button"
-              aria-label="Log In"
+              aria-label="Log in"
             >
               Log In
             </Button>
@@ -156,7 +167,7 @@ const Navbar = () => {
               href="/signup"
               type="primary"
               className="navbar-button"
-              aria-label="Sign Up"
+              aria-label="Sign up"
             >
               Sign Up
             </Button>
@@ -167,13 +178,16 @@ const Navbar = () => {
             <Button
               icon={
                 user.avatarUrl ? (
-                  <Avatar src={user.avatarUrl} />
+                  <Avatar
+                    src={user.avatarUrl}
+                    alt={`Avatar of ${user.username}`}
+                  />
                 ) : (
                   <UserOutlined />
                 )
               }
               className="navbar-button navbar-user"
-              aria-label={`User: ${user.username}`}
+              aria-label={`User menu for ${user.username}`}
             >
               {user.username}
             </Button>
@@ -188,13 +202,15 @@ const Navbar = () => {
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
         className="navbar-drawer"
+        aria-label="Mobile navigation menu"
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Search
-            placeholder="Search..."
+            placeholder="Search movies, groups, users..."
             onSearch={handleSearch}
             className="navbar-search"
-            aria-label="Search movies, groups, users"
+            aria-label="Search movies, groups, or users"
+            enterButton={<SearchOutlined />}
           />
           {navLinks}
           {!isLoading && !user && (
@@ -204,7 +220,7 @@ const Navbar = () => {
                 icon={<LoginOutlined />}
                 className="navbar-button"
                 block
-                aria-label="Log In"
+                aria-label="Log in"
               >
                 Log In
               </Button>
@@ -213,7 +229,7 @@ const Navbar = () => {
                 type="primary"
                 className="navbar-button"
                 block
-                aria-label="Sign Up"
+                aria-label="Sign up"
               >
                 Sign Up
               </Button>
@@ -226,7 +242,7 @@ const Navbar = () => {
                 icon={<ProfileOutlined />}
                 className="navbar-button"
                 block
-                aria-label="Profile"
+                aria-label="View profile"
               >
                 Profile
               </Button>
@@ -235,7 +251,7 @@ const Navbar = () => {
                 icon={<SettingOutlined />}
                 className="navbar-button"
                 block
-                aria-label="Settings"
+                aria-label="Account settings"
               >
                 Settings
               </Button>
@@ -244,7 +260,7 @@ const Navbar = () => {
                 className="navbar-button"
                 block
                 onClick={handleLogout}
-                aria-label="Logout"
+                aria-label="Log out"
               >
                 Logout
               </Button>
@@ -255,11 +271,11 @@ const Navbar = () => {
             onChange={toggleTheme}
             checkedChildren="Dark"
             unCheckedChildren="Light"
-            aria-label="Toggle theme"
+            aria-label={`Toggle ${isDarkMode ? "light" : "dark"} theme`}
           />
         </Space>
       </Drawer>
-    </div>
+    </nav>
   );
 };
 
