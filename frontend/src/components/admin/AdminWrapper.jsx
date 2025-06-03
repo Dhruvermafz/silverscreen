@@ -1,5 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Table, Button, Typography, Space, Spin } from "antd";
+import React, { useState } from "react";
+import {
+  Row,
+  Col,
+  Card,
+  Table,
+  Button,
+  Typography,
+  Space,
+  Spin,
+  Tooltip,
+} from "antd";
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -7,193 +17,240 @@ import {
   StarOutlined,
   UserOutlined,
   VideoCameraOutlined,
+  FlagOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./Common/Sidebar";
+import {
+  useGetDashboardStatsQuery,
+  useGetTopItemsQuery,
+  useGetLatestItemsQuery,
+  useGetLatestUsersQuery,
+  useGetLatestReviewsQuery,
+} from "../../actions/adminApi";
 
 const { Title } = Typography;
 
 const AdminWrapper = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    subscriptions: { value: 1678, change: "+15" },
-    itemsAdded: { value: 376, change: "-44" },
-    views: { value: 509573, change: "+3.1%" },
-    reviews: { value: 642, change: "+8" },
+  const [tableParams, setTableParams] = useState({
+    topItems: { pagination: { current: 1, pageSize: 5 } },
+    latestItems: { pagination: { current: 1, pageSize: 5 } },
+    latestUsers: { pagination: { current: 1, pageSize: 5 } },
+    latestReviews: { pagination: { current: 1, pageSize: 5 } },
   });
-  const [topItems, setTopItems] = useState([]);
-  const [latestItems, setLatestItems] = useState([]);
-  const [latestUsers, setLatestUsers] = useState([]);
-  const [latestReviews, setLatestReviews] = useState([]);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  // API Queries
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useGetDashboardStatsQuery();
+  const {
+    data: topItems,
+    isLoading: topItemsLoading,
+    error: topItemsError,
+    refetch: refetchTopItems,
+  } = useGetTopItemsQuery({
+    page: tableParams.topItems.pagination.current,
+    pageSize: tableParams.topItems.pagination.pageSize,
+  });
+  const {
+    data: latestItems,
+    isLoading: latestItemsLoading,
+    error: latestItemsError,
+    refetch: refetchLatestItems,
+  } = useGetLatestItemsQuery({
+    page: tableParams.latestItems.pagination.current,
+    pageSize: tableParams.latestItems.pagination.pageSize,
+  });
+  const {
+    data: latestUsers,
+    isLoading: latestUsersLoading,
+    error: latestUsersError,
+    refetch: refetchLatestUsers,
+  } = useGetLatestUsersQuery({
+    page: tableParams.latestUsers.pagination.current,
+    pageSize: tableParams.latestUsers.pagination.pageSize,
+  });
+  const {
+    data: latestReviews,
+    isLoading: latestReviewsLoading,
+    error: latestReviewsError,
+    refetch: refetchLatestReviews,
+  } = useGetLatestReviewsQuery({
+    page: tableParams.latestReviews.pagination.current,
+    pageSize: tableParams.latestReviews.pagination.pageSize,
+  });
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      // Mock API calls (replace with actual API)
-      setTopItems([
-        { id: 241, title: "The Lost City", category: "Movie", rating: 9.2 },
-        { id: 825, title: "Undercurrents", category: "Movie", rating: 9.1 },
-        {
-          id: 9271,
-          title: "Tales from the Underworld",
-          category: "TV Series",
-          rating: 9.0,
-        },
-      ]);
-      setLatestItems([
-        {
-          id: 824,
-          title: "I Dream in Another Language",
-          category: "TV Series",
-          rating: 7.2,
-        },
-        { id: 602, title: "Benched", category: "Movie", rating: 6.3 },
-        { id: 538, title: "Whitney", category: "TV Show", rating: 8.4 },
-      ]);
-      setLatestUsers([
-        {
-          id: 23,
-          fullName: "Brian Cranston",
-          email: "bcxwz@email.com",
-          username: "BrianXWZ",
-        },
-        {
-          id: 22,
-          fullName: "Jesse Plemons",
-          email: "jess@email.com",
-          username: "Jesse.P",
-        },
-        {
-          id: 21,
-          fullName: "Matt Jones",
-          email: "matt@email.com",
-          username: "Matty",
-        },
-      ]);
-      setLatestReviews([
-        {
-          id: 824,
-          item: "I Dream in Another Language",
-          author: "Eliza Josceline",
-          rating: 7.2,
-        },
-        { id: 602, item: "Benched", author: "Ketut", rating: 6.3 },
-        { id: 538, item: "Whitney", author: "Brian Cranston", rating: 8.4 },
-      ]);
-    } catch (error) {
-      toast.error("Failed to load dashboard data", {
-        position: "top-right",
-        autoClose: 2000,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRefresh = (section) => {
-    toast.info(`Refreshing ${section}...`, {
+  // Handle Errors
+  if (
+    statsError ||
+    topItemsError ||
+    latestItemsError ||
+    latestUsersError ||
+    latestReviewsError
+  ) {
+    toast.error("Failed to load dashboard data", {
       position: "top-right",
       autoClose: 2000,
     });
-    fetchDashboardData();
+  }
+
+  const handleRefresh = (section) => {
+    const refetchMap = {
+      stats: refetchStats,
+      "top items": refetchTopItems,
+      "latest items": refetchLatestItems,
+      "latest users": refetchLatestUsers,
+      "latest reviews": refetchLatestReviews,
+    };
+    refetchMap[section]();
+    toast.info(`Refreshed ${section}`, {
+      position: "top-right",
+      autoClose: 2000,
+    });
+  };
+
+  const handleTableChange = (section, pagination, filters, sorter) => {
+    setTableParams((prev) => ({
+      ...prev,
+      [section]: {
+        pagination,
+        filters,
+        sorter,
+      },
+    }));
   };
 
   const statCards = [
     {
       title: "Subscriptions",
-      value: stats.subscriptions.value,
-      change: stats.subscriptions.change,
-      changeClass: "green",
-      icon: <UserOutlined />,
+      value: stats?.subscriptions?.value || 0,
+      change: stats?.subscriptions?.change || "0",
+      changeClass: stats?.subscriptions?.change.startsWith("+")
+        ? "green"
+        : "red",
+      icon: <UserOutlined aria-label="Subscriptions icon" />,
     },
     {
-      title: "Items Added",
-      value: stats.itemsAdded.value,
-      change: stats.itemsAdded.change,
-      changeClass: "red",
-      icon: <VideoCameraOutlined />,
+      title: "Films Added",
+      value: stats?.itemsAdded?.value || 0,
+      change: stats?.itemsAdded?.change || "0",
+      changeClass: stats?.itemsAdded?.change.startsWith("+") ? "green" : "red",
+      icon: <VideoCameraOutlined aria-label="Films added icon" />,
     },
     {
       title: "Views",
-      value: stats.views.value.toLocaleString(),
-      change: stats.views.change,
-      changeClass: "green",
-      icon: <EyeOutlined />,
+      value: stats?.views?.value?.toLocaleString() || "0",
+      change: stats?.views?.change || "0",
+      changeClass: stats?.views?.change.startsWith("+") ? "green" : "red",
+      icon: <EyeOutlined aria-label="Views icon" />,
     },
     {
       title: "Reviews",
-      value: stats.reviews.value,
-      change: stats.reviews.change,
-      changeClass: "green",
-      icon: <StarOutlined />,
+      value: stats?.reviews?.value || 0,
+      change: stats?.reviews?.change || "0",
+      changeClass: stats?.reviews?.change.startsWith("+") ? "green" : "red",
+      icon: <StarOutlined aria-label="Reviews icon" />,
     },
   ];
 
   const topItemsColumns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: true },
     {
       title: "Title",
       dataIndex: "title",
       key: "title",
-      render: (text) => <a>{text}</a>,
+      render: (text, record) => (
+        <a
+          onClick={() => navigate(`/films/${record.id}`)}
+          aria-label={`View ${text}`}
+        >
+          {text}
+        </a>
+      ),
+      sorter: true,
     },
-    { title: "Category", dataIndex: "category", key: "category" },
+    { title: "Category", dataIndex: "category", key: "category", sorter: true },
     {
       title: "Rating",
       dataIndex: "rating",
       key: "rating",
       render: (rating) => (
         <span>
-          <StarOutlined /> {rating}
+          <StarOutlined aria-hidden="true" /> {rating}
         </span>
       ),
+      sorter: true,
     },
   ];
 
   const latestItemsColumns = topItemsColumns;
+
   const latestUsersColumns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: true },
     {
       title: "Name",
       dataIndex: "fullName",
       key: "fullName",
-      render: (text) => <a>{text}</a>,
+      render: (text, record) => (
+        <a
+          onClick={() => navigate(`/users/${record.id}`)}
+          aria-label={`View ${text}`}
+        >
+          {text}
+        </a>
+      ),
+      sorter: true,
     },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Username", dataIndex: "username", key: "username" },
+    { title: "Username", dataIndex: "username", key: "username", sorter: true },
   ];
+
   const latestReviewsColumns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID", dataIndex: "id", key: "id", sorter: true },
     {
-      title: "Item",
+      title: "Film",
       dataIndex: "item",
       key: "item",
-      render: (text) => <a>{text}</a>,
+      render: (text, record) => (
+        <a
+          onClick={() => navigate(`/films/${record.id}`)}
+          aria-label={`View ${text}`}
+        >
+          {text}
+        </a>
+      ),
+      sorter: true,
     },
-    { title: "Author", dataIndex: "author", key: "author" },
+    { title: "Author", dataIndex: "author", key: "author", sorter: true },
     {
       title: "Rating",
       dataIndex: "rating",
       key: "rating",
       render: (rating) => (
         <span>
-          <StarOutlined /> {rating}
+          <StarOutlined aria-hidden="true" /> {rating}
         </span>
       ),
+      sorter: true,
     },
   ];
 
-  if (loading) {
+  if (
+    statsLoading ||
+    topItemsLoading ||
+    latestItemsLoading ||
+    latestUsersLoading ||
+    latestReviewsLoading
+  ) {
     return (
       <div className="admin-wrapper-loading">
-        <Spin size="large" />
+        <Spin size="large" aria-label="Loading dashboard" />
       </div>
     );
   }
@@ -201,28 +258,43 @@ const AdminWrapper = () => {
   return (
     <>
       <Sidebar />
-      <div className="admin-wrapper">
-        <Row gutter={[16, 16]}>
+      <div className="admin-wrapper" style={{ marginLeft: 240 }}>
+        <Row gutter={[16, 16]} role="region" aria-label="Admin Dashboard">
           <Col span={24}>
             <div className="admin-wrapper-header">
               <Title level={3} className="admin-wrapper-title">
                 Dashboard
               </Title>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => navigate("/admin/add-item")}
-                aria-label="Add new item"
-              >
-                Add Item
-              </Button>
+              <Space>
+                <Tooltip title="Add new film">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => navigate("/admin/add-film")}
+                    aria-label="Add new film"
+                    className="button"
+                  >
+                    Add Film
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Manage flagged content">
+                  <Button
+                    icon={<FlagOutlined />}
+                    onClick={() => navigate("/admin/flags")}
+                    aria-label="Manage flags"
+                    className="button"
+                  >
+                    Manage Flags
+                  </Button>
+                </Tooltip>
+              </Space>
             </div>
           </Col>
 
           {/* Stats Cards */}
           {statCards.map((stat) => (
             <Col xs={24} sm={12} xl={6} key={stat.title}>
-              <Card className="admin-wrapper-stat">
+              <Card className="card admin-wrapper-stat" hoverable>
                 <Space direction="vertical" size="small">
                   <p className="admin-wrapper-stat-title">{stat.title}</p>
                   <Space>
@@ -239,13 +311,13 @@ const AdminWrapper = () => {
             </Col>
           ))}
 
-          {/* Top Items */}
+          {/* Top Films */}
           <Col xs={24} xl={12}>
             <Card
               title={
                 <Space>
-                  <StarOutlined />
-                  Top Items
+                  <StarOutlined aria-hidden="true" />
+                  Top Films
                 </Space>
               }
               extra={
@@ -253,34 +325,44 @@ const AdminWrapper = () => {
                   <Button
                     icon={<ReloadOutlined />}
                     onClick={() => handleRefresh("top items")}
-                    aria-label="Refresh top items"
+                    aria-label="Refresh top films"
                   />
-                  <Button href="/catalog" aria-label="View all items">
+                  <Button
+                    href="/films"
+                    aria-label="View all films"
+                    className="button"
+                  >
                     View All
                   </Button>
                 </Space>
               }
-              className="admin-wrapper-table"
+              className="card admin-wrapper-table"
             >
               <Table
                 columns={topItemsColumns}
-                dataSource={topItems}
-                pagination={{ pageSize: 3 }}
+                dataSource={topItems?.data}
+                pagination={{
+                  ...tableParams.topItems.pagination,
+                  total: topItems?.total,
+                  showSizeChanger: true,
+                }}
                 rowKey="id"
-                onRow={(record) => ({
-                  onClick: () => navigate(`/movies/${record.id}`),
-                })}
+                onChange={(pagination, filters, sorter) =>
+                  handleTableChange("topItems", pagination, filters, sorter)
+                }
+                role="grid"
+                aria-label="Top films table"
               />
             </Card>
           </Col>
 
-          {/* Latest Items */}
+          {/* Latest Films */}
           <Col xs={24} xl={12}>
             <Card
               title={
                 <Space>
-                  <VideoCameraOutlined />
-                  Latest Items
+                  <VideoCameraOutlined aria-hidden="true" />
+                  Latest Films
                 </Space>
               }
               extra={
@@ -288,23 +370,33 @@ const AdminWrapper = () => {
                   <Button
                     icon={<ReloadOutlined />}
                     onClick={() => handleRefresh("latest items")}
-                    aria-label="Refresh latest items"
+                    aria-label="Refresh latest films"
                   />
-                  <Button href="/catalog" aria-label="View all items">
+                  <Button
+                    href="/films"
+                    aria-label="View all films"
+                    className="button"
+                  >
                     View All
                   </Button>
                 </Space>
               }
-              className="admin-wrapper-table"
+              className="card admin-wrapper-table"
             >
               <Table
                 columns={latestItemsColumns}
-                dataSource={latestItems}
-                pagination={{ pageSize: 3 }}
+                dataSource={latestItems?.data}
+                pagination={{
+                  ...tableParams.latestItems.pagination,
+                  total: latestItems?.total,
+                  showSizeChanger: true,
+                }}
                 rowKey="id"
-                onRow={(record) => ({
-                  onClick: () => navigate(`/movies/${record.id}`),
-                })}
+                onChange={(pagination, filters, sorter) =>
+                  handleTableChange("latestItems", pagination, filters, sorter)
+                }
+                role="grid"
+                aria-label="Latest films table"
               />
             </Card>
           </Col>
@@ -314,7 +406,7 @@ const AdminWrapper = () => {
             <Card
               title={
                 <Space>
-                  <UserOutlined />
+                  <UserOutlined aria-hidden="true" />
                   Latest Users
                 </Space>
               }
@@ -325,21 +417,31 @@ const AdminWrapper = () => {
                     onClick={() => handleRefresh("latest users")}
                     aria-label="Refresh latest users"
                   />
-                  <Button href="/users" aria-label="View all users">
+                  <Button
+                    href="/users"
+                    aria-label="View all users"
+                    className="button"
+                  >
                     View All
                   </Button>
                 </Space>
               }
-              className="admin-wrapper-table"
+              className="card admin-wrapper-table"
             >
               <Table
                 columns={latestUsersColumns}
-                dataSource={latestUsers}
-                pagination={{ pageSize: 3 }}
+                dataSource={latestUsers?.data}
+                pagination={{
+                  ...tableParams.latestUsers.pagination,
+                  total: latestUsers?.total,
+                  showSizeChanger: true,
+                }}
                 rowKey="id"
-                onRow={(record) => ({
-                  onClick: () => navigate(`/users/${record.id}`),
-                })}
+                onChange={(pagination, filters, sorter) =>
+                  handleTableChange("latestUsers", pagination, filters, sorter)
+                }
+                role="grid"
+                aria-label="Latest users table"
               />
             </Card>
           </Col>
@@ -349,7 +451,7 @@ const AdminWrapper = () => {
             <Card
               title={
                 <Space>
-                  <StarOutlined />
+                  <StarOutlined aria-hidden="true" />
                   Latest Reviews
                 </Space>
               }
@@ -360,21 +462,36 @@ const AdminWrapper = () => {
                     onClick={() => handleRefresh("latest reviews")}
                     aria-label="Refresh latest reviews"
                   />
-                  <Button href="/reviews" aria-label="View all reviews">
+                  <Button
+                    href="/reviews"
+                    aria-label="View all reviews"
+                    className="button"
+                  >
                     View All
                   </Button>
                 </Space>
               }
-              className="admin-wrapper-table"
+              className="card admin-wrapper-table"
             >
               <Table
                 columns={latestReviewsColumns}
-                dataSource={latestReviews}
-                pagination={{ pageSize: 3 }}
+                dataSource={latestReviews?.data}
+                pagination={{
+                  ...tableParams.latestReviews.pagination,
+                  total: latestReviews?.total,
+                  showSizeChanger: true,
+                }}
                 rowKey="id"
-                onRow={(record) => ({
-                  onClick: () => navigate(`/movies/${record.id}`),
-                })}
+                onChange={(pagination, filters, sorter) =>
+                  handleTableChange(
+                    "latestReviews",
+                    pagination,
+                    filters,
+                    sorter
+                  )
+                }
+                role="grid"
+                aria-label="Latest reviews table"
               />
             </Card>
           </Col>

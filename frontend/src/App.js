@@ -34,6 +34,7 @@ import {
   useCompleteOnboardingMutation,
 } from "./actions/userApi";
 import FlagDashboard from "./components/flag-system/FlagDashbaord";
+import UserWrapper from "./components/admin/Users/UserWrapper";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -88,6 +89,7 @@ function App() {
   return (
     <div className="bg-dark text-gray-300 min-h-screen flex flex-col">
       <Navbar />
+
       <main className="p-8 flex-grow page-container">
         <Routes>
           {/* Public Routes */}
@@ -123,6 +125,7 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminWrapper />} />
+          <Route path="/admin/users" element={<UserWrapper />} />
           <Route path="/admin/flags" element={<FlagDashboard />} />
 
           {/* Onboarding Route */}

@@ -23,5 +23,7 @@ router.post("/:id/follow", userController.followUser);
 router.post("/:id/unfollow", userController.unfollowUser);
 router.get("/:id/reviews", userController.getUserReviews);
 router.get("/:id/requests", userController.getUserRequests);
+router.post("/add", protect, userController.addUser);
+router.put("/:userId/status", protect, userController.updateUserStatus);
 router.put("/users/:userId/onboarding", userController.completeOnboarding); // New route
 module.exports = router;

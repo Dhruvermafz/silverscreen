@@ -5,7 +5,7 @@ export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
@@ -13,78 +13,114 @@ export const userApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ["User", "Users", "Reviews", "Requests"],
   endpoints: (builder) => ({
-    // Fetch the logged-in user's profile
+    // User Profile
     getProfile: builder.query({
-      query: () => "/users/profile",
+      query: () => "/users",
+      providesTags: ["User"],
     }),
-    updatePreferences: builder.mutation({
-      query: ({ userId, preferences }) => ({
-        url: `/users/${userId}/preferences`,
-        method: "PUT",
-        body: preferences,
-      }),
-    }),
-    updateRole: builder.mutation({
-      query: ({ userId, role }) => ({
-        url: `/users/${userId}/role`,
-        method: "PUT",
-        body: { role },
-      }),
-    }),
-    // Update the logged-in user's profile
     updateProfile: builder.mutation({
       query: (updatedData) => ({
-        url: "/users/profile",
+        url: "/users",
         method: "PUT",
         body: updatedData,
       }),
+      invalidatesTags: ["User"],
     }),
-    // Fetch all users
+
+    // User Management
     getAllUsers: builder.query({
-      query: () => "/users",
+      query: ({
+        page = 1,
+        pageSize = 10,
+        search = "",
+        sort = "createdAt",
+        order = "desc",
+      } = {}) =>
+        `/users?page=${page}&pageSize=${pageSize}&search=${search}&sort=${sort}&order=${order}`,
+      providesTags: ["Users"],
     }),
-    // Fetch a user by ID
     getUserById: builder.query({
       query: (id) => `/users/${id}`,
+      providesTags: ["User"],
     }),
-    // Delete a user by ID
     deleteUser: builder.mutation({
       query: (id) => ({
         url: `/users/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["Users"],
     }),
+
+    // Admin Actions
+    addUser: builder.mutation({
+      query: (body) => ({
+        url: "/admin/users",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Users"],
+    }),
+    updateUserStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/admin/users/${id}/status`,
+        method: "PUT",
+        body: { status },
+      }),
+      invalidatesTags: ["Users", "User"],
+    }),
+
+    // Social Features
     followUser: builder.mutation({
       query: (id) => ({
         url: `/users/${id}/follow`,
         method: "POST",
       }),
+      invalidatesTags: ["User", "Users"],
     }),
-    getUserReviews: builder.query({
-      query: (userId) => `/users/${userId}/reviews`,
-    }),
-    getUserRequests: builder.query({
-      query: (userId) => `/users/${userId}/requests`,
-    }),
-    // Unfollow user
     unfollowUser: builder.mutation({
       query: (id) => ({
         url: `/users/${id}/unfollow`,
         method: "POST",
       }),
+      invalidatesTags: ["User", "Users"],
     }),
-    // Fetch all members
-    getAllMembers: builder.query({
-      query: () => "/users/",
+
+    // User Activity
+    getUserReviews: builder.query({
+      query: (userId) => `/users/${userId}/reviews`,
+      providesTags: ["Reviews"],
     }),
-    // Complete onboarding
+    getUserRequests: builder.query({
+      query: (userId) => `/users/${userId}/requests`,
+      providesTags: ["Requests"],
+    }),
+
+    // User Settings
+    updatePreferences: builder.mutation({
+      query: ({ id, preferences }) => ({
+        url: `/users/${id}/preferences`,
+        method: "PUT",
+        body: preferences,
+      }),
+      invalidatesTags: ["User"],
+    }),
+    updateRole: builder.mutation({
+      query: ({ id, role }) => ({
+        url: `/users/${id}/role`,
+        method: "PUT",
+        body: { role },
+      }),
+      invalidatesTags: ["User", "Users"],
+    }),
     completeOnboarding: builder.mutation({
-      query: ({ userId, isNewUser }) => ({
-        url: `/users/${userId}/onboarding`,
+      query: ({ id, isNewUser }) => ({
+        url: `/users/${id}/onboarding`,
         method: "PUT",
         body: { isNewUser },
       }),
+      invalidatesTags: ["User", "Users"],
     }),
   }),
 });
@@ -95,12 +131,13 @@ export const {
   useGetAllUsersQuery,
   useGetUserByIdQuery,
   useDeleteUserMutation,
-  useGetAllMembersQuery,
+  useAddUserMutation,
+  useUpdateUserStatusMutation,
   useFollowUserMutation,
   useUnfollowUserMutation,
-  useGetUserRequestsQuery,
   useGetUserReviewsQuery,
+  useGetUserRequestsQuery,
   useUpdatePreferencesMutation,
   useUpdateRoleMutation,
-  useCompleteOnboardingMutation, // Export new hook
+  useCompleteOnboardingMutation,
 } = userApi;

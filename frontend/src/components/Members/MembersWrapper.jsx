@@ -25,16 +25,15 @@ import {
   MessageOutlined,
   FlagOutlined,
 } from "@ant-design/icons";
-import { useGetAllMembersQuery } from "../../actions/userApi";
 import "./members.css";
-
+import { useGetAllUsersQuery } from "../../actions/userApi";
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
 const MembersWrapper = () => {
   const navigate = useNavigate();
-  const { data: members = [], isLoading, isError } = useGetAllMembersQuery();
+  const { data: members = [], isLoading, isError } = useGetAllUsersQuery();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("joined");
   const [roleFilter, setRoleFilter] = useState("all");

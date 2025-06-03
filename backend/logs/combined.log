@@ -50,3 +50,4 @@
 {"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-03T04:07:10.924Z"}
 {"email":"sodhi@gokuldham.in","level":"info","message":"User registered successfully","timestamp":"2025-06-03T04:10:29.795Z","userId":"683e75b5a48b599f71ad4009"}
 {"email":"sodhi@gokuldham.in","level":"info","message":"User logged in successfully","timestamp":"2025-06-03T04:10:43.544Z","userId":"683e75b5a48b599f71ad4009"}
+{"email":"sodhi@gokuldham.in","level":"info","message":"User logged in successfully","timestamp":"2025-06-03T06:58:00.418Z","userId":"683e75b5a48b599f71ad4009"}

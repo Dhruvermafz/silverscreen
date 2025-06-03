@@ -214,3 +214,62 @@ exports.completeOnboarding = async (req, res) => {
       .json({ message: "Failed to update onboarding status", error });
   }
 };
+// userController.js (append to existing)
+
+// POST /api/admin/users
+exports.addUser = async (req, res) => {
+  try {
+    const { fullName, email, username, pricingPlan, password } = req.body;
+
+    // Validate required fields
+    if (!fullName || !email || !username || !pricingPlan || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check for existing user
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ error: "Email or username already exists" });
+    }
+
+    // Create new user
+    const user = new User({
+      fullName,
+      email,
+      username,
+      pricingPlan,
+      password, // Assume password is hashed in User model pre-save hook
+    });
+
+    await user.save();
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// PATCH /api/admin/users/:id/status
+exports.updateUserStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["approved", "banned"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+};
