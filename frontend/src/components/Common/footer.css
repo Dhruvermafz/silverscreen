@@ -1,61 +1,131 @@
 .footer {
-  background: #ffffff;
-  color: #ffffff;
-  padding: 24px 0;
+  background: #1a1a1b; /* Dark cinematic background */
+  color: #d7dadc; /* Light gray text for readability */
+  padding: 40px 0;
   margin-top: auto;
+  border-top: 1px solid #2f3336;
 }
 
-.footer .container {
+.footer-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 16px;
 }
 
 .footer-title {
-  font-size: 18px;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ff4500; /* Reddit-inspired orange */
+  margin-bottom: 12px;
 }
 
 .footer-subtitle {
   font-size: 16px;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 8px;
+  font-weight: 600;
+  color: #d7dadc;
+  margin-bottom: 12px;
 }
 
 .footer-description {
   font-size: 14px;
+  color: #d7dadc;
   opacity: 0.8;
+  line-height: 1.5;
 }
 
 .footer-link {
   font-size: 14px;
-  color: #ffffff;
-  opacity: 0.8;
+  color: #d7dadc;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
 }
 
 .footer-link:hover {
-  opacity: 1;
+  color: #ff4500;
+}
+
+.footer-social {
+  display: flex;
+  gap: 16px;
 }
 
 .footer-social-icon {
-  font-size: 20px;
-  color: #ffffff;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  font-size: 24px;
+  color: #d7dadc;
+  transition: color 0.2s;
 }
 
 .footer-social-icon:hover {
-  opacity: 1;
+  color: #ff4500;
+}
+
+.footer-newsletter {
+  margin-top: 16px;
+}
+
+.footer-newsletter-input {
+  background: #2f3336;
+  border: none;
+  color: #d7dadc;
+  border-radius: 4px 0 0 4px;
+}
+
+.footer-newsletter .ant-btn-primary {
+  background: #ff4500;
+  border-color: #ff4500;
+  border-radius: 0 4px 4px 0;
+}
+
+.footer-newsletter .ant-btn-primary:hover {
+  background: #e03e00;
+  border-color: #e03e00;
 }
 
 .footer-bottom {
   display: block;
   text-align: center;
   font-size: 12px;
+  color: #d7dadc;
   opacity: 0.6;
-  margin-top: 24px;
+  margin-top: 32px;
+}
+
+.footer-bottom a {
+  color: #d7dadc;
+  text-decoration: none;
+}
+
+.footer-bottom a:hover {
+  color: #ff4500;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 24px 0;
+  }
+
+  .footer-title {
+    font-size: 18px;
+  }
+
+  .footer-subtitle {
+    font-size: 14px;
+  }
+
+  .footer-description,
+  .footer-link {
+    font-size: 13px;
+  }
+
+  .footer-social-icon {
+    font-size: 20px;
+  }
+
+  .footer-bottom {
+    font-size: 11px;
+  }
+
+  .footer-newsletter-input {
+    font-size: 13px;
+  }
 }

@@ -30,7 +30,24 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
+    logout: builder.mutation({
+      query: () => ({
+        url: "logout",
+        method: "POST",
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Optionally clear cached data or reset state
+          // dispatch(authApi.util.resetApiState());
+          localStorage.removeItem("token");
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+      },
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation } = authApi;
+export const { useRegisterMutation, useLoginMutation, useLogoutMutation } =
+  authApi;

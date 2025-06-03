@@ -134,7 +134,7 @@ const Signup = () => {
       }}
     >
       <Title level={3} style={{ textAlign: "center", marginBottom: 20 }}>
-        JOIN SilverScreen
+        JOIN Cinenotes
       </Title>
 
       <Form

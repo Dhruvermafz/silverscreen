@@ -9,6 +9,7 @@ import {
   Switch,
   Dropdown,
   Menu,
+  Skeleton,
 } from "antd";
 import {
   UserOutlined,
@@ -20,22 +21,24 @@ import {
   SearchOutlined,
   BulbOutlined,
 } from "@ant-design/icons";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetProfileQuery } from "../../actions/userApi";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import "./navbar.css";
-
+import { useLogoutMutation } from "../../actions/authApi";
 const { Title } = Typography;
 const { Search } = Input;
 
 const Navbar = () => {
   const { data: user, isLoading, isError } = useGetProfileQuery();
+  const [logout] = useLogoutMutation();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isError) {
-      toast.error("Failed to fetch user profile!", {
+      toast.error("Failed to fetch profile. Please log in again.", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -43,47 +46,60 @@ const Navbar = () => {
   }, [isError]);
 
   useEffect(() => {
-    // Apply theme to body on mount and update
-    document.body.className = isDarkMode ? "dark-theme" : "light-theme";
+    // Store theme preference in localStorage
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
   }, [isDarkMode]);
 
   const handleSearch = (value) => {
-    if (value) {
-      toast.info(`Searching for "${value}"`, {
-        position: "top-right",
-        autoClose: 2000,
-      });
+    if (value.trim()) {
+      navigate(`/search?q=${encodeURIComponent(value)}`);
+      toast.success(`Searching for "${value}"`, { autoClose: 2000 });
+      setDrawerVisible(false);
+    } else {
+      toast.warn("Please enter a search term.", { autoClose: 2000 });
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    toast.success("Logged out successfully", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-    window.location.href = "/login";
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      localStorage.removeItem("token");
+      toast.success("Logged out successfully!", { autoClose: 1000 });
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Logout failed.", { autoClose: 3000 });
+    }
   };
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     toast.info(`Switched to ${!isDarkMode ? "Dark" : "Light"} mode`, {
-      position: "top-right",
-      autoClose: 2000,
+      autoClose: 1000,
     });
   };
 
   const userMenu = (
-    <Menu className="navbar-user-menu">
+    <Menu className="custom-user-menu">
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
-        <a href={`/u/${user?._id}`} aria-label="View my profile">
+        <Link to={`/u/${user?._id}`} aria-label="View profile">
           Profile
-        </a>
+        </Link>
       </Menu.Item>
+      {user?.isFilmmaker && (
+        <Menu.Item key="portfolio" icon={<ProfileOutlined />}>
+          <Link to="/portfolio" aria-label="View filmmaker portfolio">
+            Portfolio
+          </Link>
+        </Menu.Item>
+      )}
       <Menu.Item key="settings" icon={<SettingOutlined />}>
-        <a href="/settings" aria-label="Account settings">
+        <Link to="/settings" aria-label="Settings">
           Settings
-        </a>
+        </Link>
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Logout
@@ -96,51 +112,54 @@ const Navbar = () => {
       size="large"
       direction={drawerVisible ? "vertical" : "horizontal"}
       className="navbar-links"
+      role="navigation"
+      aria-label="Main navigation links"
     >
-      <a href="/films" className="navbar-link" aria-label="Films page">
+      <Link to="/films" className="navbar-link" aria-label="Films">
         Films
-      </a>
-      <a href="/groups" className="navbar-link" aria-label="Groups page">
+      </Link>
+      <Link to="/groups" className="navbar-link" aria-label="Groups">
         Groups
-      </a>
-      <a href="/about" className="navbar-link" aria-label="About page">
+      </Link>
+      <Link to="/box-office" className="navbar-link" aria-label="Box Office">
+        Box Office
+      </Link>
+      <Link to="/blogs" className="navbar-link" aria-label="Blogs">
+        Blogs
+      </Link>
+      <Link to="/about" className="navbar-link" aria-label="About">
         About
-      </a>
-      <a href="/contact" className="navbar-link" aria-label="Contact page">
-        Contact
-      </a>
+      </Link>
     </Space>
   );
 
   return (
-    <nav
-      className={`navbar ${isDarkMode ? "dark" : "light"}`}
-      aria-label="Main navigation"
-    >
-      {/* Left: Logo & Menu Icon */}
+    <nav className="navbar" role="navigation" aria-label="Primary navigation">
+      {/* Left: Logo & Menu */}
       <Space size="middle" className="navbar-left">
         <Button
           className="navbar-mobile-menu"
           icon={<MenuOutlined />}
           onClick={() => setDrawerVisible(true)}
-          aria-label="Open navigation menu"
+          aria-label="Open menu"
         />
         <Title level={4} className="navbar-logo">
-          <a href="/" aria-label="Cinenotes Homepage">
+          <Link to="/" aria-label="Cinenotes Homepage">
             Cinenotes
-          </a>
+          </Link>
         </Title>
       </Space>
 
-      {/* Center: Search & Nav Links */}
+      {/* Center: Links & Search */}
       <Space size="large" className="navbar-center">
         {navLinks}
         <Search
-          placeholder="Search movies, groups, users..."
+          placeholder="Search films, groups, blogs..."
           onSearch={handleSearch}
           className="navbar-search"
-          aria-label="Search movies, groups, or users"
+          aria-label="Search"
           enterButton={<SearchOutlined />}
+          loading={isLoading}
         />
       </Space>
 
@@ -149,49 +168,40 @@ const Navbar = () => {
         <Switch
           checked={isDarkMode}
           onChange={toggleTheme}
-          checkedChildren={<BulbOutlined />}
-          unCheckedChildren={<BulbOutlined />}
+          checkedChildren="Dark"
+          unCheckedChildren="Light"
           aria-label={`Toggle ${isDarkMode ? "light" : "dark"} theme`}
         />
-        {!isLoading && !user && (
-          <>
-            <Button
-              href="/login"
-              icon={<LoginOutlined />}
-              className="navbar-button"
-              aria-label="Log in"
-            >
-              Log In
-            </Button>
-            <Button
-              href="/signup"
-              type="primary"
-              className="navbar-button"
-              aria-label="Sign up"
-            >
-              Sign Up
-            </Button>
-          </>
-        )}
-        {!isLoading && user && (
+        {isLoading ? (
+          <Skeleton.Avatar active size="small" />
+        ) : user ? (
           <Dropdown overlay={userMenu} placement="bottomRight">
             <Button
+              className="navbar-user"
               icon={
                 user.avatarUrl ? (
                   <Avatar
                     src={user.avatarUrl}
-                    alt={`Avatar of ${user.username}`}
+                    alt={`${user.username}'s avatar`}
                   />
                 ) : (
-                  <UserOutlined />
+                  <Avatar icon={<UserOutlined />} />
                 )
               }
-              className="navbar-button navbar-user"
               aria-label={`User menu for ${user.username}`}
             >
               {user.username}
             </Button>
           </Dropdown>
+        ) : (
+          <>
+            <Button href="/login" icon={<LoginOutlined />} aria-label="Log in">
+              Log In
+            </Button>
+            <Button href="/signup" type="primary" aria-label="Sign up">
+              Sign Up
+            </Button>
+          </>
         )}
       </Space>
 
@@ -202,69 +212,81 @@ const Navbar = () => {
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
         className="navbar-drawer"
-        aria-label="Mobile navigation menu"
+        aria-label="Mobile menu"
       >
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Search
-            placeholder="Search movies, groups, users..."
+            placeholder="Search films, groups, blogs..."
             onSearch={handleSearch}
-            className="navbar-search"
-            aria-label="Search movies, groups, or users"
+            aria-label="Search"
             enterButton={<SearchOutlined />}
           />
           {navLinks}
-          {!isLoading && !user && (
-            <>
-              <Button
-                href="/login"
-                icon={<LoginOutlined />}
-                className="navbar-button"
-                block
-                aria-label="Log in"
-              >
-                Log In
-              </Button>
-              <Button
-                href="/signup"
-                type="primary"
-                className="navbar-button"
-                block
-                aria-label="Sign up"
-              >
-                Sign Up
-              </Button>
-            </>
-          )}
-          {!isLoading && user && (
+          {isLoading ? (
+            <Skeleton.Button active block />
+          ) : user ? (
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Button
-                href={`/u/${user?._id}`}
                 icon={<ProfileOutlined />}
-                className="navbar-button"
                 block
-                aria-label="View profile"
+                onClick={() => {
+                  navigate(`/u/${user._id}`);
+                  setDrawerVisible(false);
+                }}
+                aria-label="Profile"
               >
                 Profile
               </Button>
+              {user.isFilmmaker && (
+                <Button
+                  icon={<ProfileOutlined />}
+                  block
+                  onClick={() => {
+                    navigate("/portfolio");
+                    setDrawerVisible(false);
+                  }}
+                  aria-label="Portfolio"
+                >
+                  Portfolio
+                </Button>
+              )}
               <Button
-                href="/settings"
                 icon={<SettingOutlined />}
-                className="navbar-button"
                 block
-                aria-label="Account settings"
+                onClick={() => {
+                  navigate("/settings");
+                  setDrawerVisible(false);
+                }}
+                aria-label="Settings"
               >
                 Settings
               </Button>
               <Button
                 icon={<LogoutOutlined />}
-                className="navbar-button"
                 block
-                onClick={handleLogout}
-                aria-label="Log out"
+                onClick={() => {
+                  handleLogout();
+                  setDrawerVisible(false);
+                }}
+                aria-label="Logout"
               >
                 Logout
               </Button>
             </Space>
+          ) : (
+            <>
+              <Button
+                href="/login"
+                icon={<LoginOutlined />}
+                block
+                aria-label="Log in"
+              >
+                Log In
+              </Button>
+              <Button href="/signup" type="primary" block aria-label="Sign up">
+                Sign Up
+              </Button>
+            </>
           )}
           <Switch
             checked={isDarkMode}
