@@ -6,8 +6,8 @@ import {
   Avatar,
   Space,
   Typography,
-  Dropdown,
   Menu,
+  Dropdown,
   Tooltip,
 } from "antd";
 import {
@@ -15,10 +15,10 @@ import {
   ShareAltOutlined,
   FlagOutlined,
   EditOutlined,
+  EllipsisOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import "./groups.css";
 
 const { Text, Paragraph } = Typography;
@@ -31,33 +31,24 @@ const GroupCard = ({ group, onJoin, onLeave, userRole, onView, className }) => {
 
   const handleEditGroup = (e) => {
     e.stopPropagation();
-    toast.info(`Editing group: ${group.name}`, {
-      position: "top-right",
-      autoClose: 2000,
-    });
+    toast.info(`Editing community: ${group.name}`);
   };
 
   const handleShare = (e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(
-      window.location.origin + `/group/${group._id}`
+      `${window.location.origin}/group/${group._id}`
     );
-    toast.info(`Shared group: ${group.name}`, {
-      position: "top-right",
-      autoClose: 2000,
-    });
+    toast.success(`Link copied for ${group.name}!`);
   };
 
   const handleReport = (e) => {
     e.stopPropagation();
-    toast.info(`Reported group: ${group.name}`, {
-      position: "top-right",
-      autoClose: 2000,
-    });
+    toast.info(`Reported community: ${group.name}`);
   };
 
   const actionMenu = (
-    <Menu className="group-card-dropdown-menu">
+    <Menu>
       <Menu.Item key="share" onClick={handleShare}>
         <ShareAltOutlined /> Share
       </Menu.Item>
@@ -68,132 +59,120 @@ const GroupCard = ({ group, onJoin, onLeave, userRole, onView, className }) => {
   );
 
   return (
-    <Link
-      to={`/group/${group._id}`}
-      className="group-card-link"
-      aria-label={`View ${group.name} group`}
-    >
-      <Card
-        className={`group-card ${className || ""}`}
-        cover={
+    <Card
+      className={`group-card ${className || ""}`}
+      cover={
+        <div className="group-card-banner">
           <img
-            alt={`${group.name} cover`}
-            src={group.coverImage || "https://placehold.co/600x400"}
+            alt={`${group.name} banner`}
+            src={group.coverImage || "https://placehold.co/600x200"}
             className="group-card-cover"
           />
-        }
-        title={
-          <Space className="group-card-title">
-            <Avatar
-              src={group.avatar}
-              icon={<UserOutlined />}
-              size={40}
-              className="group-card-avatar"
-              alt={`${group.name} avatar`}
-            />
-            <Text strong className="group-card-name">
-              {group.name}
-            </Text>
-          </Space>
-        }
-        extra={
+        </div>
+      }
+      hoverable
+      onClick={onView}
+      tabIndex={0}
+      role="button"
+      aria-label={`View ${group.name} community`}
+    >
+      <div className="group-card-header">
+        <Space align="center">
+          <Avatar
+            src={group.avatar}
+            icon={<UserOutlined />}
+            size={32}
+            className="group-card-avatar"
+            alt={`${group.name} avatar`}
+          />
+          <Text strong className="group-card-name">
+            r/{group.name}
+          </Text>
           <Tag
             className="group-card-tag"
             color={group.isPrivate ? "red" : "green"}
           >
             {group.isPrivate ? "Private" : "Public"}
           </Tag>
-        }
-        hoverable
-      >
-        <Paragraph ellipsis={{ rows: 2 }} className="group-card-description">
-          {group.description || "No description available"}
-        </Paragraph>
-        <Space direction="vertical" className="group-card-stats">
-          <Text>
-            <UserOutlined /> {group.members?.length || 0} Members
-          </Text>
-          <Text>Posts: {group.postCount || 0}</Text>
-          <Text>Created: {new Date(group.createdAt).toLocaleDateString()}</Text>
-          {group.recentActivity && (
-            <Text type="secondary" ellipsis className="group-card-activity">
-              Latest: {group.recentActivity.title || "No recent activity"}
-            </Text>
-          )}
         </Space>
-        <div
-          className="group-card-actions"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Space>
-            {userRole === "none" && (
-              <Tooltip title="Join this group">
-                <Button
-                  type="primary"
-                  onClick={(e) => handleButtonClick(e, onJoin, "Joined")}
-                  className="group-card-button"
-                  aria-label={`Join ${group.name}`}
-                >
-                  Join Group
-                </Button>
-              </Tooltip>
-            )}
-            {userRole === "member" && (
-              <Tooltip title="Leave this group">
-                <Button
-                  onClick={(e) => handleButtonClick(e, onLeave, "Left")}
-                  className="group-card-button"
-                  aria-label={`Leave ${group.name}`}
-                >
-                  Leave Group
-                </Button>
-              </Tooltip>
-            )}
-            {userRole === "creator" && (
-              <Space>
-                <Button
-                  icon={<EditOutlined />}
-                  onClick={handleEditGroup}
-                  className="group-card-button"
-                  aria-label={`Edit ${group.name}`}
-                >
-                  Edit Group
-                </Button>
-                <Tag color="gold" className="group-card-role-tag">
-                  Creator
-                </Tag>
-              </Space>
-            )}
-            {userRole === "moderator" && (
-              <Space>
-                <Button
-                  onClick={handleEditGroup}
-                  className="group-card-button"
-                  aria-label={`Manage ${group.name}`}
-                >
-                  Manage
-                </Button>
-                <Tag color="blue" className="group-card-role-tag">
-                  Moderator
-                </Tag>
-              </Space>
-            )}
-            <Dropdown
-              overlay={actionMenu}
-              trigger={["click"]}
-              overlayClassName="group-card-dropdown"
-            >
+      </div>
+      <Paragraph ellipsis={{ rows: 2 }} className="group-card-description">
+        {group.description || "No description available"}
+      </Paragraph>
+      <Space direction="vertical" size={4} className="group-card-stats">
+        <Text>
+          <UserOutlined /> {group.members?.length || 0} Members
+        </Text>
+        <Text>{group.postCount || 0} Posts</Text>
+        <Text type="secondary">
+          Created {new Date(group.createdAt).toLocaleDateString()}
+        </Text>
+        {group.recentActivity && (
+          <Text type="secondary" ellipsis className="group-card-activity">
+            Latest: {group.recentActivity.title || "No recent activity"}
+          </Text>
+        )}
+      </Space>
+      <div className="group-card-actions" onClick={(e) => e.stopPropagation()}>
+        <Space size="small">
+          {userRole === "none" && (
+            <Tooltip title="Join this community">
               <Button
-                className="group-card-button"
-                aria-label="More actions for group"
+                type="primary"
+                size="small"
+                onClick={(e) => handleButtonClick(e, onJoin, "Joined")}
+                aria-label={`Join ${group.name}`}
               >
-                More
+                Join
               </Button>
-            </Dropdown>
-          </Space>
-        </div>
-      </Card>
-    </Link>
+            </Tooltip>
+          )}
+          {userRole === "member" && (
+            <Tooltip title="Leave this community">
+              <Button
+                size="small"
+                onClick={(e) => handleButtonClick(e, onLeave, "Left")}
+                aria-label={`Leave ${group.name}`}
+              >
+                Leave
+              </Button>
+            </Tooltip>
+          )}
+          {userRole === "creator" && (
+            <Space size="small">
+              <Button
+                size="small"
+                icon={<EditOutlined />}
+                onClick={handleEditGroup}
+                aria-label={`Edit ${group.name}`}
+              >
+                Edit
+              </Button>
+              <Tag color="gold">Creator</Tag>
+            </Space>
+          )}
+          {userRole === "moderator" && (
+            <Space size="small">
+              <Button
+                size="small"
+                onClick={handleEditGroup}
+                aria-label={`Manage ${group.name}`}
+              >
+                Manage
+              </Button>
+              <Tag color="blue">Moderator</Tag>
+            </Space>
+          )}
+          <Dropdown overlay={actionMenu} trigger={["click"]}>
+            <Button
+              size="small"
+              icon={<EllipsisOutlined />}
+              aria-label="More actions"
+            />
+          </Dropdown>
+        </Space>
+      </div>
+    </Card>
   );
 };
 

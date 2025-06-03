@@ -47,7 +47,8 @@ function App() {
     }
   );
   const [completeOnboarding] = useCompleteOnboardingMutation();
-
+  const token = localStorage.getItem("token");
+  console.log(token);
   // Protected route component
   const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -9,13 +9,17 @@ import {
   Select,
   Row,
   Col,
-  Card,
   Space,
   message,
   Upload,
   Typography,
+  Skeleton,
 } from "antd";
-import { UploadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  SearchOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import GroupCard from "./GroupCard";
 import SearchBar from "../SearchBar";
 import BoxOfficeWidget from "../BoxOfficeWdget";
@@ -34,7 +38,7 @@ const { TextArea } = Input;
 
 const GroupsPage = () => {
   const navigate = useNavigate();
-  const { data: groups = [], refetch } = useGetAllGroupsQuery();
+  const { data: groups = [], isLoading, refetch } = useGetAllGroupsQuery();
   const [createGroup] = useCreateGroupMutation();
   const [joinGroup] = useJoinGroupMutation();
   const [leaveGroup] = useLeaveGroupMutation();
@@ -46,6 +50,9 @@ const GroupsPage = () => {
   const [form] = Form.useForm();
   const [category, setCategory] = useState("all");
   const [fileList, setFileList] = useState([]);
+  const loaderRef = useRef(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const categories = [
     { value: "all", label: "All" },
@@ -57,6 +64,8 @@ const GroupsPage = () => {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
+    setPage(1);
+    setHasMore(true);
   };
 
   const handleCreateGroup = async (values) => {
@@ -75,9 +84,9 @@ const GroupsPage = () => {
       form.resetFields();
       setFileList([]);
       refetch();
-      message.success("Group created successfully");
+      message.success("Group created successfully!");
     } catch (error) {
-      message.error("Failed to create group");
+      message.error("Failed to create group.");
     }
   };
 
@@ -85,9 +94,9 @@ const GroupsPage = () => {
     try {
       await joinGroup(groupId).unwrap();
       refetch();
-      message.success("Joined group successfully");
+      message.success("Joined group successfully!");
     } catch (error) {
-      message.error("Failed to join group");
+      message.error("Failed to join group.");
     }
   };
 
@@ -95,9 +104,9 @@ const GroupsPage = () => {
     try {
       await leaveGroup(groupId).unwrap();
       refetch();
-      message.success("Left group successfully");
+      message.success("Left group successfully!");
     } catch (error) {
-      message.error("Failed to leave group");
+      message.error("Failed to leave group.");
     }
   };
 
@@ -106,95 +115,130 @@ const GroupsPage = () => {
   );
 
   const uploadProps = {
-    onRemove: (file) => {
-      setFileList(fileList.filter((item) => item.uid !== file.uid));
-    },
+    onRemove: () => setFileList([]),
     beforeUpload: (file) => {
       setFileList([{ ...file, url: URL.createObjectURL(file) }]);
       return false;
     },
     fileList,
     maxCount: 1,
-    listType: "picture",
+    listType: "picture-card",
+    accept: "image/*",
   };
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.5, rootMargin: "100px" }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [isLoading, hasMore]);
 
   return (
     <section className="groups-page" aria-label="Groups page">
       <div className="groups-container">
-        <Row gutter={[24, 24]}>
+        <Row gutter={[16, 16]}>
           <Col xs={24} md={18}>
             {/* Header */}
             <div className="groups-header">
               <Title level={3} className="groups-title">
-                Discover Groups
+                Communities
               </Title>
               <Button
                 type="primary"
+                icon={<PlusOutlined />}
                 onClick={() => setIsModalOpen(true)}
                 className="groups-create-button"
-                aria-label="Create a new group"
+                aria-label="Create a new community"
               >
-                Create Group
+                Create Community
               </Button>
             </div>
 
             {/* Filters */}
-            <Space className="groups-filters" wrap>
-              <SearchBar
-                onSearch={handleSearch}
-                placeholder="Search groups..."
-                className="groups-search"
-                prefix={<SearchOutlined />}
-                aria-label="Search groups"
-              />
-              <Select
-                value={category}
-                onChange={setCategory}
-                className="groups-select"
-                aria-label="Filter by category"
-              >
-                {categories.map((cat) => (
-                  <Option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </Option>
-                ))}
-              </Select>
-            </Space>
+            <div className="groups-filters">
+              <Space wrap>
+                <SearchBar
+                  onSearch={handleSearch}
+                  placeholder="Search communities..."
+                  className="groups-search"
+                  prefix={<SearchOutlined />}
+                  aria-label="Search communities"
+                  allowClear
+                />
+                <Select
+                  value={category}
+                  onChange={setCategory}
+                  className="groups-select"
+                  aria-label="Filter by category"
+                >
+                  {categories.map((cat) => (
+                    <Option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Space>
+            </div>
 
             {/* Groups Grid */}
-            <Row gutter={[16, 16]} className="groups-grid">
-              {filteredGroups.length > 0 ? (
-                filteredGroups.map((group) => (
-                  <Col xs={24} sm={12} md={8} key={group._id}>
-                    <GroupCard
-                      group={group}
-                      onJoin={handleJoinGroup}
-                      onLeave={handleLeaveGroup}
-                      userRole={group.userRole}
-                      onView={() => navigate(`/group/${group._id}`)}
-                      className="group-card-wrapper"
-                    />
-                  </Col>
-                ))
+            <div className="groups-grid">
+              {isLoading && filteredGroups.length === 0 ? (
+                <Row gutter={[16, 16]}>
+                  {[...Array(6)].map((_, i) => (
+                    <Col xs={24} sm={12} md={8} key={i}>
+                      <Skeleton active avatar paragraph={{ rows: 2 }} />
+                    </Col>
+                  ))}
+                </Row>
+              ) : filteredGroups.length > 0 ? (
+                <Row gutter={[16, 16]}>
+                  {filteredGroups.map((group) => (
+                    <Col xs={24} sm={12} md={8} key={group._id}>
+                      <GroupCard
+                        group={group}
+                        onJoin={handleJoinGroup}
+                        onLeave={handleLeaveGroup}
+                        userRole={group.userRole}
+                        onView={() => navigate(`/group/${group._id}`)}
+                        className="group-card-wrapper"
+                      />
+                    </Col>
+                  ))}
+                </Row>
               ) : (
-                <Col xs={24}>
-                  <Text className="groups-empty-text">
-                    No groups found matching your criteria.
-                  </Text>
-                </Col>
+                <Text className="groups-empty-text">
+                  No communities found. Try adjusting your search or category.
+                </Text>
               )}
-            </Row>
+              <div ref={loaderRef} className="groups-loader" />
+            </div>
           </Col>
 
           {/* Sidebar */}
           <Col xs={24} md={6}>
-            <BoxOfficeWidget className="groups-sidebar-widget" />
+            <div className="groups-sidebar">
+              <BoxOfficeWidget className="groups-sidebar-widget" />
+              <div className="groups-sidebar-info">
+                <Title level={5}>About Communities</Title>
+                <Text>
+                  Join communities to discuss movies, TV shows, anime, and more.
+                  Create your own to connect with fans!
+                </Text>
+              </div>
+            </div>
           </Col>
         </Row>
 
         {/* Create Group Modal */}
         <Modal
-          title="Create New Group"
+          title="Create New Community"
           open={isModalOpen}
           onCancel={() => {
             setIsModalOpen(false);
@@ -205,38 +249,38 @@ const GroupsPage = () => {
           okText="Create"
           cancelText="Cancel"
           className="groups-create-modal"
-          aria-label="Create new group modal"
+          aria-label="Create new community modal"
         >
           <Form form={form} onFinish={handleCreateGroup} layout="vertical">
             <Form.Item
               name="name"
-              label="Group Name"
-              rules={[{ required: true, message: "Please enter a group name" }]}
+              label="Community Name"
+              rules={[
+                { required: true, message: "Please enter a community name" },
+                { max: 50, message: "Name must be 50 characters or less" },
+              ]}
             >
-              <Input placeholder="Group Name" className="groups-form-input" />
+              <Input placeholder="e.g., Movie Fans" />
             </Form.Item>
             <Form.Item
               name="description"
               label="Description"
               rules={[
                 { required: true, message: "Please enter a description" },
+                {
+                  max: 200,
+                  message: "Description must be 200 characters or less",
+                },
               ]}
             >
-              <TextArea
-                placeholder="Description"
-                rows={3}
-                className="groups-form-input"
-              />
+              <TextArea placeholder="Describe your community" rows={3} />
             </Form.Item>
             <Form.Item
               name="category"
               label="Category"
               rules={[{ required: true, message: "Please select a category" }]}
             >
-              <Select
-                placeholder="Select category"
-                className="groups-form-select"
-              >
+              <Select placeholder="Select category">
                 {categories.slice(1).map((cat) => (
                   <Option key={cat.value} value={cat.value}>
                     {cat.label}
@@ -245,17 +289,8 @@ const GroupsPage = () => {
               </Select>
             </Form.Item>
             <Form.Item name="coverImage" label="Cover Image">
-              <Upload
-                {...uploadProps}
-                accept="image/*"
-                className="groups-upload"
-              >
-                <Button
-                  icon={<UploadOutlined />}
-                  className="groups-upload-button"
-                >
-                  Upload Image
-                </Button>
+              <Upload {...uploadProps}>
+                <Button icon={<UploadOutlined />}>Upload Banner</Button>
               </Upload>
             </Form.Item>
             <Form.Item
@@ -263,13 +298,16 @@ const GroupsPage = () => {
               valuePropName="checked"
               initialValue={true}
             >
-              <Checkbox className="groups-checkbox">Public Group</Checkbox>
+              <Checkbox>Public Community</Checkbox>
             </Form.Item>
-            <Form.Item name="rules" label="Rules">
+            <Form.Item
+              name="rules"
+              label="Rules"
+              extra="Enter one rule per line"
+            >
               <TextArea
-                placeholder="Enter one rule per line"
+                placeholder="e.g., Be respectful\nNo spoilers"
                 rows={3}
-                className="groups-form-input"
               />
             </Form.Item>
           </Form>

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Select, Rate, Space, Button, Slider } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import { Select, Slider, Space } from "antd";
 import { getGenresFromAPI } from "../../actions/getMoviesFromAPI";
 import { toast } from "react-toastify";
 
@@ -7,93 +7,97 @@ const { Option } = Select;
 
 const MovieFilter = ({ onChange }) => {
   const [genres, setGenres] = useState([]);
-  const [filters, setFilters] = useState({
-    genre: null,
-    rating: 0,
-    sort: null,
-    year: [1900, 2025],
-  });
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [sortOption, setSortOption] = useState("popularity.desc");
+  const [yearRange, setYearRange] = useState([1900, 2025]);
 
   useEffect(() => {
-    getGenresFromAPI()
-      .then(setGenres)
-      .catch(() => {
-        toast.error("Failed to fetch genres", {
+    const fetchGenres = async () => {
+      try {
+        const fetchedGenres = await getGenresFromAPI();
+        setGenres(fetchedGenres);
+      } catch (error) {
+        toast.error("Failed to load genres", {
           position: "top-right",
           autoClose: 2000,
         });
-      });
+      }
+    };
+    fetchGenres();
   }, []);
 
-  const handleChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onChange(newFilters);
+  // Memoized filter update to prevent unnecessary calls
+  const updateFilters = useCallback(() => {
+    onChange({
+      genres: selectedGenres,
+      sort: sortOption,
+      yearRange,
+    });
+  }, [selectedGenres, sortOption, yearRange, onChange]);
+
+  // Handle genre change
+  const handleGenreChange = (value) => {
+    setSelectedGenres(value);
   };
 
-  const handleReset = () => {
-    const resetFilters = {
-      genre: null,
-      rating: 0,
-      sort: null,
-      year: [1900, 2025],
-    };
-    setFilters(resetFilters);
-    onChange(resetFilters);
-    toast.success("Filters reset", { position: "top-right", autoClose: 2000 });
+  // Handle sort change
+  const handleSortChange = (value) => {
+    setSortOption(value);
   };
+
+  // Handle year range change
+  const handleYearRangeChange = (value) => {
+    setYearRange(value);
+  };
+
+  // Trigger onChange only when user interaction is complete
+  useEffect(() => {
+    updateFilters();
+  }, [updateFilters]);
 
   return (
-    <Space wrap className="movie-filter">
+    <Space direction="vertical" size="middle" className="movie-filter">
       <Select
-        placeholder="Select Genre"
-        onChange={(value) => handleChange("genre", value)}
+        mode="multiple"
+        placeholder="Select genres"
+        value={selectedGenres}
+        onChange={handleGenreChange}
         style={{ width: 200 }}
-        value={filters.genre}
-        allowClear
-        aria-label="Select genre"
+        showSearch
+        optionFilterProp="children"
+        aria-label="Select genres"
       >
-        {genres.map((g) => (
-          <Option key={g.id} value={g.id}>
-            {g.name}
+        {genres.map((genre) => (
+          <Option key={genre.id} value={genre.id}>
+            {genre.name}
           </Option>
         ))}
       </Select>
       <Select
-        placeholder="Sort By"
-        onChange={(value) => handleChange("sort", value)}
+        placeholder="Sort by"
+        value={sortOption}
+        onChange={handleSortChange}
         style={{ width: 200 }}
-        value={filters.sort}
-        allowClear
         aria-label="Sort movies"
       >
-        <Option value="popularity.desc">Popularity</Option>
-        <Option value="release_date.desc">Newest</Option>
-        <Option value="vote_average.desc">Top Rated</Option>
+        <Option value="popularity.desc">Popularity Descending</Option>
+        <Option value="popularity.asc">Popularity Ascending</Option>
+        <Option value="release_date.desc">Release Date Descending</Option>
+        <Option value="release_date.asc">Release Date Ascending</Option>
+        <Option value="vote_average.desc">Rating Descending</Option>
+        <Option value="vote_average.asc">Rating Ascending</Option>
       </Select>
       <div>
-        <p>Rating</p>
-        <Rate
-          onChange={(value) => handleChange("rating", value)}
-          value={filters.rating}
-          allowClear
-        />
-      </div>
-      <div>
-        <p>Year Range</p>
+        <label>Year Range</label>
         <Slider
           range
           min={1900}
           max={2025}
-          value={filters.year}
-          onChange={(value) => handleChange("year", value)}
-          style={{ width: 200 }}
+          value={yearRange}
+          onChange={handleYearRangeChange}
           aria-label="Select year range"
         />
       </div>
-      <Button onClick={handleReset} aria-label="Reset filters">
-        Reset
-      </Button>
     </Space>
   );
 };

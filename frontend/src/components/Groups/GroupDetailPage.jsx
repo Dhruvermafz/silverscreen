@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
   Form,
   Input,
   Modal,
-  List,
   Typography,
-  Avatar,
   Card,
   Tabs,
   Select,
@@ -15,10 +13,17 @@ import {
   Col,
   Space,
   message,
+  Skeleton,
+  List,
+  Avatar,
 } from "antd";
-import { UserAddOutlined, UserDeleteOutlined } from "@ant-design/icons";
+import {
+  UserAddOutlined,
+  UserDeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import PostCard from "../PostCard";
-import BoxOfficeWidget from "../BoxOfficeWdget";
+import BoxOfficeWidget from "../BoxOfficeWdget"; // Fixed typo in import
 import {
   useGetGroupByIdQuery,
   useGetGroupPostsQuery,
@@ -29,7 +34,7 @@ import {
   useJoinGroupMutation,
   useLeaveGroupMutation,
 } from "../../actions/groupApi";
-import "./groups.css"; // Corrected CSS import
+import "./groups.css";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -45,8 +50,11 @@ const GroupDetailPage = () => {
     isError: groupError,
     error: groupErrorDetails,
   } = useGetGroupByIdQuery(groupId);
-  const { data: posts = [], refetch: refetchPosts } =
-    useGetGroupPostsQuery(groupId);
+  const {
+    data: posts = [],
+    isLoading: postsLoading,
+    refetch: refetchPosts,
+  } = useGetGroupPostsQuery(groupId);
   const [postToGroup] = usePostToGroupMutation();
   const [commentOnGroupPost] = useCommentOnGroupPostMutation();
   const [promoteToModerator] = usePromoteToModeratorMutation();
@@ -56,11 +64,31 @@ const GroupDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
   const [sortBy, setSortBy] = useState("new");
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const loaderRef = useRef(null);
 
-  // Derive membership status safely
-  const isMember = group && group.userRole && group.userRole !== "none";
-  const isAdmin =
-    group && (group.userRole === "creator" || group.userRole === "moderator");
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !postsLoading && hasMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { threshold: 0.5, rootMargin: "100px" }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [postsLoading, hasMore]);
+
+  // Log for debugging
+  useEffect(() => {
+    if (groupError) {
+      console.error("Group Error:", groupErrorDetails);
+    }
+    console.log("Group Data:", group);
+  }, [group, groupError, groupErrorDetails]);
 
   const handlePost = async (values) => {
     try {
@@ -68,9 +96,9 @@ const GroupDetailPage = () => {
       setIsModalOpen(false);
       form.resetFields();
       refetchPosts();
-      message.success("Post created successfully");
+      message.success("Post created!");
     } catch (error) {
-      message.error("Failed to create post");
+      message.error("Failed to create post.");
     }
   };
 
@@ -78,9 +106,9 @@ const GroupDetailPage = () => {
     try {
       await commentOnGroupPost({ postId, commentData: { comment } }).unwrap();
       refetchPosts();
-      message.success("Comment added");
+      message.success("Comment added!");
     } catch (error) {
-      message.error("Failed to comment");
+      message.error("Failed to comment.");
     }
   };
 
@@ -88,31 +116,31 @@ const GroupDetailPage = () => {
     try {
       if (action === "promote") {
         await promoteToModerator({ groupId, userId }).unwrap();
-        message.success("User promoted to moderator");
+        message.success("User promoted to moderator!");
       } else if (action === "ban") {
         await banUserFromGroup({ groupId, userId }).unwrap();
-        message.success("User banned from group");
+        message.success("User banned from group!");
       }
     } catch (error) {
-      message.error(`Failed to ${action} user`);
+      message.error(`Failed to ${action} user.`);
     }
   };
 
   const handleJoinGroup = async () => {
     try {
       await joinGroup(groupId).unwrap();
-      message.success("Joined group successfully");
+      message.success("Joined community!");
     } catch (error) {
-      message.error("Failed to join group");
+      message.error("Failed to join community.");
     }
   };
 
   const handleLeaveGroup = async () => {
     try {
       await leaveGroup(groupId).unwrap();
-      message.success("Left group successfully");
+      message.success("Left community!");
     } catch (error) {
-      message.error("Failed to leave group");
+      message.error("Failed to leave community.");
     }
   };
 
@@ -120,6 +148,7 @@ const GroupDetailPage = () => {
     if (sortBy === "new") return new Date(b.createdAt) - new Date(a.createdAt);
     if (sortBy === "hot")
       return (b.comments?.length || 0) - (a.comments?.length || 0);
+    if (sortBy === "top") return (b.upvotes || 0) - (a.upvotes || 0);
     return 0;
   });
 
@@ -128,184 +157,187 @@ const GroupDetailPage = () => {
 
   if (groupLoading) {
     return (
-      <div className="group-detail-loading">
-        <Typography.Text>Loading group details...</Typography.Text>
+      <div className="group-detail-page">
+        <Skeleton active avatar paragraph={{ rows: 4 }} />
       </div>
     );
   }
 
-  if (groupError) {
+  if (groupError || !group) {
     message.error(
-      groupErrorDetails?.data?.message || "Failed to load group details"
+      groupErrorDetails?.data?.message || "Failed to load community details."
     );
     return (
-      <div className="group-detail-error">
-        <Typography.Text type="danger">
-          Failed to load group details.
-        </Typography.Text>
+      <div className="group-detail-page">
+        <Text type="danger">Community not found.</Text>
       </div>
     );
   }
 
-  if (!group) {
-    return (
-      <div className="group-detail-error">
-        <Typography.Text type="danger">Group not found.</Typography.Text>
-      </div>
-    );
-  }
+  // Define membership status after group is confirmed
+  const isMember = group.userRole && group.userRole !== "none";
+  const isAdmin =
+    group.userRole === "creator" || group.userRole === "moderator";
 
   return (
-    <section
-      className="group-detail-page"
-      aria-label={`Details for ${group.name} group`}
-    >
+    <section className="group-detail-page" aria-label={`r/${group.name}`}>
       <div className="group-detail-container">
-        <Row gutter={[24, 24]}>
+        {/* Banner */}
+        <div className="group-detail-banner">
+          <img
+            alt={`${group.name} banner`}
+            src={group.coverImage || "https://placehold.co/1200x200"}
+            className="group-detail-cover-image"
+          />
+        </div>
+
+        <Row gutter={[16, 16]}>
           <Col xs={24} md={18}>
-            {/* Group Header */}
-            <Card
-              className="group-detail-header-card"
-              cover={
-                <img
-                  alt={`${group.name} cover`}
-                  src={
-                    group.coverImage || "https://via.placeholder.com/1200x200"
-                  }
-                  className="group-detail-cover-image"
+            {/* Header */}
+            <div className="group-detail-header">
+              <Space align="center" className="group-detail-title-space">
+                <Avatar
+                  src={group.avatar}
+                  size={48}
+                  className="group-detail-avatar"
+                  alt={`${group.name} avatar`}
                 />
-              }
-            >
-              <Title level={3} className="group-detail-title">
-                {group.name}
-              </Title>
-              <Paragraph className="group-detail-description">
-                {group.description || "No description available"}
-              </Paragraph>
-              <Space className="group-detail-stats">
-                <Text>{group.members?.length || 0} Members</Text>
-                <Text>{group.isPrivate ? "Private" : "Public"}</Text>
+                <Title level={3} className="group-detail-title">
+                  gr/{group.name}
+                </Title>
+                <Text type="secondary">
+                  {group.isPrivate ? "Private" : "Public"}
+                </Text>
               </Space>
               <Space className="group-detail-actions">
                 {isMember ? (
                   <Button
+                    size="small"
                     onClick={handleLeaveGroup}
                     icon={<UserDeleteOutlined />}
-                    className="group-detail-button"
-                    aria-label="Leave group"
+                    aria-label="Leave community"
                   >
-                    Leave Group
+                    Leave
                   </Button>
                 ) : (
                   <Button
                     type="primary"
+                    size="small"
                     onClick={handleJoinGroup}
                     icon={<UserAddOutlined />}
-                    className="group-detail-button"
-                    aria-label="Join group"
+                    aria-label="Join community"
                   >
-                    Join Group
+                    Join
                   </Button>
                 )}
                 {isAdmin && (
                   <Button
+                    size="small"
                     onClick={() => navigate(`/groups/${groupId}/invite`)}
-                    className="group-detail-button"
                     aria-label="Invite members"
                   >
-                    Invite Members
+                    Invite
                   </Button>
                 )}
               </Space>
-            </Card>
+            </div>
 
-            {/* Tabs for Content */}
-            <Tabs defaultActiveKey="posts" className="group-detail-tabs">
-              <TabPane tab="Posts" key="posts">
-                <Space className="group-detail-post-controls">
+            {/* Tabs */}
+            <Tabs
+              defaultActiveKey="posts"
+              className="group-detail-tabs"
+              tabBarExtraContent={
+                <Space>
                   <Select
                     value={sortBy}
                     onChange={setSortBy}
-                    className="group-detail-sort-select"
+                    size="small"
                     aria-label="Sort posts"
+                    style={{ width: 100 }}
                   >
                     <Option value="new">New</Option>
                     <Option value="hot">Hot</Option>
+                    <Option value="top">Top</Option>
                   </Select>
                   {isMember && (
                     <Button
                       type="primary"
+                      size="small"
+                      icon={<PlusOutlined />}
                       onClick={() => setIsModalOpen(true)}
-                      className="group-detail-create-post-button"
-                      aria-label="Create a new post"
+                      aria-label="Create post"
                     >
-                      Create Post
+                      Post
                     </Button>
                   )}
                 </Space>
-
-                {/* Pinned Posts */}
-                {pinnedPosts.length > 0 && (
-                  <>
-                    <Title level={4} className="group-detail-section-title">
-                      Pinned Posts
-                    </Title>
-                    {pinnedPosts.map((post) => (
-                      <PostCard
-                        key={post._id}
-                        post={{ ...post, isPinned: true }}
-                        onComment={handleComment}
-                        className="group-detail-post-card"
-                      />
-                    ))}
-                  </>
-                )}
-
-                {/* Regular Posts */}
-                {regularPosts.length > 0 ? (
-                  regularPosts.map((post) => (
-                    <PostCard
-                      key={post._id}
-                      post={post}
-                      onComment={handleComment}
-                      className="group-detail-post-card"
-                    />
-                  ))
+              }
+            >
+              <TabPane tab="Posts" key="posts">
+                {postsLoading && posts.length === 0 ? (
+                  <Skeleton active paragraph={{ rows: 3 }} />
                 ) : (
-                  <Text className="group-detail-empty-text">
-                    No posts available.
-                  </Text>
+                  <>
+                    {pinnedPosts.length > 0 && (
+                      <div className="group-detail-pinned">
+                        <Text strong>Pinned by Moderators</Text>
+                        {pinnedPosts.map((post) => (
+                          <PostCard
+                            key={post._id}
+                            post={{ ...post, isPinned: true }}
+                            onComment={handleComment}
+                            className="group-detail-post-card"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {regularPosts.length > 0 ? (
+                      regularPosts.map((post) => (
+                        <PostCard
+                          key={post._id}
+                          post={post}
+                          onComment={handleComment}
+                          className="group-detail-post-card"
+                        />
+                      ))
+                    ) : (
+                      <Text className="group-detail-empty-text">
+                        No posts yet. Be the first to share!
+                      </Text>
+                    )}
+                    <div ref={loaderRef} className="group-detail-loader" />
+                  </>
                 )}
               </TabPane>
               <TabPane tab="Members" key="members">
                 <List
-                  dataSource={group.members}
+                  dataSource={group.members || []}
                   renderItem={(member) => (
                     <List.Item
                       className="group-detail-member-item"
                       actions={
-                        isAdmin
+                        isAdmin && member.role !== "creator"
                           ? [
                               <Button
                                 key="promote"
+                                type="text"
                                 size="small"
                                 onClick={() =>
                                   handleModerate(member._id, "promote")
                                 }
-                                className="group-detail-moderate-button"
-                                aria-label={`Promote ${member.name} to moderator`}
+                                aria-label={`Promote ${member.name}`}
                               >
                                 Promote
                               </Button>,
                               <Button
                                 key="ban"
+                                type="text"
                                 size="small"
                                 danger
                                 onClick={() =>
                                   handleModerate(member._id, "ban")
                                 }
-                                className="group-detail-moderate-button"
-                                aria-label={`Ban ${member.name} from group`}
+                                aria-label={`Ban ${member.name}`}
                               >
                                 Ban
                               </Button>,
@@ -317,18 +349,12 @@ const GroupDetailPage = () => {
                         avatar={
                           <Avatar
                             src={member.avatar}
-                            alt={`Avatar of ${member.name}`}
+                            alt={`${member.name} avatar`}
                           />
                         }
-                        title={
-                          <Text className="group-detail-member-name">
-                            {member.name}
-                          </Text>
-                        }
+                        title={<Text>{member.name}</Text>}
                         description={
-                          <Text className="group-detail-member-role">
-                            {member.role}
-                          </Text>
+                          <Text type="secondary">{member.role}</Text>
                         }
                       />
                     </List.Item>
@@ -340,62 +366,77 @@ const GroupDetailPage = () => {
 
           {/* Sidebar */}
           <Col xs={24} md={6}>
-            <Card title="About" className="group-detail-sidebar-card">
-              <Paragraph className="group-detail-about-description">
-                {group.description || "No description available"}
-              </Paragraph>
-              <Space direction="vertical" className="group-detail-about-stats">
-                <Text>
-                  <strong>Created:</strong>{" "}
-                  {new Date(group.createdAt).toLocaleDateString()}
-                </Text>
-                <Text>
-                  <strong>Privacy:</strong>{" "}
-                  {group.isPrivate ? "Private" : "Public"}
-                </Text>
-              </Space>
-            </Card>
-            {group.rules && group.rules.length > 0 && (
-              <Card title="Rules" className="group-detail-sidebar-card">
-                <List
-                  dataSource={group.rules}
-                  renderItem={(rule, index) => (
-                    <List.Item className="group-detail-rule-item">
-                      {index + 1}. {rule}
-                    </List.Item>
-                  )}
-                />
+            <div className="group-detail-sidebar">
+              <Card className="group-detail-sidebar-card">
+                <Title level={5}>About r/{group.name}</Title>
+                <Paragraph
+                  ellipsis={{ rows: 3 }}
+                  className="group-detail-about-description"
+                >
+                  {group.description || "No description available"}
+                </Paragraph>
+                <Space direction="vertical" size={4}>
+                  <Text>
+                    <strong>Members:</strong> {group.members?.length || 0}
+                  </Text>
+                  <Text>
+                    <strong>Created:</strong>{" "}
+                    {new Date(group.createdAt).toLocaleDateString()}
+                  </Text>
+                  <Text>
+                    <strong>Privacy:</strong>{" "}
+                    {group.isPrivate ? "Private" : "Public"}
+                  </Text>
+                </Space>
               </Card>
-            )}
-            <BoxOfficeWidget className="group-detail-sidebar-widget" />
+              {group.rules?.length > 0 && (
+                <Card className="group-detail-sidebar-card">
+                  <Title level={5}>Rules</Title>
+                  <List
+                    dataSource={group.rules}
+                    renderItem={(rule, index) => (
+                      <List.Item className="group-detail-rule-item">
+                        <Text>
+                          {index + 1}. {rule}
+                        </Text>
+                      </List.Item>
+                    )}
+                  />
+                </Card>
+              )}
+              <BoxOfficeWidget className="group-detail-sidebar-widget" />
+            </div>
           </Col>
         </Row>
 
         {/* Post Creation Modal */}
         <Modal
-          title="Create Post"
+          title="Submit a Post"
           open={isModalOpen}
           onCancel={() => {
             setIsModalOpen(false);
             form.resetFields();
           }}
           onOk={() => form.submit()}
-          okText="Post"
+          okText="Submit"
           cancelText="Cancel"
           className="group-detail-post-modal"
-          aria-label="Create new post modal"
+          aria-label="Create post modal"
         >
           <Form form={form} onFinish={handlePost} layout="vertical">
             <Form.Item
+              name="title"
+              label="Title"
+              rules={[{ required: true, message: "Please enter a title" }]}
+            >
+              <Input placeholder="Post title" />
+            </Form.Item>
+            <Form.Item
               name="content"
-              label="Post Content"
+              label="Content"
               rules={[{ required: true, message: "Please enter content" }]}
             >
-              <TextArea
-                placeholder="What's on your mind?"
-                rows={4}
-                className="group-detail-form-input"
-              />
+              <TextArea placeholder="What's on your mind?" rows={4} />
             </Form.Item>
           </Form>
         </Modal>

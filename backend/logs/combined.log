@@ -44,3 +44,9 @@
 {"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-02T09:50:27.589Z"}
 {"email":"madhavi@gokuldham.in","level":"info","message":"User registered successfully","timestamp":"2025-06-02T09:51:17.104Z","userId":"683d7414677bab9482345971"}
 {"email":"madhavi@gokuldham.in","level":"info","message":"User logged in successfully","timestamp":"2025-06-02T09:51:32.712Z","userId":"683d7414677bab9482345971"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-03T04:03:02.568Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-03T04:03:05.581Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-03T04:06:33.376Z"}
+{"details":null,"level":"warn","message":"Error response: User with this email already exists","status":400,"timestamp":"2025-06-03T04:07:10.924Z"}
+{"email":"sodhi@gokuldham.in","level":"info","message":"User registered successfully","timestamp":"2025-06-03T04:10:29.795Z","userId":"683e75b5a48b599f71ad4009"}
+{"email":"sodhi@gokuldham.in","level":"info","message":"User logged in successfully","timestamp":"2025-06-03T04:10:43.544Z","userId":"683e75b5a48b599f71ad4009"}

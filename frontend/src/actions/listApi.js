@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_URL } from "../context/config";
 
 export const listApi = createApi({
-  reducerPath: "listApi", // Defines the name for the slice in the Redux store
+  reducerPath: "listApi",
   baseQuery: fetchBaseQuery({
     baseUrl: API_URL,
     prepareHeaders: (headers, { getState }) => {
@@ -12,32 +12,45 @@ export const listApi = createApi({
       }
       return headers;
     },
-  }), // Change this to your Express API base URL
+  }),
   endpoints: (builder) => ({
-    // Fetch lists
     getLists: builder.query({
-      query: () => "/lists", // Maps to GET /lists
+      query: () => "/lists",
     }),
-    // Create a new list
+    getListsByUserId: builder.query({
+      query: (userId) => `/lists/user/${userId}`,
+    }),
     createList: builder.mutation({
-      query: (newList) => ({
-        url: "/lists", // Maps to POST /lists
+      query: ({ name, isPrivate }) => ({
+        url: "/lists",
         method: "POST",
-        body: newList, // Send the data as the request body
+        body: { name, isPrivate },
       }),
     }),
-    // Delete a list by ID
     deleteList: builder.mutation({
       query: (id) => ({
-        url: `/lists/${id}`, // Maps to DELETE /lists/:id
+        url: `/lists/${id}`,
         method: "DELETE",
       }),
     }),
     addMovieToList: builder.mutation({
       query: ({ listId, movie }) => ({
-        url: `/lists/${listId}/add`,
+        url: `/lists/${listId}/movies`,
         method: "POST",
         body: { movie },
+      }),
+    }),
+    updateList: builder.mutation({
+      query: ({ listId, name, isPrivate }) => ({
+        url: `/lists/${listId}`,
+        method: "PUT",
+        body: { name, isPrivate },
+      }),
+    }),
+    removeMovieFromList: builder.mutation({
+      query: ({ listId, movieId }) => ({
+        url: `/lists/${listId}/movies/${movieId}`,
+        method: "DELETE",
       }),
     }),
   }),
@@ -45,7 +58,10 @@ export const listApi = createApi({
 
 export const {
   useGetListsQuery,
+  useGetListsByUserIdQuery,
   useCreateListMutation,
   useDeleteListMutation,
   useAddMovieToListMutation,
+  useUpdateListMutation,
+  useRemoveMovieFromListMutation,
 } = listApi;

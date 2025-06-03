@@ -1,65 +1,103 @@
-import React from "react";
-import { Button, Typography, Tooltip } from "antd";
-import {
-  HeartFilled,
-  EyeFilled,
-  MessageFilled,
-  PlayCircleOutlined,
-} from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Button, Typography, List, Avatar, Space, Spin } from "antd";
+import { PlayCircleOutlined, FireOutlined } from "@ant-design/icons";
+import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
+import { toast } from "react-toastify";
 import "./movies.css";
-const { Title, Paragraph, Link } = Typography;
 
-const MovieSidebar = () => {
+const { Title, Text } = Typography;
+
+const MovieSidebar = ({ searchQuery, selectedFilter }) => {
+  const [trendingMovies, setTrendingMovies] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchTrendingMovies = async () => {
+      setLoading(true);
+      try {
+        const response = await getMoviesFromAPI(
+          "",
+          { sort: "popularity.desc", ...selectedFilter },
+          1
+        );
+        setTrendingMovies(response.movies.slice(0, 5)); // Top 5 trending
+      } catch (error) {
+        toast.error("Failed to load trending movies", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrendingMovies();
+  }, [selectedFilter]);
+
   return (
     <div className="sidebar-container">
-      <img
-        alt="Paddington in Peru movie poster"
-        className="w-full rounded-lg shadow-lg"
-        height="450"
-        src="https://storage.googleapis.com/a1aa/image/W1sNrRpcuUp1VcsmZeQYN01loDotuhVKP27LSz1ugk8.jpg"
-        width="300"
-      />
+      <Title level={4} className="sidebar-title">
+        Trending Movies
+      </Title>
+      {loading ? (
+        <Spin size="large" />
+      ) : trendingMovies.length > 0 ? (
+        <List
+          itemLayout="horizontal"
+          dataSource={trendingMovies}
+          renderItem={(movie) => (
+            <List.Item
+              actions={[
+                <Button
+                  type="text"
+                  icon={<PlayCircleOutlined />}
+                  href={`https://www.themoviedb.org/movie/${movie.id}`}
+                  target="_blank"
+                  aria-label={`Watch trailer for ${movie.title}`}
+                />,
+              ]}
+            >
+              <List.Item.Meta
+                avatar={
+                  <Avatar
+                    src={movie.posterUrl}
+                    shape="square"
+                    size={48}
+                    alt={`${movie.title} poster`}
+                  />
+                }
+                title={<a href={`/movies/${movie.id}`}>{movie.title}</a>}
+                description={
+                  <Text ellipsis>
+                    {movie.releaseDate?.substring(0, 4) || "N/A"}
+                  </Text>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      ) : (
+        <Text className="sidebar-empty">No trending movies found</Text>
+      )}
 
-      <div className="flex items-center space-x-4 mt-4 text-white text-sm">
-        <Tooltip title="Likes">
-          <div className="flex items-center space-x-1">
-            <HeartFilled className="text-green-500" />
-            <span>170K</span>
-          </div>
-        </Tooltip>
-        <Tooltip title="Views">
-          <div className="flex items-center space-x-1">
-            <EyeFilled className="text-blue-500" />
-            <span>39K</span>
-          </div>
-        </Tooltip>
-        <Tooltip title="Comments">
-          <div className="flex items-center space-x-1">
-            <MessageFilled className="text-yellow-500" />
-            <span>52K</span>
-          </div>
-        </Tooltip>
-      </div>
-
-      <div className="mt-6 text-white">
-        <Title level={4} style={{ color: "white" }}>
-          Where to Watch
+      <div className="sidebar-section">
+        <Title level={4} className="sidebar-title">
+          Community
         </Title>
-        <Button
-          type="primary"
-          icon={<PlayCircleOutlined />}
-          className="mt-2"
-          href="https://youtu.be/NTvudSGfHRI?si=P433FQN7fIiYhvIU"
-          target="_blank"
-        >
-          Trailer
-        </Button>
-        <Paragraph className="mt-2 mb-0 text-gray-300">
-          Not streaming.
-        </Paragraph>
-        <Link className="text-blue-500" href="#">
-          All services...
-        </Link>
+        <List
+          itemLayout="horizontal"
+          dataSource={[
+            { id: 1, user: "User1", comment: "Loved this movie!" },
+            { id: 2, user: "User2", comment: "Great plot twist!" },
+          ]}
+          renderItem={(item) => (
+            <List.Item>
+              <List.Item.Meta
+                title={<Text strong>{item.user}</Text>}
+                description={<Text ellipsis>{item.comment}</Text>}
+              />
+            </List.Item>
+          )}
+        />
       </div>
     </div>
   );

@@ -12,6 +12,8 @@ import {
   Tooltip,
   AutoComplete,
   Pagination,
+  Checkbox,
+  Badge,
 } from "antd";
 import {
   PlusOutlined,
@@ -19,35 +21,67 @@ import {
   EditOutlined,
   ShareAltOutlined,
   CopyOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import {
   useGetListsQuery,
+  useGetListsByUserIdQuery,
   useCreateListMutation,
   useDeleteListMutation,
+  useAddMovieToListMutation,
+  useUpdateListMutation,
+  useRemoveMovieFromListMutation,
 } from "../../actions/listApi";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./list.css"; // Custom styles
 import placehold from "../../assets/img/placeholder-image-300x225.png";
+
 const { Meta } = Card;
 const { Text } = Typography;
 const { Search } = Input;
 
-const ListComponent = () => {
-  const { data: lists = [], refetch } = useGetListsQuery();
-  const [createList] = useCreateListMutation();
-  const [deleteList] = useDeleteListMutation();
+const ListComponent = ({ userId }) => {
+  // Call both hooks unconditionally
+  const {
+    data: publicLists = [],
+    refetch: refetchPublic,
+    isLoading: publicListsLoading,
+    error: publicListsError,
+  } = useGetListsQuery();
+  const {
+    data: userLists = [],
+    refetch: refetchUser,
+    isLoading: userListsLoading,
+    error: userListsError,
+  } = useGetListsByUserIdQuery(userId || null, { skip: !userId }); // Skip if no userId
+
+  // Select the appropriate lists based on userId
+  const lists = userId ? userLists : publicLists;
+  const refetch = userId ? refetchUser : refetchPublic;
+  const listsLoading = userId ? userListsLoading : publicListsLoading;
+  const listsError = userId ? userListsError : publicListsError;
+
+  const [createList, { isLoading: createLoading }] = useCreateListMutation();
+  const [deleteList, { isLoading: deleteLoading }] = useDeleteListMutation();
+  const [addMovieToList, { isLoading: addMovieLoading }] =
+    useAddMovieToListMutation();
+  const [updateList, { isLoading: updateLoading }] = useUpdateListMutation();
+  const [removeMovieFromList, { isLoading: removeMovieLoading }] =
+    useRemoveMovieFromListMutation();
 
   const TMDB_API_URL = "https://api.themoviedb.org/3";
   const API_KEY = "967df4e131f467edcdd674b650bf257c";
 
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [newListName, setNewListName] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
   const [selectedList, setSelectedList] = useState(null);
   const [isMoviesModalVisible, setIsMoviesModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editListName, setEditListName] = useState("");
+  const [editIsPrivate, setEditIsPrivate] = useState(false);
   const [movieDetails, setMovieDetails] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -55,6 +89,15 @@ const ListComponent = () => {
   const [currentMoviePage, setCurrentMoviePage] = useState(1);
   const pageSize = 8; // Lists per page
   const moviesPageSize = 5; // Movies per page
+
+  useEffect(() => {
+    if (listsError) {
+      toast.error(listsError?.data?.message || "Failed to load lists", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  }, [listsError]);
 
   const fetchMovieDetails = async (movieId) => {
     try {
@@ -96,17 +139,29 @@ const ListComponent = () => {
     }
   };
 
+  const validateListName = (name) => {
+    if (!name.trim()) {
+      return "List name cannot be empty";
+    }
+    if (!/^[a-zA-Z0-9\s_-]{3,50}$/.test(name)) {
+      return "List name must be 3-50 characters and contain only letters, numbers, spaces, underscores, or hyphens";
+    }
+    return null;
+  };
+
   const handleCreateList = async () => {
-    if (!newListName.trim()) {
-      toast.warning("List name cannot be empty", {
+    const validationError = validateListName(newListName);
+    if (validationError) {
+      toast.warning(validationError, {
         position: "top-right",
         autoClose: 2000,
       });
       return;
     }
     try {
-      await createList({ name: newListName }).unwrap();
+      await createList({ name: newListName, isPrivate }).unwrap();
       setNewListName("");
+      setIsPrivate(false);
       setIsCreateModalVisible(false);
       refetch();
       toast.success("List created successfully", {
@@ -114,7 +169,7 @@ const ListComponent = () => {
         autoClose: 2000,
       });
     } catch (error) {
-      toast.error("Failed to create list", {
+      toast.error(error?.data?.message || "Failed to create list", {
         position: "top-right",
         autoClose: 2000,
       });
@@ -130,7 +185,7 @@ const ListComponent = () => {
         autoClose: 2000,
       });
     } catch (error) {
-      toast.error("Failed to delete list", {
+      toast.error(error?.data?.message || "Failed to delete list", {
         position: "top-right",
         autoClose: 2000,
       });
@@ -138,24 +193,28 @@ const ListComponent = () => {
   };
 
   const handleEditList = async () => {
-    if (!editListName.trim()) {
-      toast.warning("List name cannot be empty", {
+    const validationError = validateListName(editListName);
+    if (validationError) {
+      toast.warning(validationError, {
         position: "top-right",
         autoClose: 2000,
       });
       return;
     }
     try {
-      // Mock edit list (replace with actual API)
-      await axios.put(`/api/lists/${selectedList._id}`, { name: editListName });
+      await updateList({
+        listId: selectedList._id,
+        name: editListName,
+        isPrivate: editIsPrivate,
+      }).unwrap();
       setIsEditModalVisible(false);
       refetch();
-      toast.success("List renamed successfully", {
+      toast.success("List updated successfully", {
         position: "top-right",
         autoClose: 2000,
       });
     } catch (error) {
-      toast.error("Failed to rename list", {
+      toast.error(error?.data?.message || "Failed to update list", {
         position: "top-right",
         autoClose: 2000,
       });
@@ -164,8 +223,24 @@ const ListComponent = () => {
 
   const handleAddMovie = async (movieId) => {
     try {
-      // Mock add movie (replace with actual API)
-      await axios.post(`/api/lists/${selectedList._id}/movies`, { movieId });
+      const selectedMovie = searchResults.find(
+        (result) => result.value === movieId
+      )?.movie;
+      if (!selectedMovie) {
+        toast.error("Invalid movie selected", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        return;
+      }
+      await addMovieToList({
+        listId: selectedList._id,
+        movie: {
+          id: selectedMovie.id,
+          title: selectedMovie.title,
+          poster_path: selectedMovie.poster_path,
+        },
+      }).unwrap();
       refetch();
       setSearchQuery("");
       setSearchResults([]);
@@ -174,7 +249,7 @@ const ListComponent = () => {
         autoClose: 2000,
       });
     } catch (error) {
-      toast.error("Failed to add movie", {
+      toast.error(error?.data?.message || "Failed to add movie", {
         position: "top-right",
         autoClose: 2000,
       });
@@ -183,15 +258,17 @@ const ListComponent = () => {
 
   const handleRemoveMovie = async (movieId) => {
     try {
-      // Mock remove movie (replace with actual API)
-      await axios.delete(`/api/lists/${selectedList._id}/movies/${movieId}`);
+      await removeMovieFromList({
+        listId: selectedList._id,
+        movieId,
+      }).unwrap();
       refetch();
       toast.success("Movie removed from list", {
         position: "top-right",
         autoClose: 2000,
       });
     } catch (error) {
-      toast.error("Failed to remove movie", {
+      toast.error(error?.data?.message || "Failed to remove movie", {
         position: "top-right",
         autoClose: 2000,
       });
@@ -199,7 +276,13 @@ const ListComponent = () => {
   };
 
   const handleShareList = () => {
-    // Mock share (replace with actual share logic)
+    if (selectedList.isPrivate) {
+      toast.warning("This is a private list and can only be viewed by you.", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      return;
+    }
     const shareUrl = `${window.location.origin}/lists/${selectedList._id}`;
     navigator.clipboard.writeText(shareUrl);
     toast.success("List URL copied to clipboard", {
@@ -210,8 +293,9 @@ const ListComponent = () => {
 
   const handleCardClick = async (list) => {
     setSelectedList(list);
-    setIsMoviesModalVisible(true);
     setEditListName(list.name);
+    setEditIsPrivate(list.isPrivate);
+    setIsMoviesModalVisible(true);
 
     const details = {};
     for (const movie of list.movies) {
@@ -228,12 +312,20 @@ const ListComponent = () => {
         onClick={() => {
           setSelectedList(list);
           setEditListName(list.name);
+          setEditIsPrivate(list.isPrivate);
           setIsEditModalVisible(true);
         }}
+        disabled={list.userId !== localStorage.getItem("userId")} // Disable if not the owner
       >
         <EditOutlined /> Rename
       </Menu.Item>
-      <Menu.Item key="share" onClick={handleShareList}>
+      <Menu.Item
+        key="share"
+        onClick={() => {
+          setSelectedList(list);
+          handleShareList();
+        }}
+      >
         <ShareAltOutlined /> Share
       </Menu.Item>
       <Menu.Item
@@ -264,70 +356,98 @@ const ListComponent = () => {
   return (
     <div className="list-component">
       <Space style={{ marginBottom: 16 }}>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsCreateModalVisible(true)}
-          aria-label="Create new list"
-        >
-          Create New List
-        </Button>
+        {!userId && ( // Only show create button if not viewing another user's lists
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsCreateModalVisible(true)}
+            aria-label="Create new list"
+            loading={createLoading}
+          >
+            Create New List
+          </Button>
+        )}
       </Space>
 
-      <List
-        grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
-        dataSource={paginatedLists}
-        renderItem={(item) => (
-          <List.Item>
-            <Card
-              hoverable
-              onClick={() => handleCardClick(item)}
-              cover={
-                <img
-                  alt={`${item.name} cover`}
-                  src={item.coverImage || placehold}
-                  style={{ height: 150, objectFit: "cover" }}
-                />
-              }
-              actions={[
-                <Tooltip title="Delete list">
-                  <DeleteOutlined
-                    key="delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteList(item._id);
-                    }}
-                    aria-label={`Delete ${item.name}`}
-                  />
-                </Tooltip>,
-                <Dropdown overlay={actionMenu(item)} trigger={["click"]}>
-                  <Button
-                    icon={<ShareAltOutlined />}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label="More actions"
-                  />
-                </Dropdown>,
-              ]}
-            >
-              <Meta
-                title={item.name}
-                description={
-                  <Text ellipsis>{`${item.movies.length} movies`}</Text>
-                }
-              />
-            </Card>
-          </List.Item>
-        )}
-      />
+      {listsLoading ? (
+        <Text>Loading lists...</Text>
+      ) : (
+        <>
+          <List
+            grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
+            dataSource={paginatedLists}
+            renderItem={(item) => (
+              <List.Item>
+                <Badge.Ribbon
+                  text={item.isPrivate ? "Private" : "Public"}
+                  color={item.isPrivate ? "red" : "green"}
+                  style={{ display: item.isPrivate ? "block" : "" }}
+                >
+                  <Card
+                    hoverable={true}
+                    onClick={() => handleCardClick(item)}
+                    cover={
+                      <img
+                        alt={`${item.name} cover`}
+                        src={item.coverImage || placehold}
+                        style={{ height: 150, objectFit: "cover" }}
+                      />
+                    }
+                    actions={[
+                      <Tooltip title="Delete list">
+                        <DeleteOutlined
+                          key="delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteList(item._id);
+                          }}
+                          aria-label={`Delete ${item.name}`}
+                          disabled={
+                            deleteLoading ||
+                            item.userId !== localStorage.getItem("userId")
+                          } // Disable if not the owner
+                        />
+                      </Tooltip>,
+                      <Dropdown overlay={actionMenu(item)} trigger={["click"]}>
+                        <Button
+                          icon={<ShareAltOutlined />}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label="More actions"
+                        />
+                      </Dropdown>,
+                    ]}
+                  >
+                    <Meta
+                      title={
+                        <Space>
+                          {item.name}
+                          {item.isPrivate && (
+                            <LockOutlined style={{ fontSize: 14 }} />
+                          )}
+                        </Space>
+                      }
+                      description={
+                        <Text
+                          ellipsis={true}
+                        >{`${item.movies.length} movies`}</Text>
+                      }
+                    />
+                  </Card>
+                </Badge.Ribbon>
+              </List.Item>
+            )}
+          />
 
-      {lists.length > pageSize && (
-        <Pagination
-          current={currentListPage}
-          pageSize={pageSize}
-          total={lists.length}
-          onChange={(page) => setCurrentListPage(page)}
-          style={{ textAlign: "center", marginTop: 16 }}
-        />
+          {lists.length > 0 && (
+            <Pagination
+              current={currentListPage}
+              pageSize={pageSize}
+              total={lists.length}
+              onChange={(page) => setCurrentListPage(page)}
+              style={{ textAlign: "center", marginTop: 16 }}
+            />
+          )}
+        </>
       )}
 
       {/* Create List Modal */}
@@ -335,58 +455,86 @@ const ListComponent = () => {
         title="Create New List"
         open={isCreateModalVisible}
         onOk={handleCreateList}
-        onCancel={() => setIsCreateModalVisible(false)}
+        onCancel={() => {
+          setIsCreateModalVisible(false);
+          setNewListName("");
+          setIsPrivate(false);
+        }}
         okText="Create"
+        confirmLoading={createLoading}
       >
-        <Input
-          placeholder="Enter list name"
-          value={newListName}
-          onChange={(e) => setNewListName(e.target.value)}
-          aria-label="List name"
-        />
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Input
+            placeholder="Enter list name"
+            value={newListName}
+            onChange={(e) => setNewListName(e.target.value)}
+            aria-label="List name"
+          />
+          <Checkbox
+            checked={isPrivate}
+            onChange={(e) => setIsPrivate(e.target.checked)}
+          >
+            Make this list private
+          </Checkbox>
+        </Space>
       </Modal>
 
       {/* Edit List Modal */}
       <Modal
-        title="Rename List"
+        title="Edit List"
         open={isEditModalVisible}
         onOk={handleEditList}
-        onCancel={() => setIsEditModalVisible(false)}
+        onCancel={() => {
+          setIsEditModalVisible(false);
+        }}
         okText="Save"
+        confirmLoading={updateLoading}
       >
-        <Input
-          placeholder="Enter new list name"
-          value={editListName}
-          onChange={(e) => setEditListName(e.target.value)}
-          aria-label="New list name"
-        />
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Input
+            placeholder="Enter new list name"
+            value={editListName}
+            onChange={(e) => setEditListName(e.target.value)}
+            aria-label="List name"
+          />
+          <Checkbox
+            checked={editIsPrivate}
+            onChange={(e) => setEditIsPrivate(e.target.checked)}
+          >
+            Make this list private
+          </Checkbox>
+        </Space>
       </Modal>
 
       {/* Movies List Modal */}
       <Modal
-        title={selectedList?.name || "Movies"}
+        title={selectedList?.name || ""}
         open={isMoviesModalVisible}
         onCancel={() => {
           setIsMoviesModalVisible(false);
           setSearchQuery("");
           setSearchResults([]);
+          setCurrentMoviePage(1);
         }}
         footer={null}
         width={600}
       >
-        <AutoComplete
-          options={searchResults}
-          style={{ width: "100%", marginBottom: 16 }}
-          onSearch={searchMovies}
-          onSelect={(value) => handleAddMovie(value)}
-          value={searchQuery}
-          onChange={(value) => setSearchQuery(value)}
-        >
-          <Search
-            placeholder="Search movies to add"
-            aria-label="Search movies"
-          />
-        </AutoComplete>
+        {selectedList?.userId === localStorage.getItem("userId") && (
+          <AutoComplete
+            options={searchResults}
+            style={{ width: "100%", marginBottom: 16 }}
+            onSearch={searchMovies}
+            onSelect={(value) => handleAddMovie(value)}
+            value={searchQuery}
+            onChange={(value) => setSearchQuery(value)}
+          >
+            <Search
+              placeholder="Search movies to add"
+              aria-label="Search movies"
+              disabled={addMovieLoading}
+            />
+          </AutoComplete>
+        )}
         {paginatedMovies.length > 0 ? (
           <>
             <List
@@ -395,16 +543,20 @@ const ListComponent = () => {
                 const data = movieDetails[movie._id];
                 return (
                   <List.Item
-                    key={movie._id}
-                    actions={[
-                      <Tooltip title="Remove movie">
-                        <Button
-                          icon={<DeleteOutlined />}
-                          onClick={() => handleRemoveMovie(movie._id)}
-                          aria-label={`Remove ${data?.title || "movie"}`}
-                        />
-                      </Tooltip>,
-                    ]}
+                    actions={
+                      selectedList?.userId === localStorage.getItem("userId")
+                        ? [
+                            <Tooltip title="Remove">
+                              <Button
+                                icon={<DeleteOutlined />}
+                                onClick={() => handleRemoveMovie(movie.movieId)}
+                                aria-label={`Remove ${data?.title || "movie"}`}
+                                disabled={removeMovieLoading}
+                              />
+                            </Tooltip>,
+                          ]
+                        : []
+                    }
                   >
                     <div
                       style={{
