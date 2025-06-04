@@ -1,6 +1,6 @@
 import React from "react";
 import { Typography, Card } from "antd";
-
+import "./about.css";
 const { Title, Paragraph } = Typography;
 
 const About = () => {

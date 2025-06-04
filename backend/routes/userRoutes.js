@@ -13,7 +13,7 @@ router.put("/profile", protect, userController.updateProfile);
 router.get("/", userController.getAllUsers);
 
 // GET user by ID
-router.get("/:id", protect, userController.getUserById);
+router.get("/:id", userController.getUserById);
 router.put("/users/:userId/preferences", userController.updateUserPreferences);
 router.put("/users/:userId/role", userController.updateUserRole);
 // DELETE user by ID

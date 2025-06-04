@@ -17,7 +17,7 @@ export const userApi = createApi({
   endpoints: (builder) => ({
     // User Profile
     getProfile: builder.query({
-      query: () => "/users",
+      query: () => "/users/profile",
       providesTags: ["User"],
     }),
     updateProfile: builder.mutation({

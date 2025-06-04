@@ -132,27 +132,25 @@ function App() {
           <Route
             path="/onboarding"
             element={
-              <OnboardingRoute>
-                <OnboardingFlow
-                  userId={userId}
-                  onComplete={() => {
-                    completeOnboarding({
-                      userId,
-                      preferences: profile?.preferences || {},
-                      role: profile?.role || "viewer",
+              <OnboardingFlow
+                userId={userId}
+                onComplete={() => {
+                  completeOnboarding({
+                    userId,
+                    preferences: profile?.preferences || {},
+                    role: profile?.role || "viewer",
+                  })
+                    .unwrap()
+                    .then(() => {
+                      dispatch(setOnboardingComplete());
+                      localStorage.removeItem("cameFromSignup");
+                      navigate("/");
                     })
-                      .unwrap()
-                      .then(() => {
-                        dispatch(setOnboardingComplete());
-                        localStorage.removeItem("cameFromSignup");
-                        navigate("/");
-                      })
-                      .catch((error) => {
-                        console.error("Failed to complete onboarding:", error);
-                      });
-                  }}
-                />
-              </OnboardingRoute>
+                    .catch((error) => {
+                      console.error("Failed to complete onboarding:", error);
+                    });
+                }}
+              />
             }
           />
 

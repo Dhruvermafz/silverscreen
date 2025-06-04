@@ -1,166 +1,114 @@
+/* About Page */
 .about-page {
-  background: #f5f5f5;
-  padding: 40px 16px;
+  background: var(--background-dark); /* #1a2426 for dark teal */
+  color: var(--text-primary); /* #d9d9d9 for light gray */
+  padding: var(--spacing-md) var(--spacing-sm);
   min-height: 100vh;
 }
 
 .about-hero {
   text-align: center;
-  padding: 40px 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+  padding: var(--spacing-md);
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("https://images.unsplash.com/photo-1489599849927-2ee91cede3ba");
   background-size: cover;
   background-position: center;
-  color: #ffffff;
-  border-radius: 12px;
-  margin-bottom: 40px;
+  color: var(--text-primary);
+  border-radius: var(--border-radius); /* 4px */
+  margin-bottom: var(--spacing-md);
 }
 
 .about-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 .about-subtitle {
-  font-size: 18px;
-  max-width: 700px;
-  margin: 16px auto;
-  color: #d7dadc;
+  font-size: 16px;
+  max-width: 600px;
+  margin: var(--spacing-sm) auto;
+  color: var(--text-secondary); /* #a0a0a0 for muted gray */
 }
 
-.about-cta .ant-btn {
-  border-radius: 6px;
+.about-cta .button {
+  width: auto;
 }
 
-.about-join-button {
-  background: #ff4500 !important; /* Reddit-inspired orange */
-  border-color: #ff4500 !important;
-}
-
-.about-join-button:hover {
-  background: #e03e00 !important;
-  border-color: #e03e00 !important;
-}
-
+/* Features Section */
 .about-features {
   max-width: 1200px;
-  margin: 0 auto 40px;
+  margin: 0 auto var(--spacing-md);
 }
 
 .about-section-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
   text-align: center;
-  margin-bottom: 24px;
-  color: #1a1a1b;
+  margin-bottom: var(--spacing-sm);
 }
 
 .about-feature-card {
   text-align: center;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-}
-
-.about-feature-card:hover {
-  transform: translateY(-4px);
+  padding: var(--spacing-sm);
 }
 
 .about-feature-icon {
-  font-size: 32px;
-  color: #ff4500;
-  margin-bottom: 16px;
+  font-size: 28px;
+  color: var(--primary-color); /* #f5c518 for yellow */
+  margin-bottom: var(--spacing-xs);
 }
 
 .about-feature-card .ant-typography {
-  color: #1a1a1b;
+  color: var(--text-primary);
 }
 
+/* Mission Section */
 .about-mission {
-  max-width: 900px;
-  margin: 0 auto 40px;
+  max-width: 800px;
+  margin: 0 auto var(--spacing-md);
 }
 
 .about-mission-card {
   text-align: center;
-  padding: 32px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-sm);
 }
 
-.about-mission-card .ant-btn {
-  margin-top: 16px;
-  background: #ff4500;
-  border-color: #ff4500;
-  border-radius: 6px;
+.about-mission-card .button {
+  margin-top: var(--spacing-sm);
 }
 
-.about-mission-card .ant-btn:hover {
-  background: #e03e00;
-  border-color: #e03e00;
-}
-
+/* Newsletter Section */
 .about-newsletter {
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
   text-align: center;
 }
 
 .about-newsletter-form {
-  margin-top: 16px;
+  margin-top: var(--spacing-sm);
+  display: flex;
+  gap: var(--spacing-xs);
 }
 
 .about-newsletter-input {
-  border-radius: 4px 0 0 4px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
 }
 
-.about-newsletter-form .ant-btn {
-  background: #ff4500;
-  border-color: #ff4500;
-  border-radius: 0 4px 4px 0;
+.about-newsletter-form .button {
+  border-radius: var(--border-radius);
 }
 
-.about-newsletter-form .ant-btn:hover {
-  background: #e03e00;
-  border-color: #e03e00;
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
   .about-page {
-    padding: 24px 12px;
+    padding: var(--spacing-sm);
   }
 
   .about-hero {
-    padding: 24px 16px;
+    padding: var(--spacing-sm);
   }
 
-  .about-title {
-    font-size: 28px;
-  }
-
-  .about-subtitle {
-    font-size: 16px;
-  }
-
-  .about-section-title {
-    font-size: 24px;
-  }
-
-  .about-feature-card {
-    padding: 16px;
-  }
-
-  .about-feature-icon {
-    font-size: 24px;
-  }
-
-  .about-mission-card {
-    padding: 24px;
-  }
-}
-
-@media (max-width: 480px) {
   .about-title {
     font-size: 24px;
   }
@@ -169,8 +117,39 @@
     font-size: 14px;
   }
 
-  .about-cta .ant-btn {
+  .about-section-title {
+    font-size: 20px;
+  }
+
+  .about-feature-icon {
+    font-size: 24px;
+  }
+
+  .about-mission-card {
+    padding: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .about-title {
+    font-size: 20px;
+  }
+
+  .about-subtitle {
+    font-size: 13px;
+  }
+
+  .about-cta .button {
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .about-newsletter-form {
+    flex-direction: column;
+  }
+
+  .about-newsletter-input,
+  .about-newsletter-form .button {
+    width: 100%;
   }
 }

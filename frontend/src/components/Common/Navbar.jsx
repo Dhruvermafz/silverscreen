@@ -26,27 +26,32 @@ import { useGetProfileQuery } from "../../actions/userApi";
 import { toast } from "react-toastify";
 import "./navbar.css";
 import { useLogoutMutation } from "../../actions/authApi";
+
 const { Title } = Typography;
 const { Search } = Input;
 
 const Navbar = () => {
-  const { data: user, isLoading, isError } = useGetProfileQuery();
+  const { data: user, isLoading, isError, error } = useGetProfileQuery();
   const [logout] = useLogoutMutation();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isError) {
-      toast.error("Failed to fetch profile. Please log in again.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      toast.error(
+        error?.data?.error || "Failed to fetch profile. Please log in again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
     }
-  }, [isError]);
+  }, [isError, error]);
 
   useEffect(() => {
-    // Store theme preference in localStorage
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     document.documentElement.setAttribute(
       "data-theme",
@@ -71,21 +76,25 @@ const Navbar = () => {
       toast.success("Logged out successfully!", { autoClose: 1000 });
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error.message || "Logout failed.", { autoClose: 3000 });
+      toast.error(error?.data?.error || "Logout failed.", { autoClose: 3000 });
     }
   };
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    toast.info(`Switched to ${!isDarkMode ? "Dark" : "Light"} mode`, {
+    setIsDarkMode((prev) => !prev);
+    toast.info(`Switched to ${isDarkMode ? "Light" : "Dark"} mode`, {
       autoClose: 1000,
     });
   };
 
+  const displayName = user?.username?.includes("@")
+    ? user?.email?.split("@")[0] || user?._id || "User"
+    : user?.username || "User";
+
   const userMenu = (
     <Menu className="custom-user-menu">
       <Menu.Item key="profile" icon={<ProfileOutlined />}>
-        <Link to={`/u/${user?._id}`} aria-label="View profile">
+        <Link to={`/u/${user?._id || "unknown"}`} aria-label="View profile">
           Profile
         </Link>
       </Menu.Item>
@@ -123,12 +132,6 @@ const Navbar = () => {
       </Link>
       <Link to="/box-office" className="navbar-link" aria-label="Box Office">
         Box Office
-      </Link>
-      <Link to="/blogs" className="navbar-link" aria-label="Blogs">
-        Blogs
-      </Link>
-      <Link to="/about" className="navbar-link" aria-label="About">
-        About
       </Link>
     </Space>
   );
@@ -174,6 +177,10 @@ const Navbar = () => {
         />
         {isLoading ? (
           <Skeleton.Avatar active size="small" />
+        ) : isError ? (
+          <Button href="/login" icon={<LoginOutlined />} aria-label="Log in">
+            Log In
+          </Button>
         ) : user ? (
           <Dropdown overlay={userMenu} placement="bottomRight">
             <Button
@@ -182,15 +189,15 @@ const Navbar = () => {
                 user.avatarUrl ? (
                   <Avatar
                     src={user.avatarUrl}
-                    alt={`${user.username}'s avatar`}
+                    alt={`${displayName}'s avatar`}
                   />
                 ) : (
                   <Avatar icon={<UserOutlined />} />
                 )
               }
-              aria-label={`User menu for ${user.username}`}
+              aria-label={`User menu for ${displayName}`}
             >
-              {user.username}
+              {displayName}
             </Button>
           </Dropdown>
         ) : (
@@ -198,7 +205,7 @@ const Navbar = () => {
             <Button href="/login" icon={<LoginOutlined />} aria-label="Log in">
               Log In
             </Button>
-            <Button href="/signup" type="primary" aria-label="Sign up">
+            <Button href="/signup" className="button" aria-label="Sign up">
               Sign Up
             </Button>
           </>
@@ -224,13 +231,32 @@ const Navbar = () => {
           {navLinks}
           {isLoading ? (
             <Skeleton.Button active block />
+          ) : isError ? (
+            <>
+              <Button
+                href="/login"
+                icon={<LoginOutlined />}
+                block
+                aria-label="Log in"
+              >
+                Log In
+              </Button>
+              <Button
+                href="/signup"
+                className="button"
+                block
+                aria-label="Sign up"
+              >
+                Sign Up
+              </Button>
+            </>
           ) : user ? (
             <Space direction="vertical" size="middle" style={{ width: "100%" }}>
               <Button
                 icon={<ProfileOutlined />}
                 block
                 onClick={() => {
-                  navigate(`/u/${user._id}`);
+                  navigate(`/u/${user._id || "unknown"}`);
                   setDrawerVisible(false);
                 }}
                 aria-label="Profile"
@@ -283,7 +309,12 @@ const Navbar = () => {
               >
                 Log In
               </Button>
-              <Button href="/signup" type="primary" block aria-label="Sign up">
+              <Button
+                href="/signup"
+                className="button"
+                block
+                aria-label="Sign up"
+              >
                 Sign Up
               </Button>
             </>
