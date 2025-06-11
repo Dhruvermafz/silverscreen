@@ -7,6 +7,7 @@ import {
   MailOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import "./footer.css";
 
 const { Footer } = Layout;
@@ -25,7 +26,7 @@ const socialMedia = [
   {
     label: "GitHub",
     icon: <GithubOutlined />,
-    url: "https://github.com/Cinenotes-project",
+    url: "https://github.com/Dhruvermafz/silverscreen",
   },
   {
     label: "Twitter",
@@ -41,7 +42,7 @@ const socialMedia = [
     label: "Email",
     icon: <MailOutlined />,
     url: `mailto:${
-      process.env.REACT_APP_SUPPORT_EMAIL || "support@Cinenotes.com"
+      process.env.REACT_APP_SUPPORT_EMAIL || "support@cinenotes.com"
     }`,
   },
 ];
@@ -51,53 +52,39 @@ const AppFooter = () => {
     e.preventDefault();
     const email = e.target[0].value;
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       return;
     }
     // Simulate newsletter signup (replace with API call)
     console.log("Newsletter subscription:", email);
-    alert("Subscribed to Cinenotes newsletter!");
+    toast.success("Subscribed to Cinenotes newsletter!", {
+      position: "top-right",
+      autoClose: 2000,
+    });
     e.target.reset();
   };
 
   return (
     <Footer className="footer">
       <div className="footer-container">
-        <Row gutter={[24, 24]} justify="center">
-          {/* Cinenotes Branding */}
+        <Row gutter={[16, 16]} justify="center">
+          {/* Branding Section */}
           <Col xs={24} sm={12} md={8}>
             <Title level={4} className="footer-title">
               Cinenotes
             </Title>
             <Text className="footer-description">
-              Cinenotes is your home for cinema. Rate films, join vibrant
-              groups, track box office trends, and write blogs about movies. No
-              politics, just pure cinematic passion.
+              Join the Cinenotes community to rate films, discuss in groups,
+              track box office, and share your movie blogs. Pure cinema, no
+              distractions.
             </Text>
-            <form
-              onSubmit={handleNewsletterSubmit}
-              className="footer-newsletter"
-            >
-              <Space.Compact>
-                <Input
-                  placeholder="Enter your email"
-                  type="email"
-                  aria-label="Newsletter email"
-                  className="footer-newsletter-input"
-                />
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  aria-label="Subscribe to newsletter"
-                >
-                  Subscribe
-                </Button>
-              </Space.Compact>
-            </form>
           </Col>
 
           {/* Quick Links */}
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={12} sm={6} md={4}>
             <Text className="footer-subtitle">Explore</Text>
             <nav aria-label="Footer navigation">
               <Space direction="vertical" size="small">
@@ -115,10 +102,33 @@ const AppFooter = () => {
             </nav>
           </Col>
 
+          {/* Legal Links */}
+          <Col xs={12} sm={6} md={4}>
+            <Text className="footer-subtitle">Legal</Text>
+            <nav aria-label="Legal navigation">
+              <Space direction="vertical" size="small">
+                <Link
+                  to="/terms"
+                  className="footer-link"
+                  aria-label="Terms of Use"
+                >
+                  Terms
+                </Link>
+                <Link
+                  to="/privacy"
+                  className="footer-link"
+                  aria-label="Privacy Policy"
+                >
+                  Privacy
+                </Link>
+              </Space>
+            </nav>
+          </Col>
+
           {/* Social Media */}
           <Col xs={24} sm={12} md={8}>
             <Text className="footer-subtitle">Connect</Text>
-            <Space size="large" className="footer-social">
+            <Space size="middle" className="footer-social">
               {socialMedia.map((social) => (
                 <a
                   key={social.label}
@@ -137,14 +147,7 @@ const AppFooter = () => {
 
         {/* Bottom Section */}
         <Text className="footer-bottom">
-          © {new Date().getFullYear()} Cinenotes. All rights reserved. |{" "}
-          <Link to="/terms" aria-label="Terms of Use">
-            Terms
-          </Link>{" "}
-          |{" "}
-          <Link to="/privacy" aria-label="Privacy Policy">
-            Privacy
-          </Link>
+          © {new Date().getFullYear()} Cinenotes. All rights reserved.
         </Text>
       </div>
     </Footer>

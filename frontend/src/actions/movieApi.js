@@ -22,7 +22,13 @@ export const movieApi = createApi({
       query: () => "/",
       providesTags: ["Movies"],
     }),
-
+    submitMovieRequest: builder.mutation({
+      query: (data) => ({
+        url: "/movie/request",
+        method: "POST",
+        body: data,
+      }),
+    }),
     // POST new movie
     addMovie: builder.mutation({
       query: (newMovie) => ({

@@ -55,3 +55,6 @@
 {"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-06-04T05:12:35.378Z"}
 {"details":null,"level":"warn","message":"Error response: Invalid email or password","status":401,"timestamp":"2025-06-04T05:12:38.087Z"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-04T05:12:52.963Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-05T04:54:51.341Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-06T12:20:17.638Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-06-10T04:19:07.850Z","userId":"68131e1207af9fb1b048a138"}

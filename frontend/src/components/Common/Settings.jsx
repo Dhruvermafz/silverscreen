@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Avatar,
   Button,
@@ -6,7 +6,6 @@ import {
   Input,
   Upload,
   Rate,
-  message,
   Tabs,
   Typography,
   Spin,
@@ -16,9 +15,8 @@ import {
   Switch,
   List,
   Modal,
-  Menu,
-  Divider,
   Card,
+  Divider,
 } from "antd";
 import {
   UploadOutlined,
@@ -26,9 +24,10 @@ import {
   LockOutlined,
   BellOutlined,
   DeleteOutlined,
-  LogoutOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "./settings.css";
 
 const { TabPane } = Tabs;
 const { Title, Text } = Typography;
@@ -40,11 +39,11 @@ const SettingsWrapper = () => {
     email: "",
     bio: "",
     avatar: "",
-    favoriteMovies: [],
-    favoriteGenres: [],
+    favoriteFilms: [],
+    favoriteDirectors: [],
     socialLinks: {},
-    isPublic: true,
-    rating: 0,
+    isProfilePublic: true,
+    profileRating: 0,
   });
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm();
@@ -52,76 +51,89 @@ const SettingsWrapper = () => {
   const [forgotPasswordForm] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false); // Mock 2FA state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [notifications, setNotifications] = useState({
     email: true,
     inApp: true,
-    mentions: true,
+    reviews: true,
   });
-  const [sessions, setSessions] = useState([]); // Mock active sessions
+  const [sessions, setSessions] = useState([]);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get("/api/user/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUserData(response.data);
-        form.setFieldsValue({
-          bio: response.data.bio || "",
-          favoriteMovies: response.data.favoriteMovies?.join("\n") || "",
-          favoriteGenres: response.data.favoriteGenres?.join("\n") || "",
-          socialLinks: response.data.socialLinks || {},
-          isPublic: response.data.isPublic !== false,
-        });
-        // Mock sessions fetch
-        setSessions([
-          { id: 1, device: "Chrome on Windows", lastActive: "2025-05-15" },
-          { id: 2, device: "Safari on iPhone", lastActive: "2025-05-14" },
-        ]);
-      } catch (err) {
-        message.error("Failed to fetch user data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
+  // Fetch user profile
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("/api/user/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUserData(response.data);
+      form.setFieldsValue({
+        bio: response.data.bio || "",
+        favoriteFilms: response.data.favoriteFilms?.join("\n") || "",
+        favoriteDirectors: response.data.favoriteDirectors?.join("\n") || "",
+        socialLinks: response.data.socialLinks || {},
+        isProfilePublic: response.data.isProfilePublic !== false,
+        profileRating: response.data.profileRating || 0,
+      });
+      setSessions([
+        { id: 1, device: "Chrome on Windows", lastActive: "2025-05-15" },
+        { id: 2, device: "Safari on iPhone", lastActive: "2025-05-14" },
+      ]);
+    } catch (err) {
+      toast.error("Failed to fetch user data", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [form]);
 
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  // Update profile
   const handleUpdateProfile = async (values) => {
     try {
       const updatedUser = {
         bio: values.bio,
         avatar: fileList.length > 0 ? fileList[0].url : userData.avatar,
-        favoriteMovies: values.favoriteMovies
-          ? values.favoriteMovies
+        favoriteFilms: values.favoriteFilms
+          ? values.favoriteFilms
               .split("\n")
               .map((m) => m.trim())
               .filter(Boolean)
           : [],
-        favoriteGenres: values.favoriteGenres
-          ? values.favoriteGenres
+        favoriteDirectors: values.favoriteDirectors
+          ? values.favoriteDirectors
               .split("\n")
               .map((g) => g.trim())
               .filter(Boolean)
           : [],
         socialLinks: values.socialLinks,
-        isPublic: values.isPublic,
-        rating: values.rating || userData.rating,
+        isProfilePublic: values.isProfilePublic,
+        profileRating: values.profileRating || userData.profileRating,
       };
       const response = await axios.put("/api/user/profile", updatedUser, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setUserData(response.data);
       setFileList([]);
-      message.success("Profile updated successfully");
+      toast.success("Profile updated successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     } catch (err) {
-      message.error("Failed to update profile");
+      toast.error("Failed to update profile", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Upload avatar
   const handleUploadAvatar = ({ file }) => {
     const formData = new FormData();
     formData.append("avatar", file);
@@ -137,15 +149,27 @@ const SettingsWrapper = () => {
           { uid: file.uid, url: response.data.avatar, name: file.name },
         ]);
         setUserData((prev) => ({ ...prev, avatar: response.data.avatar }));
-        message.success("Avatar uploaded successfully");
+        toast.success("Profile picture uploaded successfully", {
+          position: "top-right",
+          autoClose: 2000,
+        });
       })
-      .catch((err) => message.error("Failed to upload avatar"));
+      .catch((err) => {
+        toast.error("Failed to upload profile picture", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+      });
     return false;
   };
 
+  // Change password
   const handlePasswordChange = async (values) => {
     if (values.newPassword !== values.confirmPassword) {
-      return message.error("Passwords do not match");
+      return toast.error("Passwords do not match", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
     try {
       await axios.post(
@@ -155,130 +179,202 @@ const SettingsWrapper = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      message.success("Password changed successfully");
+      toast.success("Password changed successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       passwordForm.resetFields();
     } catch (err) {
-      message.error("Failed to change password");
+      toast.error("Failed to change password", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Forgot password
   const handleForgotPassword = async (values) => {
     try {
       await axios.post("/api/user/forgot-password", { email: values.email });
-      message.success("Password reset link sent");
+      toast.success("Password reset link sent to your email", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       forgotPasswordForm.resetFields();
     } catch (err) {
-      message.error("Failed to send reset link");
+      toast.error("Failed to send reset link", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Delete account
   const handleDeleteAccount = async () => {
     try {
       await axios.delete("/api/user/delete-account", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      message.success("Account deleted successfully");
+      toast.success("Account deleted successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       localStorage.removeItem("token");
       window.location.href = "/login";
     } catch (err) {
-      message.error("Failed to delete account");
+      toast.error("Failed to delete account", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Toggle 2FA
   const handleToggle2FA = async (checked) => {
     try {
-      // Mock 2FA toggle (replace with actual API)
       setTwoFactorEnabled(checked);
-      message.success(
-        `Two-factor authentication ${checked ? "enabled" : "disabled"}`
+      toast.success(
+        `Two-factor authentication ${checked ? "enabled" : "disabled"}`,
+        {
+          position: "top-right",
+          autoClose: 2000,
+        }
       );
     } catch (err) {
-      message.error("Failed to update 2FA settings");
+      toast.error("Failed to update 2FA settings", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Update notifications
   const handleUpdateNotifications = async () => {
     try {
-      // Mock notification update (replace with actual API)
-      message.success("Notification settings updated");
+      toast.success("Notification settings updated", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     } catch (err) {
-      message.error("Failed to update notification settings");
+      toast.error("Failed to update notification settings", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
+  // Terminate session
   const handleTerminateSession = async (sessionId) => {
     try {
-      // Mock session termination (replace with actual API)
       setSessions(sessions.filter((s) => s.id !== sessionId));
-      message.success("Session terminated");
+      toast.success("Session terminated", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     } catch (err) {
-      message.error("Failed to terminate session");
+      toast.error("Failed to terminate session", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
+      <div className="settings-loading">
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className="settings-page">
+    <div className="settings-wrapper">
       <Row gutter={[16, 16]}>
+        {/* Sidebar */}
         <Col xs={24} md={6}>
-          {/* Sidebar */}
-          <Card>
-            <Menu mode="vertical" defaultSelectedKeys={["profile"]}>
-              <Menu.Item key="profile" icon={<UserOutlined />}>
+          <Card className="settings-sidebar">
+            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+              <Button
+                block
+                icon={<UserOutlined />}
+                type="text"
+                className="settings-nav-btn settings-nav-btn-active"
+              >
                 Profile
-              </Menu.Item>
-              <Menu.Item key="security" icon={<LockOutlined />}>
+              </Button>
+              <Button
+                block
+                icon={<LockOutlined />}
+                type="text"
+                className="settings-nav-btn"
+              >
                 Security
-              </Menu.Item>
-              <Menu.Item key="notifications" icon={<BellOutlined />}>
+              </Button>
+              <Button
+                block
+                icon={<BellOutlined />}
+                type="text"
+                className="settings-nav-btn"
+              >
                 Notifications
-              </Menu.Item>
-              <Menu.Item key="delete" icon={<DeleteOutlined />}>
+              </Button>
+              <Button
+                block
+                icon={<DeleteOutlined />}
+                type="text"
+                className="settings-nav-btn"
+              >
                 Delete Account
-              </Menu.Item>
-            </Menu>
+              </Button>
+            </Space>
           </Card>
         </Col>
+        {/* Main Content */}
         <Col xs={24} md={18}>
-          <Title level={2} style={{ marginBottom: 24 }}>
-            Account Settings
+          <Title level={2} className="settings-title">
+            Settings
           </Title>
-          <Tabs defaultActiveKey="1">
+          <Tabs defaultActiveKey="1" className="settings-tabs">
             <TabPane tab="Profile" key="1">
-              <Card style={{ textAlign: "center", marginBottom: 16 }}>
+              <Card className="settings-profile-card">
                 <Avatar
-                  size={100}
-                  src={userData.avatar || "https://via.placeholder.com/100"}
+                  size={80}
+                  src={userData.avatar || "https://via.placeholder.com/80"}
                   icon={<UserOutlined />}
+                  className="settings-avatar"
                 />
-                <Title level={3}>{userData.username}</Title>
-                <Text>{userData.email}</Text>
-                <div style={{ marginTop: 10 }}>
-                  <Rate disabled value={userData.rating} />
-                </div>
+                <Title level={4} className="settings-username">
+                  {userData.username}
+                </Title>
+                <Text className="settings-email">{userData.email}</Text>
+                <Rate
+                  disabled
+                  value={userData.profileRating}
+                  className="settings-rating"
+                />
               </Card>
               <Form
                 layout="vertical"
                 form={form}
                 onFinish={handleUpdateProfile}
+                className="settings-form"
               >
                 <Form.Item
-                  label="Bio"
+                  label="About Me"
                   name="bio"
                   rules={[
-                    { max: 500, message: "Bio cannot exceed 500 characters" },
+                    {
+                      max: 500,
+                      message: "About Me cannot exceed 500 characters",
+                    },
                   ]}
                 >
-                  <TextArea rows={4} placeholder="Enter your bio" />
+                  <TextArea
+                    rows={4}
+                    placeholder="Tell us about your love for films"
+                  />
                 </Form.Item>
-                <Form.Item label="Avatar" name="avatar">
+                <Form.Item label="Profile Picture" name="avatar">
                   <Upload
                     name="avatar"
                     listType="picture"
@@ -287,30 +383,35 @@ const SettingsWrapper = () => {
                     accept="image/*"
                     onRemove={() => setFileList([])}
                   >
-                    <Button icon={<UploadOutlined />}>Upload Avatar</Button>
+                    <Button icon={<UploadOutlined />}>
+                      Upload Profile Picture
+                    </Button>
                   </Upload>
                 </Form.Item>
-                <Form.Item label="Favorite Movies" name="favoriteMovies">
-                  <TextArea rows={4} placeholder="Enter one movie per line" />
+                <Form.Item label="Favorite Films" name="favoriteFilms">
+                  <TextArea
+                    rows={4}
+                    placeholder="Enter one film per line (e.g., The Godfather)"
+                  />
                 </Form.Item>
-                <Form.Item label="Favorite Genres" name="favoriteGenres">
-                  <TextArea rows={4} placeholder="Enter one genre per line" />
+                <Form.Item label="Favorite Directors" name="favoriteDirectors">
+                  <TextArea
+                    rows={4}
+                    placeholder="Enter one director per line (e.g., Martin Scorsese)"
+                  />
                 </Form.Item>
                 <Form.Item
-                  label="Social Links"
-                  name={["socialLinks", "twitter"]}
+                  label="Letterboxd"
+                  name={["socialLinks", "letterboxd"]}
                 >
-                  <Input placeholder="Twitter URL" />
+                  <Input placeholder="Letterboxd profile URL" />
                 </Form.Item>
-                <Form.Item
-                  label="Instagram"
-                  name={["socialLinks", "instagram"]}
-                >
-                  <Input placeholder="Instagram URL" />
+                <Form.Item label="Twitter" name={["socialLinks", "twitter"]}>
+                  <Input placeholder="Twitter profile URL" />
                 </Form.Item>
                 <Form.Item
                   label="Profile Visibility"
-                  name="isPublic"
+                  name="isProfilePublic"
                   valuePropName="checked"
                 >
                   <Switch
@@ -318,7 +419,7 @@ const SettingsWrapper = () => {
                     unCheckedChildren="Private"
                   />
                 </Form.Item>
-                <Form.Item label="Rating" name="rating">
+                <Form.Item label="Profile Rating" name="profileRating">
                   <Rate />
                 </Form.Item>
                 <Form.Item>
@@ -333,6 +434,7 @@ const SettingsWrapper = () => {
                 layout="vertical"
                 form={passwordForm}
                 onFinish={handlePasswordChange}
+                className="settings-form"
               >
                 <Form.Item
                   label="Current Password"
@@ -408,7 +510,11 @@ const SettingsWrapper = () => {
               />
             </TabPane>
             <TabPane tab="Notifications" key="3">
-              <Form layout="vertical" onFinish={handleUpdateNotifications}>
+              <Form
+                layout="vertical"
+                onFinish={handleUpdateNotifications}
+                className="settings-form"
+              >
                 <Form.Item
                   label="Email Notifications"
                   name="emailNotifications"
@@ -431,13 +537,13 @@ const SettingsWrapper = () => {
                     }
                   />
                 </Form.Item>
-                <Form.Item label="Mentions" name="mentions">
+                <Form.Item label="Review Mentions" name="reviews">
                   <Switch
-                    checked={notifications.mentions}
+                    checked={notifications.reviews}
                     onChange={(checked) =>
                       setNotifications((prev) => ({
                         ...prev,
-                        mentions: checked,
+                        reviews: checked,
                       }))
                     }
                   />
@@ -454,6 +560,7 @@ const SettingsWrapper = () => {
                 layout="vertical"
                 form={forgotPasswordForm}
                 onFinish={handleForgotPassword}
+                className="settings-form"
               >
                 <Form.Item
                   label="Email"
@@ -476,16 +583,16 @@ const SettingsWrapper = () => {
               </Form>
             </TabPane>
             <TabPane tab="Delete Account" key="5">
-              <Text type="danger">
-                This action is irreversible. All your data will be permanently
-                deleted.
+              <Text type="danger" className="settings-warning">
+                This action is irreversible. All your reviews, lists, and
+                profile data will be permanently deleted.
               </Text>
               <Button
                 danger
                 type="primary"
                 block
                 onClick={() => setIsDeleteModalOpen(true)}
-                style={{ marginTop: 16 }}
+                className="settings-delete-btn"
               >
                 Delete My Account
               </Button>
@@ -494,7 +601,6 @@ const SettingsWrapper = () => {
         </Col>
       </Row>
 
-      {/* Delete Account Confirmation Modal */}
       <Modal
         title="Confirm Account Deletion"
         open={isDeleteModalOpen}
@@ -504,8 +610,8 @@ const SettingsWrapper = () => {
         okType="danger"
       >
         <Text type="danger">
-          Are you sure you want to delete your account? This action cannot be
-          undone.
+          Are you sure you want to delete your account? All your data will be
+          lost.
         </Text>
       </Modal>
     </div>

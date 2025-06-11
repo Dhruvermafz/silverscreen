@@ -89,7 +89,9 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
       >
         <div className="movie-card-overlay">
           <div className="movie-card-content">
-            <h3 className="movie-card-title">{movie.title}</h3>
+            <h3 className="movie-card-title" style={{ color: "white" }}>
+              {movie.title}
+            </h3>
             {!isCompact && (
               <>
                 <p className="movie-card-meta">

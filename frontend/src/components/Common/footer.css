@@ -1,105 +1,115 @@
-/* Footer */
+/* footer.css */
 .footer {
-  background: var(--background-dark); /* #1a2426 for dark teal */
-  color: var(--text-primary); /* #d9d9d9 for light gray */
-  padding: var(--spacing-md) 0;
+  background: #f6f7f8; /* Reddit-like light background */
+  color: #1a1a1b; /* Dark text for readability */
+  padding: 32px 0;
   margin-top: auto;
-  border-top: 1px solid var(--border-color); /* #3a3a3a for subtle border */
+  font-family: "Inter", sans-serif;
 }
 
 .footer-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-sm);
+  padding: 0 16px;
 }
 
 .footer-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--primary-color); /* #f5c518 for yellow */
-  margin-bottom: var(--spacing-xs);
+  color: #ff4500; /* Reddit’s orange accent */
+  margin-bottom: 8px;
 }
 
 .footer-subtitle {
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
+  color: #1a1a1b;
+  margin-bottom: 12px;
 }
 
 .footer-description {
   font-size: 13px;
-  color: var(--text-secondary); /* #a0a0a0 for muted gray */
-  line-height: 1.5;
-  max-width: 300px;
+  color: #7c7c7d; /* Muted gray for secondary text */
+  line-height: 1.6;
+  max-width: 280px;
 }
 
 .footer-link {
   font-size: 13px;
-  color: var(--text-primary);
+  color: #1a1a1b;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .footer-link:hover,
 .footer-link:focus {
-  color: var(--primary-color);
+  color: #ff4500;
 }
 
 .footer-social {
   display: flex;
-  gap: var(--spacing-xs);
-  margin: var(--spacing-sm) 0;
+  gap: 16px;
+  margin: 12px 0;
 }
 
 .footer-social-icon {
   font-size: 20px;
-  color: var(--text-primary);
-  transition: color 0.2s ease;
+  color: #1a1a1b;
+  transition: color 0.2s ease-in-out;
 }
 
 .footer-social-icon:hover,
 .footer-social-icon:focus {
-  color: var(--primary-color);
+  color: #ff4500;
 }
 
 .footer-newsletter {
-  margin-top: var(--spacing-sm);
+  margin-top: 16px;
+}
+
+.footer-newsletter-form {
+  max-width: 300px;
 }
 
 .footer-newsletter-input {
-  background: var(--background-secondary); /* #2f2f2f for dark gray */
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-xs);
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  color: #1a1a1b;
+  border-radius: 20px;
+  padding: 8px 12px;
 }
 
-.footer-newsletter .button {
-  border-radius: var(--border-radius);
+.footer-newsletter-input:hover,
+.footer-newsletter-input:focus {
+  border-color: #ff4500;
+  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+}
+
+.footer-newsletter .ant-btn-primary {
+  background: #ff4500;
+  border-color: #ff4500;
+  border-radius: 20px;
+  padding: 0 16px;
+}
+
+.footer-newsletter .ant-btn-primary:hover,
+.footer-newsletter .ant-btn-primary:focus {
+  background: #e63e00;
+  border-color: #e63e00;
 }
 
 .footer-bottom {
   text-align: center;
   font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: var(--spacing-md);
-}
-
-.footer-bottom a {
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.footer-bottom a:hover,
-.footer-bottom a:focus {
-  color: var(--primary-color);
+  color: #7c7c7d;
+  margin-top: 24px;
+  display: block;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .footer {
-    padding: var(--spacing-sm) 0;
+    padding: 24px 0;
   }
 
   .footer-title {
@@ -123,8 +133,8 @@
     font-size: 11px;
   }
 
-  .footer-newsletter-input {
-    font-size: 12px;
+  .footer-newsletter-form {
+    max-width: 100%;
   }
 }
 
@@ -135,8 +145,8 @@
   }
 
   .footer-newsletter-input,
-  .footer-newsletter .button {
+  .footer-newsletter .ant-btn {
     width: 100%;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 8px;
   }
 }

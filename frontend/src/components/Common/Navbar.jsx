@@ -130,6 +130,9 @@ const Navbar = () => {
       <Link to="/groups" className="navbar-link" aria-label="Groups">
         Groups
       </Link>
+      <Link to="/members" className="navbar-link" aria-label="Members">
+        Members
+      </Link>
       <Link to="/box-office" className="navbar-link" aria-label="Box Office">
         Box Office
       </Link>

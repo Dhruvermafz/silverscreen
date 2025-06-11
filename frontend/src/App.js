@@ -35,6 +35,8 @@ import {
 } from "./actions/userApi";
 import FlagDashboard from "./components/flag-system/FlagDashbaord";
 import UserWrapper from "./components/admin/Users/UserWrapper";
+import TermsAndPrivacy from "./components/Common/TermsAndPrivacy";
+import BoxOfficeWrapper from "./components/BoxOffice/BoxOfficeWrapper";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -98,7 +100,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-
+          <Route path="/terms-and-conditions" element={<TermsAndPrivacy />} />
           {/* Protected Routes */}
           <Route path="/films" element={<MovieWrapper />} />
           <Route path="/lists" element={<ListComponent />} />
@@ -127,7 +129,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminWrapper />} />
           <Route path="/admin/users" element={<UserWrapper />} />
           <Route path="/admin/flags" element={<FlagDashboard />} />
-
+          <Route path="/box-office" element={<BoxOfficeWrapper />} />
           {/* Onboarding Route */}
           <Route
             path="/onboarding"

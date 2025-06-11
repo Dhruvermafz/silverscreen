@@ -6,7 +6,7 @@ import {
   Rate,
   Spin,
   message,
-  Image,
+  Avatar,
   Row,
   Col,
   Input,
@@ -14,9 +14,9 @@ import {
   Button,
   Space,
   Tag,
-  Avatar,
   Dropdown,
   Menu,
+  Badge,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -24,9 +24,11 @@ import {
   UserDeleteOutlined,
   MessageOutlined,
   FlagOutlined,
+  StarOutlined,
 } from "@ant-design/icons";
-import "./members.css";
+import "./members.css"; // Updated CSS file
 import { useGetAllUsersQuery } from "../../actions/userApi";
+
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
@@ -37,7 +39,7 @@ const MembersWrapper = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("joined");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [followedUsers, setFollowedUsers] = useState(new Set()); // Mock followed users
+  const [followedUsers, setFollowedUsers] = useState(new Set());
 
   const roles = [
     { value: "all", label: "All" },
@@ -111,43 +113,45 @@ const MembersWrapper = () => {
 
   return (
     <section className="members-page" aria-label="Community members">
-      <Row gutter={[24, 24]} className="members-container">
-        <Col xs={24} md={16}>
-          <Title level={2} className="members-title">
-            Community Members
-          </Title>
-          <Space className="members-filters" wrap>
-            <Search
-              placeholder="Search members by username"
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="members-search"
-              aria-label="Search members by username"
-              enterButton={<Button>Search</Button>}
-            />
-            <Select
-              defaultValue="all"
-              onChange={setRoleFilter}
-              className="members-select"
-              aria-label="Filter by role"
-            >
-              {roles.map((role) => (
-                <Option key={role.value} value={role.value}>
-                  {role.label}
-                </Option>
-              ))}
-            </Select>
-            <Select
-              defaultValue="joined"
-              onChange={setSortBy}
-              className="members-select"
-              aria-label="Sort members"
-            >
-              <Option value="joined">Recently Joined</Option>
-              <Option value="rating">Highest Rated</Option>
-              <Option value="activity">Most Active</Option>
-            </Select>
-          </Space>
-          <Row gutter={[24, 24]} className="members-grid">
+      <div className="members-header">
+        <Title level={2} className="members-title">
+          Community Members
+        </Title>
+        <Space className="members-filters" wrap>
+          <Search
+            placeholder="Search members by username"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="members-search"
+            aria-label="Search members by username"
+            enterButton={<Button type="primary">Search</Button>}
+          />
+          <Select
+            defaultValue="all"
+            onChange={setRoleFilter}
+            className="members-select"
+            aria-label="Filter by role"
+          >
+            {roles.map((role) => (
+              <Option key={role.value} value={role.value}>
+                {role.label}
+              </Option>
+            ))}
+          </Select>
+          <Select
+            defaultValue="joined"
+            onChange={setSortBy}
+            className="members-select"
+            aria-label="Sort members"
+          >
+            <Option value="joined">Recently Joined</Option>
+            <Option value="rating">Highest Rated</Option>
+            <Option value="activity">Most Active</Option>
+          </Select>
+        </Space>
+      </div>
+      <Row gutter={[16, 16]} className="members-container">
+        <Col xs={24} lg={16}>
+          <Row gutter={[16, 16]} className="members-grid">
             {sortedMembers.length > 0 ? (
               sortedMembers.map((user) => (
                 <Col key={user._id} xs={24} sm={12} md={8} lg={6}>
@@ -157,6 +161,9 @@ const MembersWrapper = () => {
                     actions={[
                       <Button
                         key="follow"
+                        type={
+                          followedUsers.has(user._id) ? "default" : "primary"
+                        }
                         icon={
                           followedUsers.has(user._id) ? (
                             <UserDeleteOutlined />
@@ -198,15 +205,26 @@ const MembersWrapper = () => {
                     ]}
                   >
                     <div className="member-card-content">
-                      <Avatar
-                        src={
-                          user.avatar ||
-                          `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
+                      <Badge
+                        count={
+                          user.role === "creator" ? (
+                            <StarOutlined style={{ color: "#fadb14" }} />
+                          ) : (
+                            0
+                          )
                         }
-                        alt={`Avatar of ${user.username}`}
-                        size={64}
-                        className="member-avatar"
-                      />
+                        offset={[-10, 10]}
+                      >
+                        <Avatar
+                          src={
+                            user.avatar ||
+                            `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
+                          }
+                          alt={`Avatar of ${user.username}`}
+                          size={64}
+                          className="member-avatar"
+                        />
+                      </Badge>
                       <Title level={5} className="member-username">
                         <Link
                           to={`/u/${user._id}`}
@@ -263,7 +281,7 @@ const MembersWrapper = () => {
             )}
           </Row>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={8}>
           <Card
             title="Community Stats"
             className="members-sidebar-card"
@@ -291,6 +309,7 @@ const MembersWrapper = () => {
                     <Button
                       key="follow"
                       size="small"
+                      type={followedUsers.has(user._id) ? "default" : "primary"}
                       onClick={() => handleFollow(user._id)}
                       className="members-follow-button"
                       aria-label={

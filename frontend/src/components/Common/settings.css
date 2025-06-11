@@ -1,0 +1,192 @@
+/* settings.css */
+.settings-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+  background: #f6f7f8; /* Reddit-like light background */
+  font-family: "Inter", sans-serif;
+}
+
+.settings-loading {
+  text-align: center;
+  padding: 50px;
+}
+
+.settings-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1b;
+  margin-bottom: 16px;
+}
+
+.settings-sidebar {
+  position: sticky;
+  top: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-nav-btn {
+  font-size: 14px;
+  color: #1a1a1b;
+  padding: 8px 16px;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.settings-nav-btn:hover {
+  background: #e6e7e8;
+}
+
+.settings-nav-btn-active {
+  background: #ff4500; /* Reddit’s orange accent */
+  color: #fff !important;
+}
+
+.settings-tabs .ant-tabs-nav {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-tabs .ant-tabs-tab {
+  font-size: 14px;
+  color: #1a1a1b;
+}
+
+.settings-tabs .ant-tabs-tab-active {
+  color: #ff4500;
+}
+
+.settings-profile-card {
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-avatar {
+  margin-bottom: 8px;
+}
+
+.settings-username {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1b;
+  margin: 8px 0;
+}
+
+.settings-email {
+  font-size: 13px;
+  color: #7c7c7d;
+}
+
+.settings-rating {
+  margin-top: 8px;
+}
+
+.settings-form .ant-form-item-label > label {
+  font-size: 13px;
+  color: #1a1a1b;
+}
+
+.settings-form .ant-input,
+.settings-form .ant-input-password,
+.settings-form .ant-upload-select {
+  border-radius: 20px;
+  border: 1px solid #d9d9d9;
+}
+
+.settings-form .ant-input:hover,
+.settings-form .ant-input:focus,
+.settings-form .ant-input-password:hover,
+.settings-form .ant-input-password:focus {
+  border-color: #ff4500;
+  box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+}
+
+.settings-form .ant-btn-primary {
+  background: #ff4500;
+  border-color: #ff4500;
+  border-radius: 20px;
+}
+
+.settings-form .ant-btn-primary:hover,
+.settings-form .ant-btn-primary:focus {
+  background: #e63e00;
+  border-color: #e63e00;
+}
+
+.settings-warning {
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.settings-delete-btn {
+  border-radius: 20px;
+}
+
+.settings-form .ant-switch-checked {
+  background: #ff4500;
+}
+
+.settings-form .ant-list-item {
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 8px 16px;
+}
+
+.settings-form .ant-list-item-meta-title {
+  font-size: 14px;
+  color: #1a1a1b;
+}
+
+.settings-form .ant-list-item-meta-description {
+  font-size: 12px;
+  color: #7c7c7d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-title {
+    font-size: 20px;
+  }
+
+  .settings-sidebar {
+    position: static;
+    margin-bottom: 16px;
+  }
+
+  .settings-nav-btn {
+    font-size: 13px;
+  }
+
+  .settings-profile-card {
+    padding: 12px;
+  }
+
+  .settings-username {
+    font-size: 16px;
+  }
+
+  .settings-email {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-form .ant-btn {
+    font-size: 12px;
+  }
+
+  .settings-form .ant-input,
+  .settings-form .ant-input-password {
+    font-size: 12px;
+  }
+}
