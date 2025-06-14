@@ -12,6 +12,9 @@ import {
   Tooltip,
   Dropdown,
   Menu,
+  Tag,
+  Tabs,
+  Avatar,
 } from "antd";
 import {
   HeartOutlined,
@@ -34,6 +37,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./movie-page.css";
 
 const { Title, Paragraph, Text } = Typography;
+const { TabPane } = Tabs;
 
 const MoviePage = () => {
   const { id } = useParams();
@@ -49,7 +53,6 @@ const MoviePage = () => {
   const [addMovieToList] = useAddMovieToListMutation();
   const { data: lists = [] } = useGetListsQuery();
 
-  // TMDB API key
   const API_KEY = "967df4e131f467edcdd674b650bf257c";
   const BASE_URL = "https://api.themoviedb.org/3";
 
@@ -58,7 +61,7 @@ const MoviePage = () => {
     setIsMovieLoading(true);
     try {
       const response = await axios.get(
-        `${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=en-US`
+        `${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=en-US&append_to_response=credits,release_dates`
       );
       setMovie(response.data);
     } catch (error) {
@@ -196,133 +199,207 @@ const MoviePage = () => {
     </Menu>
   );
 
+  // Get certification (e.g., PG-13)
+  const getCertification = () => {
+    if (!movie?.release_dates?.results) return "N/A";
+    const usRelease = movie.release_dates.results.find(
+      (r) => r.iso_3166_1 === "US"
+    );
+    return usRelease?.release_dates?.[0]?.certification || "N/A";
+  };
+
   if (isMovieLoading) {
     return (
-      <div className="movie-page">
+      <div className="movie-page tmdb">
         <Skeleton active avatar paragraph={{ rows: 4 }} />
       </div>
     );
   }
   if (!movie) {
     return (
-      <div className="movie-page">
+      <div className="movie-page tmdb">
         <Text type="danger">Movie not found.</Text>
       </div>
     );
   }
 
   return (
-    <div className="movie-page">
-      <Row gutter={[16, 16]}>
-        {/* Main Content */}
-        <Col xs={24} lg={16}>
-          {/* Trailer or Poster */}
-          <div className="movie-page-banner">
-            {trailer ? (
-              <iframe
-                src={trailer}
-                title={`${movie.title} trailer`}
-                className="movie-page-trailer"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
+    <div className="movie-page tmdb">
+      {/* Backdrop Section */}
+      <div
+        className="tmdb-backdrop"
+        style={{
+          backgroundImage: `url(https://image.tmdb.org/t/p/w1280${movie.backdrop_path})`,
+        }}
+      >
+        <div className="tmdb-backdrop-overlay">
+          <Row gutter={[24, 24]} className="tmdb-header">
+            <Col xs={24} sm={8} md={6}>
               <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
                 alt={movie.title}
-                className="movie-page-poster"
+                className="tmdb-poster"
               />
-            )}
-          </div>
-
-          {/* Movie Details */}
-          <div className="movie-page-details">
-            <Title level={2} className="movie-page-title">
-              {movie.title}
-            </Title>
-            <Space size="middle" wrap className="movie-page-meta">
-              <Text>
-                <strong>Release:</strong> {movie.release_date}
-              </Text>
-              <Text>
-                <strong>Genres:</strong>{" "}
-                {movie.genres?.map((genre) => genre.name).join(", ")}
-              </Text>
-              <Text>
-                <strong>Rating:</strong>{" "}
-                <Rate disabled value={movie.vote_average / 2} allowHalf /> (
-                {movie.vote_average}/10)
-              </Text>
-            </Space>
-            <Paragraph className="movie-page-overview">
-              {movie.overview}
-            </Paragraph>
-
-            {/* Actions */}
-            <Space size="middle" className="movie-page-actions">
-              <Tooltip title={isLiked ? "Unlike" : "Like"}>
-                <Button
-                  shape="circle"
-                  icon={isLiked ? <HeartFilled /> : <HeartOutlined />}
-                  type={isLiked ? "primary" : "default"}
-                  onClick={handleToggleLike}
-                  aria-label={isLiked ? "Unlike movie" : "Like movie"}
-                />
-              </Tooltip>
-              <Tooltip title="Share">
-                <Button
-                  shape="circle"
-                  icon={<ShareAltOutlined />}
-                  onClick={handleShare}
-                  aria-label="Share movie"
-                />
-              </Tooltip>
-              <Tooltip title="Add to List">
-                <Dropdown overlay={addToListMenu} trigger={["click"]}>
+            </Col>
+            <Col xs={24} sm={16} md={18}>
+              <Title level={2} className="tmdb-title">
+                {movie.title}
+                <Text className="tmdb-year">
+                  ({movie.release_date?.split("-")[0]})
+                </Text>
+              </Title>
+              <Paragraph className="tmdb-tagline">{movie.tagline}</Paragraph>
+              <Space size="middle" wrap className="tmdb-meta">
+                <Text className="tmdb-certification">{getCertification()}</Text>
+                <Text>{movie.release_date}</Text>
+                {movie.genres?.map((genre) => (
+                  <Tag key={genre.id} className="tmdb-genre">
+                    {genre.name}
+                  </Tag>
+                ))}
+                <Text>{movie.runtime} min</Text>
+              </Space>
+              <Space size="small" className="tmdb-rating">
+                <Rate disabled value={movie.vote_average / 2} allowHalf />
+                <Text className="tmdb-rating-text">
+                  {movie.vote_average.toFixed(1)}/10 ({movie.vote_count} votes)
+                </Text>
+              </Space>
+              <Space size="middle" className="tmdb-actions">
+                <Tooltip title={isLiked ? "Unlike" : "Like"}>
                   <Button
                     shape="circle"
-                    icon={<PlusOutlined />}
-                    aria-label="Add to list"
+                    icon={isLiked ? <HeartFilled /> : <HeartOutlined />}
+                    className="tmdb-action-btn"
+                    onClick={handleToggleLike}
+                    aria-label={isLiked ? "Unlike movie" : "Like movie"}
                   />
-                </Dropdown>
-              </Tooltip>
-              <Button
-                type="primary"
-                icon={<PlayCircleOutlined />}
-                href={`https://www.themoviedb.org/movie/${movie.id}`}
-                target="_blank"
-                aria-label="Watch trailer"
-              >
-                Watch Trailer
-              </Button>
-            </Space>
-          </div>
+                </Tooltip>
+                <Tooltip title="Share">
+                  <Button
+                    shape="circle"
+                    icon={<ShareAltOutlined />}
+                    className="tmdb-action-btn"
+                    onClick={handleShare}
+                    aria-label="Share movie"
+                  />
+                </Tooltip>
+                <Tooltip title="Add to List">
+                  <Dropdown overlay={addToListMenu} trigger={["click"]}>
+                    <Button
+                      shape="circle"
+                      icon={<PlusOutlined />}
+                      className="tmdb-action-btn"
+                      aria-label="Add to list"
+                    />
+                  </Dropdown>
+                </Tooltip>
+                <Button
+                  type="primary"
+                  icon={<PlayCircleOutlined />}
+                  href={
+                    trailer || `https://www.themoviedb.org/movie/${movie.id}`
+                  }
+                  target="_blank"
+                  className="tmdb-action-btn-primary"
+                  aria-label="Watch trailer"
+                >
+                  Play Trailer
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+      </div>
 
-          <Divider />
+      {/* Main Content */}
+      <div className="tmdb-content">
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={16}>
+            <Tabs defaultActiveKey="overview" className="tmdb-tabs">
+              <TabPane tab="Overview" key="overview">
+                <Title level={4}>Overview</Title>
+                <Paragraph className="tmdb-overview">
+                  {movie.overview}
+                </Paragraph>
+                <div className="tmdb-details">
+                  <Text strong>Director: </Text>
+                  <Text>
+                    {movie.credits?.crew?.find((c) => c.job === "Director")
+                      ?.name || "N/A"}
+                  </Text>
+                  <br />
+                  <Text strong>Cast: </Text>
+                  <Text>
+                    {movie.credits?.cast
+                      ?.slice(0, 4)
+                      .map((c) => c.name)
+                      .join(", ") || "N/A"}
+                  </Text>
+                </div>
+              </TabPane>
+              {trailer && (
+                <TabPane tab="Videos" key="videos">
+                  <div className="tmdb-trailer">
+                    <iframe
+                      src={trailer}
+                      title={`${movie.title} trailer`}
+                      className="tmdb-trailer-iframe"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </TabPane>
+              )}
+              <TabPane tab="Reviews" key="reviews">
+                <MovieReview movieId={id} />
+              </TabPane>
+            </Tabs>
+          </Col>
+          <Col xs={24} lg={8}>
+            <div className="tmdb-sidebar">
+              <Title level={4}>Facts</Title>
+              <div className="tmdb-facts">
+                <Text strong>Status: </Text>
+                <Text>{movie.status || "N/A"}</Text>
+                <br />
+                <Text strong>Original Language: </Text>
+                <Text>{movie.original_language?.toUpperCase() || "N/A"}</Text>
+                <br />
+                <Text strong>Budget: </Text>
+                <Text>
+                  {movie.budget ? `$${movie.budget.toLocaleString()}` : "-"}
+                </Text>
+                <br />
+                <Text strong>Revenue: </Text>
+                <Text>
+                  {movie.revenue ? `$${movie.revenue.toLocaleString()}` : "-"}
+                </Text>
+                <br />
+                <Text strong>Production: </Text>
+                <Text>
+                  {movie.production_companies?.map((c) => c.name).join(", ") ||
+                    "N/A"}
+                </Text>
+              </div>
+            </div>
+          </Col>
+        </Row>
 
-          {/* Reviews Section */}
-          <Title level={3}>Reviews</Title>
-          <MovieReview movieId={id} />
-        </Col>
-
-        {/* Sidebar */}
-        <Col xs={24} lg={8}>
-          <div className="movie-page-sidebar">
-            {/* Recommended Movies */}
-            <Title level={4} className="sidebar-title">
-              Recommended
-            </Title>
-            {isRecsLoading ? (
-              <Skeleton active paragraph={{ rows: 2 }} />
-            ) : recommendedMovies.length > 0 ? (
-              <Space direction="vertical" size="small" className="sidebar-list">
-                {recommendedMovies.map((rec) => (
+        {/* Recommended Movies */}
+        <div className="tmdb-section">
+          <Title level={4}>Recommended Movies</Title>
+          {isRecsLoading ? (
+            <Skeleton active paragraph={{ rows: 2 }} />
+          ) : recommendedMovies.length > 0 ? (
+            <Row gutter={[16, 16]} className="tmdb-movie-list">
+              {recommendedMovies.map((rec) => (
+                <Col xs={12} sm={8} md={4} key={rec.id}>
                   <MovieCard
-                    key={rec.id}
                     movie={{
                       id: rec.id,
                       title: rec.title,
-                      posterUrl: `https://image.tmdb.org/t/p/w200${rec.poster_path}`,
+                      posterUrl: `https://image.tmdb.org/t/p/w185${rec.poster_path}`,
                       releaseDate: rec.release_date,
                       genre: rec.genre_ids?.join(", "),
                       rating: rec.vote_average,
@@ -331,41 +408,40 @@ const MoviePage = () => {
                     onAddToList={handleAddToList}
                     onClick={() => navigate(`/movies/${rec.id}`)}
                   />
-                ))}
-              </Space>
-            ) : (
-              <Text>No recommendations available.</Text>
-            )}
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <Text>No recommendations available.</Text>
+          )}
+        </div>
 
-            <Divider />
-
-            {/* Trending Movies */}
-            <Title level={4} className="sidebar-title">
-              <FireOutlined /> Trending Now
-            </Title>
-            {isTrendingLoading ? (
-              <Skeleton active paragraph={{ rows: 2 }} />
-            ) : trendingMovies.length > 0 ? (
-              <Space direction="vertical" size="small" className="sidebar-list">
-                {trendingMovies.map((trend) => (
+        {/* Trending Movies */}
+        <div className="tmdb-section">
+          <Title level={4}>Trending Now</Title>
+          {isTrendingLoading ? (
+            <Skeleton active paragraph={{ rows: 2 }} />
+          ) : trendingMovies.length > 0 ? (
+            <Row gutter={[16, 16]} className="tmdb-movie-list">
+              {trendingMovies.map((trend) => (
+                <Col xs={12} sm={8} md={4} key={trend.id}>
                   <MovieCard
-                    key={trend.id}
                     movie={{
                       ...trend,
-                      posterUrl: trend.posterUrl.replace("/w500", "/w200"),
+                      posterUrl: trend.posterUrl.replace("/w500", "/w185"),
                     }}
                     isCompact
                     onAddToList={handleAddToList}
                     onClick={() => navigate(`/movies/${trend.id}`)}
                   />
-                ))}
-              </Space>
-            ) : (
-              <Text>No trending movies available.</Text>
-            )}
-          </div>
-        </Col>
-      </Row>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <Text>No trending movies available.</Text>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Button,
@@ -10,42 +10,31 @@ import {
   Card,
   Typography,
   Spin,
+  Popconfirm,
 } from "antd";
-import axios from "axios";
+import { DeleteOutlined } from "@ant-design/icons";
+import { useGetProfileQuery } from "../../actions/userApi";
+import {
+  useAddReviewMutation,
+  useGetReviewsQuery,
+  useDeleteReviewMutation,
+} from "../../actions/reviewApi"; // Import review API hooks
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const { Title, Paragraph } = Typography;
 
 const MovieReview = () => {
   const { id } = useParams(); // Get movie ID from URL
-  const [reviews, setReviews] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
+  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery(); // Fetch user profile
+  const { data: reviews = [], isLoading: isReviewsLoading } =
+    useGetReviewsQuery(id); // Fetch reviews for movie
+  const [addReview, { isLoading: isAddingReview }] = useAddReviewMutation(); // Add review mutation
+  const [deleteReview] = useDeleteReviewMutation(); // Delete review mutation
 
-  // TMDB API key
-  const API_KEY = "967df4e131f467edcdd674b650bf257c";
-  // Placeholder for custom backend API URL
-
-  const BACKEND_API_URL = "https://your-backend-api.com/reviews";
-
-  // Fetch reviews from TMDB
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${API_KEY}&language=en-US`
-        );
-        setReviews(response.data.results);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, [id]);
-
-  // Truncate text to 100 characters
+  // Truncate text to 250 characters
   const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
@@ -53,6 +42,13 @@ const MovieReview = () => {
 
   // Handle opening/closing the modal
   const showModal = () => {
+    if (!profile) {
+      toast.error("Please log in to add a review", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      return;
+    }
     setIsModalOpen(true);
   };
 
@@ -63,50 +59,107 @@ const MovieReview = () => {
 
   // Handle review submission
   const handleSubmit = async (values) => {
+    if (!profile) return; // Ensure user is logged in
+
     const newReview = {
       movieId: id,
       rating: values.rating,
       content: values.content,
-      author: values.author || "Anonymous",
+      author: profile.name || "Anonymous", // Use profile name
       created_at: new Date().toISOString(),
     };
 
     try {
-      // Send review to backend API (replace with actual endpoint)
-      await axios.post(BACKEND_API_URL, newReview);
-      setReviews([...reviews, { ...newReview, id: Date.now() }]); // Temporary ID
+      await addReview(newReview).unwrap(); // Use RTK Query mutation
+      toast.success("Review submitted successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
       setIsModalOpen(false);
       form.resetFields();
     } catch (error) {
       console.error("Error adding review:", error);
+      toast.error(error?.data?.message || "Failed to submit review", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    }
+  };
+
+  // Handle review deletion
+  const handleDelete = async (reviewId) => {
+    try {
+      await deleteReview(reviewId).unwrap(); // Use RTK Query mutation
+      toast.success("Review deleted successfully", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      toast.error(error?.data?.message || "Failed to delete review", {
+        position: "top-right",
+        autoClose: 2000,
+      });
     }
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <Title level={3}>Reviews</Title>
+    <div className="tmdb-reviews">
+      <Title level={4} className="tmdb-section-title">
+        Reviews
+      </Title>
 
       {/* Button to add a review */}
-      <Button type="primary" onClick={showModal} style={{ marginBottom: 16 }}>
-        Add Review
+      <Button
+        type="primary"
+        onClick={showModal}
+        className="tmdb-action-btn-primary"
+        disabled={isProfileLoading || !profile}
+        loading={isProfileLoading}
+      >
+        Write a Review
       </Button>
 
       {/* Reviews Slider */}
-      {isLoading ? (
-        <Spin tip="Loading reviews..." />
+      {isReviewsLoading ? (
+        <Spin tip="Loading reviews..." className="tmdb-spin" />
       ) : reviews.length === 0 ? (
-        <Paragraph>No reviews yet. Be the first to add one!</Paragraph>
+        <Paragraph className="tmdb-no-reviews">
+          No reviews yet. Be the first to add one!
+        </Paragraph>
       ) : (
-        <Carousel autoplay dots={true} style={{ width: "100%", marginTop: 16 }}>
+        <Carousel autoplay dots={true} className="tmdb-review-carousel">
           {reviews.map((review) => (
             <div key={review.id}>
-              <Card style={{ margin: "0 16px" }}>
-                <Paragraph>
-                  <strong>{review.author || "Anonymous"}</strong> rated:{" "}
-                  <Rate disabled value={review.rating || 0} allowHalf />
+              <Card className="tmdb-review-card">
+                <Paragraph className="tmdb-review-author">
+                  <strong>{review.author || "Anonymous"}</strong>
+                  <Rate
+                    disabled
+                    value={review.rating || 0}
+                    allowHalf
+                    className="tmdb-review-rating"
+                  />
+                  {profile?.name === review.author && (
+                    <Popconfirm
+                      title="Are you sure you want to delete this review?"
+                      onConfirm={() => handleDelete(review.id)}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button
+                        type="text"
+                        icon={<DeleteOutlined />}
+                        className="tmdb-delete-btn"
+                        aria-label="Delete review"
+                      />
+                    </Popconfirm>
+                  )}
                 </Paragraph>
-                <Paragraph>{truncateText(review.content, 250)}</Paragraph>
-                <Paragraph type="secondary">
+                <Paragraph className="tmdb-review-content">
+                  {truncateText(review.content, 250)}
+                </Paragraph>
+                <Paragraph className="tmdb-review-date">
                   Posted on: {new Date(review.created_at).toLocaleDateString()}
                 </Paragraph>
               </Card>
@@ -117,19 +170,13 @@ const MovieReview = () => {
 
       {/* Add Review Modal */}
       <Modal
-        title="Add a Review"
+        title="Write a Review"
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
+        className="tmdb-review-modal"
       >
         <Form form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item
-            name="author"
-            label="Your Name (Optional)"
-            rules={[{ max: 50, message: "Name must be 50 characters or less" }]}
-          >
-            <Input placeholder="Enter your name" />
-          </Form.Item>
           <Form.Item
             name="rating"
             label="Rating"
@@ -139,19 +186,34 @@ const MovieReview = () => {
           </Form.Item>
           <Form.Item
             name="content"
-            label="Review"
+            label="Your Review"
             rules={[
               { required: true, message: "Please write a review" },
               { min: 10, message: "Review must be at least 10 characters" },
+              { max: 500, message: "Review cannot exceed 500 characters" },
             ]}
           >
-            <Input.TextArea rows={4} placeholder="Write your review here" />
+            <Input.TextArea
+              rows={4}
+              placeholder="Write your review here"
+              showCount
+              maxLength={500}
+            />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit">
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="tmdb-action-btn-primary"
+              loading={isAddingReview}
+            >
               Submit Review
             </Button>
-            <Button style={{ marginLeft: 8 }} onClick={handleCancel}>
+            <Button
+              onClick={handleCancel}
+              style={{ marginLeft: 8 }}
+              className="tmdb-action-btn"
+            >
               Cancel
             </Button>
           </Form.Item>
