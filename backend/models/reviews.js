@@ -3,13 +3,9 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    movie: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Movie",
-      required: true,
-    },
+    movie: { type: String, required: true }, // Store TMDb movie ID as string
     rating: { type: Number, required: true },
-    comment: String,
+    comment: { type: String },
   },
   { timestamps: true }
 );

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
 import {
   Button,
   Modal,
@@ -18,21 +17,24 @@ import {
   useAddReviewMutation,
   useGetReviewsQuery,
   useDeleteReviewMutation,
-} from "../../actions/reviewApi"; // Import review API hooks
+} from "../../actions/reviewApi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const { Title, Paragraph } = Typography;
 
-const MovieReview = () => {
-  const { id } = useParams(); // Get movie ID from URL
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const MovieReview = ({
+  movieId,
+  triggerModal = false,
+  onModalClose = () => {},
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(triggerModal);
   const [form] = Form.useForm();
-  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery(); // Fetch user profile
+  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
   const { data: reviews = [], isLoading: isReviewsLoading } =
-    useGetReviewsQuery(id); // Fetch reviews for movie
-  const [addReview, { isLoading: isAddingReview }] = useAddReviewMutation(); // Add review mutation
-  const [deleteReview] = useDeleteReviewMutation(); // Delete review mutation
+    useGetReviewsQuery(movieId);
+  const [addReview, { isLoading: isAddingReview }] = useAddReviewMutation();
+  const [deleteReview] = useDeleteReviewMutation();
 
   // Truncate text to 250 characters
   const truncateText = (text, maxLength) => {
@@ -40,7 +42,7 @@ const MovieReview = () => {
     return text.substring(0, maxLength) + "...";
   };
 
-  // Handle opening/closing the modal
+  // Handle opening the modal
   const showModal = () => {
     if (!profile) {
       toast.error("Please log in to add a review", {
@@ -52,34 +54,43 @@ const MovieReview = () => {
     setIsModalOpen(true);
   };
 
+  // Handle closing the modal
   const handleCancel = () => {
     setIsModalOpen(false);
     form.resetFields();
+    onModalClose(); // Notify parent component (e.g., MovieCard)
   };
 
   // Handle review submission
   const handleSubmit = async (values) => {
-    if (!profile) return; // Ensure user is logged in
+    if (!profile) return;
 
     const newReview = {
-      movieId: id,
+      movieId: movieId.toString(), // Ensure movie ID is a string
       rating: values.rating,
-      content: values.content,
-      author: profile.name || "Anonymous", // Use profile name
+      comment: values.content, // Map content to comment for backend
+      author: profile.name || "Anonymous",
       created_at: new Date().toISOString(),
     };
 
     try {
-      await addReview(newReview).unwrap(); // Use RTK Query mutation
+      await addReview(newReview).unwrap();
       toast.success("Review submitted successfully", {
         position: "top-right",
         autoClose: 2000,
       });
       setIsModalOpen(false);
       form.resetFields();
+      onModalClose();
     } catch (error) {
       console.error("Error adding review:", error);
-      toast.error(error?.data?.message || "Failed to submit review", {
+      const errorMessage =
+        error.status === 400
+          ? "Invalid movie ID"
+          : error.status === 404
+          ? "Movie not found in TMDb"
+          : error?.data?.message || "Failed to submit review";
+      toast.error(errorMessage, {
         position: "top-right",
         autoClose: 2000,
       });
@@ -89,7 +100,7 @@ const MovieReview = () => {
   // Handle review deletion
   const handleDelete = async (reviewId) => {
     try {
-      await deleteReview(reviewId).unwrap(); // Use RTK Query mutation
+      await deleteReview(reviewId).unwrap();
       toast.success("Review deleted successfully", {
         position: "top-right",
         autoClose: 2000,
@@ -109,7 +120,6 @@ const MovieReview = () => {
         Reviews
       </Title>
 
-      {/* Button to add a review */}
       <Button
         type="primary"
         onClick={showModal}
@@ -120,7 +130,6 @@ const MovieReview = () => {
         Write a Review
       </Button>
 
-      {/* Reviews Slider */}
       {isReviewsLoading ? (
         <Spin tip="Loading reviews..." className="tmdb-spin" />
       ) : reviews.length === 0 ? (
@@ -168,7 +177,6 @@ const MovieReview = () => {
         </Carousel>
       )}
 
-      {/* Add Review Modal */}
       <Modal
         title="Write a Review"
         open={isModalOpen}

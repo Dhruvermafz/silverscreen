@@ -12,26 +12,37 @@ export const reviewApi = createApi({
       }
       return headers;
     },
-  }), // Adjust to match your Express server's URL
+  }),
   endpoints: (builder) => ({
     // Add a review
     addReview: builder.mutation({
       query: (reviewData) => ({
         url: "/reviews",
         method: "POST",
-        body: reviewData, // Send the review data to be added
+        body: {
+          ...reviewData,
+          movie: reviewData.movieId,
+          comment: reviewData.comment || reviewData.content,
+        }, // Map movieId to movie, content to comment
       }),
     }),
 
     // Get reviews for a specific movie
     getReviews: builder.query({
-      query: (movieId) => `/reviews/${movieId}`, // GET /reviews/:movieId
+      query: (movieId) => `/reviews/${movieId}`,
+      transformResponse: (response) =>
+        response.map((review) => ({
+          ...review,
+          id: review._id, // Map _id to id
+          content: review.comment, // Map comment to content
+          author: review.user?.username || "Anonymous", // Map user.username to author
+        })),
     }),
 
     // Delete a review by ID
     deleteReview: builder.mutation({
       query: (reviewId) => ({
-        url: `/reviews/${reviewId}`, // DELETE /reviews/:reviewId
+        url: `/reviews/${reviewId}`,
         method: "DELETE",
       }),
     }),

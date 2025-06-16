@@ -21,3 +21,234 @@
 {"ip":"::1","level":"info","message":"Incoming request: POST /api/auth/login","timestamp":"2025-06-13T06:56:16.987Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-13T06:56:17.704Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-13T06:56:17.912Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-06-14T10:07:29.835Z"}
+{"level":"info","message":"Server running on port 5000 in development mode","timestamp":"2025-06-14T10:07:29.849Z"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-14T10:08:06.897Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-14T10:08:07.713Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-14T10:09:13.002Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: POST /api/auth/login","timestamp":"2025-06-14T10:09:17.395Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-14T10:09:18.202Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-14T10:09:18.591Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-14T10:14:57.566Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-14T10:14:57.572Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/reviews/870028","timestamp":"2025-06-14T10:41:36.913Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"error":"Cast to ObjectId failed for value \"870028\" (type string) at path \"movie\" for model \"Review\"","level":"error","message":"Server error","method":"GET","stack":"CastError: Cast to ObjectId failed for value \"870028\" (type string) at path \"movie\" for model \"Review\"\n    at SchemaObjectId.cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:251:11)\n    at SchemaType.applySetters (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1255:12)\n    at SchemaType.castForQuery (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1673:17)\n    at cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\cast.js:390:32)\n    at Query.cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:4907:12)\n    at Query._castConditions (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:2325:10)\n    at model.Query._find (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:2352:8)\n    at model.Query.exec (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:4456:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async exports.getReviews (E:\\silverscreen\\backend\\controller\\reviewController.js:16:19)","timestamp":"2025-06-14T10:41:36.920Z","url":"/api/reviews/870028"}
+{"ip":"::1","level":"info","message":"Incoming request: POST /api/reviews","timestamp":"2025-06-14T10:41:55.150Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"error":"Review validation failed: movie: Cast to ObjectId failed for value \"870028\" (type string) at path \"movie\" because of \"BSONError\"","level":"error","message":"Server error","method":"POST","stack":"ValidationError: Review validation failed: movie: Cast to ObjectId failed for value \"870028\" (type string) at path \"movie\" because of \"BSONError\"\n    at Document.invalidate (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:3351:32)\n    at model.$set (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:1480:12)\n    at model.$set (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:1132:16)\n    at model.Document (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:178:12)\n    at model.Model (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:128:12)\n    at new model (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:4800:15)\n    at E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:2759:20\n    at Array.map (<anonymous>)\n    at Function.create (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:2747:34)\n    at exports.addReview (E:\\silverscreen\\backend\\controller\\reviewController.js:5:31)","timestamp":"2025-06-14T10:41:55.231Z","url":"/api/reviews"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-06-16T04:23:30.637Z"}
+{"level":"info","message":"Server running on port 5000 in development mode","timestamp":"2025-06-16T04:23:30.654Z"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-16T04:23:57.404Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-16T04:23:58.411Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-16T04:28:44.509Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-16T04:28:44.519Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/reviews/1376434","timestamp":"2025-06-16T04:28:48.278Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"error":"Cast to ObjectId failed for value \"1376434\" (type string) at path \"movie\" for model \"Review\"","level":"error","message":"Server error","method":"GET","stack":"CastError: Cast to ObjectId failed for value \"1376434\" (type string) at path \"movie\" for model \"Review\"\n    at SchemaObjectId.cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:251:11)\n    at SchemaType.applySetters (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1255:12)\n    at SchemaType.castForQuery (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1673:17)\n    at cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\cast.js:390:32)\n    at Query.cast (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:4907:12)\n    at Query._castConditions (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:2325:10)\n    at model.Query._find (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:2352:8)\n    at model.Query.exec (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\query.js:4456:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async exports.getReviews (E:\\silverscreen\\backend\\controller\\reviewController.js:16:19)","timestamp":"2025-06-16T04:28:48.288Z","url":"/api/reviews/1376434"}
+{"ip":"::1","level":"info","message":"Incoming request: POST /api/reviews","timestamp":"2025-06-16T04:29:03.968Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"error":"Review validation failed: movie: Cast to ObjectId failed for value \"1376434\" (type string) at path \"movie\" because of \"BSONError\"","level":"error","message":"Server error","method":"POST","stack":"ValidationError: Review validation failed: movie: Cast to ObjectId failed for value \"1376434\" (type string) at path \"movie\" because of \"BSONError\"\n    at Document.invalidate (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:3351:32)\n    at model.$set (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:1480:12)\n    at model.$set (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:1132:16)\n    at model.Document (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\document.js:178:12)\n    at model.Model (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:128:12)\n    at new model (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:4800:15)\n    at E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:2759:20\n    at Array.map (<anonymous>)\n    at Function.create (E:\\silverscreen\\backend\\node_modules\\mongoose\\lib\\model.js:2747:34)\n    at exports.addReview (E:\\silverscreen\\backend\\controller\\reviewController.js:5:31)","timestamp":"2025-06-16T04:29:04.036Z","url":"/api/reviews"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:24.134Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:24.140Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:27.237Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:27.240Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:28.273Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:28.276Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:28.813Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:28.816Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:28.994Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:28.996Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.496Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.498Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.545Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.547Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.588Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.592Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.600Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.603Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.644Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.650Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.665Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.668Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.696Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.697Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.742Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.745Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.778Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.780Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.810Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.812Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.826Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.828Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.871Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.872Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.911Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.913Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.929Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.930Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.968Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.969Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:29.997Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:29.999Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.026Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.028Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.061Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.064Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.094Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.097Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.127Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.129Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.164Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.167Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.206Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.211Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.228Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.229Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.254Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.255Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.292Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.295Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.324Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.326Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.356Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.357Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.388Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.389Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.443Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.444Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:35:30.461Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:35:30.464Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:31.369Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:31.371Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:31.872Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:31.874Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:31.916Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:31.918Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:31.949Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:31.952Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:31.979Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:31.981Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.012Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.013Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.031Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.033Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.065Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.067Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.110Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.111Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.147Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.149Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.170Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.172Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.198Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.199Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.246Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.248Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.267Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.268Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.295Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.296Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.329Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.332Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.370Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.373Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.402Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.404Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.431Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.432Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.463Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.464Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.494Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.495Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.526Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.527Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.561Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.564Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.608Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.611Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.642Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.646Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.661Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.664Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.696Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.698Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.745Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.747Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.766Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.767Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.791Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.792Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.833Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.834Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.869Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.870Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.898Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.900Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.937Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.938Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.963Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.964Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:32.995Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:32.996Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.027Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.028Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.054Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.056Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.103Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.104Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.130Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.132Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.166Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.168Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.194Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.197Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.226Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.228Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.253Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.254Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.298Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.299Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.336Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.336Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.363Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.365Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.393Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.394Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.427Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.429Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.454Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.455Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.484Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.485Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.515Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.516Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.562Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.563Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.595Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.596Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.646Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.647Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.683Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.687Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.749Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.750Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:33.978Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:33.980Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:34.158Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:34.160Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:38.972Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:38.974Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:39.449Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:39.452Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:39.739Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:39.741Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:40.007Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:40.009Z"}
+{"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-06-16T04:37:40.278Z"}
+{"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:40.280Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-06-16T04:38:03.538Z"}
+{"level":"info","message":"Server running on port 5000 in development mode","timestamp":"2025-06-16T04:38:03.572Z"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-16T04:39:27.105Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-16T04:39:27.122Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/reviews/1376434","timestamp":"2025-06-16T04:39:42.760Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: POST /api/reviews","timestamp":"2025-06-16T04:39:54.239Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-06-16T04:40:01.056Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-06-16T04:40:01.066Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/reviews/1376434","timestamp":"2025-06-16T04:40:03.370Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}

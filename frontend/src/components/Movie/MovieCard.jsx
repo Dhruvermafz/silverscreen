@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Modal,
-  Input,
-  Rate,
-  Space,
-  Dropdown,
-  Menu,
-  Tooltip,
-} from "antd";
+import { Button, Space, Dropdown, Menu, Tooltip, Rate } from "antd";
 import {
   HeartOutlined,
   HeartFilled,
@@ -16,29 +7,18 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useGetListsQuery } from "../../actions/listApi"; // From ListComponent
+import { useGetListsQuery } from "../../actions/listApi";
+import { useGetProfileQuery } from "../../actions/userApi";
+import MovieReview from "./MovieReview"; // Adjust path as needed
 import { toast } from "react-toastify";
 import "./moviecard.css";
 
-const { TextArea } = Input;
-
 const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
-  const [isReviewModalVisible, setReviewModalVisible] = useState(false);
-  const [review, setReview] = useState("");
-  const [rating, setRating] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const navigate = useNavigate();
-  const { data: lists = [] } = useGetListsQuery(); // Fetch user lists
-
-  const handleAddReview = () => {
-    toast.success("Review submitted!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
-    setReviewModalVisible(false);
-    setReview("");
-    setRating(0);
-  };
+  const { data: lists = [] } = useGetListsQuery();
+  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked);
@@ -55,6 +35,22 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
       position: "top-right",
       autoClose: 2000,
     });
+  };
+
+  const handleReviewClick = (e) => {
+    e.stopPropagation();
+    if (!profile) {
+      toast.error("Please log in to add a review", {
+        position: "top-right",
+        autoClose: 2000,
+      });
+      return;
+    }
+    setShowReviewModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowReviewModal(false);
   };
 
   const addToListMenu = (
@@ -106,11 +102,9 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
                   <Tooltip title="Review">
                     <Button
                       size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReviewModalVisible(true);
-                      }}
+                      onClick={handleReviewClick}
                       aria-label={`Review ${movie.title}`}
+                      disabled={isProfileLoading || !profile}
                     >
                       Review
                     </Button>
@@ -159,24 +153,14 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
         </div>
       </div>
 
-      <Modal
-        title={`Review "${movie.title}"`}
-        open={isReviewModalVisible}
-        onCancel={() => setReviewModalVisible(false)}
-        onOk={handleAddReview}
-        okText="Submit"
-        width={400}
-      >
-        <Rate value={rating} onChange={setRating} aria-label="Rate movie" />
-        <TextArea
-          value={review}
-          onChange={(e) => setReview(e.target.value)}
-          rows={4}
-          placeholder="Write your review"
-          className="movie-card-review-input"
-          aria-label="Movie review"
+      {/* Render MovieReview for modal functionality */}
+      {showReviewModal && (
+        <MovieReview
+          movieId={movie.id}
+          triggerModal={showReviewModal}
+          onModalClose={handleModalClose}
         />
-      </Modal>
+      )}
     </div>
   );
 };
