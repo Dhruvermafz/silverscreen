@@ -37,6 +37,8 @@ import FlagDashboard from "./components/flag-system/FlagDashbaord";
 import UserWrapper from "./components/admin/Users/UserWrapper";
 import TermsAndPrivacy from "./components/Common/TermsAndPrivacy";
 import BoxOfficeWrapper from "./components/BoxOffice/BoxOfficeWrapper";
+import FilmWrapper from "./components/admin/Catalog/FilmWrapper";
+import ReviewWrapper from "./components/admin/Reviews/ReviewsWrapper";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -129,6 +131,8 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminWrapper />} />
           <Route path="/admin/users" element={<UserWrapper />} />
           <Route path="/admin/flags" element={<FlagDashboard />} />
+          <Route path="/admin/films" element={<FilmWrapper />} />
+          <Route path="/admin/reviews" element={<ReviewWrapper />} />
           <Route path="/box-office" element={<BoxOfficeWrapper />} />
           {/* Onboarding Route */}
           <Route

@@ -23,27 +23,54 @@ export const reviewApi = createApi({
           ...reviewData,
           movie: reviewData.movieId,
           comment: reviewData.comment || reviewData.content,
-        }, // Map movieId to movie, content to comment
+        },
       }),
     }),
-
-    // Get reviews for a specific movie
+    // Get reviews (modified to support admin fetching all reviews)
     getReviews: builder.query({
-      query: (movieId) => `/reviews/${movieId}`,
+      query: ({ movieId, search, sort, page, limit }) => {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        if (sort) params.append("sort", sort);
+        if (page) params.append("page", page);
+        if (limit) params.append("limit", limit);
+        return movieId === "all"
+          ? `/reviews?${params.toString()}`
+          : `/reviews/${movieId}`;
+      },
       transformResponse: (response) =>
-        response.map((review) => ({
-          ...review,
-          id: review._id, // Map _id to id
-          content: review.comment, // Map comment to content
-          author: review.user?.username || "Anonymous", // Map user.username to author
-        })),
+        response.reviews
+          ? {
+              reviews: response.reviews.map((review) => ({
+                ...review,
+                id: review._id,
+                content: review.comment,
+                author: review.user?.username || "Anonymous",
+                movieTitle: review.movieTitle || "Unknown", // Assume backend populates movieTitle
+              })),
+              total: response.total,
+            }
+          : response.map((review) => ({
+              ...review,
+              id: review._id,
+              content: review.comment,
+              author: review.user?.username || "Anonymous",
+              movieTitle: review.movieTitle || "Unknown",
+            })),
     }),
-
     // Delete a review by ID
     deleteReview: builder.mutation({
       query: (reviewId) => ({
         url: `/reviews/${reviewId}`,
         method: "DELETE",
+      }),
+    }),
+    // Toggle review status
+    toggleReviewStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/reviews/${id}/status`,
+        method: "PATCH",
+        body: { status },
       }),
     }),
   }),
@@ -53,4 +80,5 @@ export const {
   useAddReviewMutation,
   useGetReviewsQuery,
   useDeleteReviewMutation,
+  useToggleReviewStatusMutation,
 } = reviewApi;

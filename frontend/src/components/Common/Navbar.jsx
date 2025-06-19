@@ -124,6 +124,9 @@ const Navbar = () => {
       role="navigation"
       aria-label="Main navigation links"
     >
+      <Link to="/lists" className="navbar-link" aria-label="Lists">
+        Lists
+      </Link>
       <Link to="/films" className="navbar-link" aria-label="Films">
         Films
       </Link>

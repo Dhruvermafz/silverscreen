@@ -1,0 +1,91 @@
+.floating-menu-container {
+  position: fixed;
+  z-index: 1000;
+  cursor: move; /* Indicate draggable when closed */
+  user-select: none; /* Prevent text selection during drag */
+}
+
+.menu-toggle-button {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.floating-menu {
+  position: absolute;
+  top: 60px; /* Position below toggle button */
+  left: 0;
+  width: 240px;
+  background-color: #001529; /* Ant Design default dark theme */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menu-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #303030;
+}
+
+.logo-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.menu-user {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #303030;
+}
+
+.menu-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.avatar-text {
+  color: #fff;
+}
+
+.logout-button {
+  color: #fff;
+}
+
+.menu-list {
+  margin-top: 8px;
+  background-color: transparent;
+}
+
+.menu-list .ant-menu-item {
+  color: #fff;
+}
+
+.menu-list .ant-menu-item:hover {
+  background-color: #1890ff;
+}
+
+.menu-list .ant-menu-item-selected {
+  background-color: #0958d9;
+}
