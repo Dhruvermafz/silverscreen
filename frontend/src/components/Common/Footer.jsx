@@ -108,7 +108,7 @@ const AppFooter = () => {
             <nav aria-label="Legal navigation">
               <Space direction="vertical" size="small">
                 <Link
-                  to="/terms"
+                  to="/terms-and-conditions"
                   className="footer-link"
                   aria-label="Terms of Use"
                 >
