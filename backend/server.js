@@ -157,12 +157,18 @@ const startServer = async () => {
 
     // Handle unhandled promise rejections
     process.on("unhandledRejection", (reason, promise) => {
-      logger.error("Unhandled Rejection at:", { reason, promise });
+      logger.error("Unhandled Rejection at:", {
+        reason: reason instanceof Error ? reason.message : reason,
+        stack: reason instanceof Error ? reason.stack : undefined,
+        promise,
+      });
+      shutdown();
     });
   } catch (error) {
     logger.error("Failed to start server", {
       error: error.message,
       stack: error.stack,
+      code: error.code,
     });
     process.exit(1);
   }
