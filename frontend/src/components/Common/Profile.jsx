@@ -397,9 +397,9 @@ const ProfileWrapper = () => {
                     type="primary"
                     onClick={() => setSuggestModalOpen(true)}
                     className="profile-suggest-button"
-                    aria-label="Suggest a movie"
+                    aria-label="Suggested"
                   >
-                    Suggest a Movie
+                    Suggested
                   </Button>
                   <SuggestMovieModal
                     visible={isSuggestModalOpen}

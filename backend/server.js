@@ -47,7 +47,12 @@ app.use(compression()); // Gzip compression
 app.use(morgan("combined")); // HTTP request logging
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(",") || "*", // Configurable CORS
+    origin: [
+      "http://localhost:3000",
+      "https://cinenotes.vercel.app",
+      "https://silverscreen.vercel.app",
+      "http://localhost:3001",
+    ], // Configurable CORS
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
