@@ -101,3 +101,4 @@
 {"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:39.741Z"}
 {"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:40.009Z"}
 {"level":"error","message":"Unhandled Rejection at:","promise":{},"reason":{},"timestamp":"2025-06-16T04:37:40.280Z"}
+{"error":"logger is not defined","level":"error","message":"Failed to start server","timestamp":"2025-07-19T05:10:02.015Z"}

@@ -5,6 +5,7 @@ const helmet = require("helmet"); // Security headers
 const morgan = require("morgan"); // Request logging
 const compression = require("compression"); // Gzip compression
 const winston = require("winston"); // Advanced logging
+const connectDB = require("./database/connectDb");
 require("dotenv").config();
 
 // Route imports
@@ -78,17 +79,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// MongoDB connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    logger.info("MongoDB connected successfully");
-  } catch (error) {
-    logger.error("MongoDB connection failed", { error: error.message });
-    process.exit(1);
-  }
-};
-
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", userRoutes);
@@ -142,7 +132,8 @@ const shutdown = () => {
 let server;
 const startServer = async () => {
   try {
-    await connectDB();
+    logger.info("Starting server.js...");
+    await connectDB(logger); // Pass logger to connectDB
     server = app.listen(PORT, () => {
       logger.info(
         `Server running on port ${PORT} in ${
@@ -169,7 +160,10 @@ const startServer = async () => {
       logger.error("Unhandled Rejection at:", { reason, promise });
     });
   } catch (error) {
-    logger.error("Failed to start server", { error: error.message });
+    logger.error("Failed to start server", {
+      error: error.message,
+      stack: error.stack,
+    });
     process.exit(1);
   }
 };

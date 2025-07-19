@@ -888,3 +888,4 @@
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/groups/","timestamp":"2025-06-30T09:39:51.852Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/groups/68625b67fb9833211deaa314","timestamp":"2025-06-30T09:39:54.897Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/groups/68625b67fb9833211deaa314/posts","timestamp":"2025-06-30T09:39:54.901Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"error":"logger is not defined","level":"error","message":"Failed to start server","timestamp":"2025-07-19T05:10:02.015Z"}
