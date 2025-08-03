@@ -24,18 +24,18 @@ const LegalInfo = ({ type = "terms" }) => {
             <>
               <Paragraph>
                 These Terms and Conditions ("Terms") govern your access to and
-                use of <strong>CineNotes</strong>, a digital platform operated
-                by <strong>ItsABlog Private Limited</strong>, a company
+                use of <strong>DimeCine</strong>, a digital platform operated by{" "}
+                <strong>ItsABlog Private Limited</strong>, a company
                 incorporated under the laws of India, with its registered office
                 at [Insert Registered Address], Mumbai, Maharashtra, India
-                ("Company"). CineNotes enables users to engage in cinema-related
+                ("Company"). DimeCine enables users to engage in cinema-related
                 activities, including but not limited to reviewing films,
                 tracking box office performance, creating curated lists,
                 participating in discussion groups, publishing blogs, and
                 accessing editorial content.
               </Paragraph>
               <Paragraph>
-                By accessing or using CineNotes, including its website, mobile
+                By accessing or using DimeCine, including its website, mobile
                 applications, and associated services (collectively, the
                 "Platform"), you agree to be bound by these Terms. If you do not
                 agree to these Terms, you must refrain from using the Platform.
@@ -340,7 +340,7 @@ const LegalInfo = ({ type = "terms" }) => {
               For inquiries, complaints, or appeals regarding these Terms,
               please contact:
               <br />
-              <strong>Email</strong>: support@cinenotes.in
+              <strong>Email</strong>: support@DimeCine.in
               <br />
               <strong>Address</strong>: ItsABlog Private Limited, [Insert
               Registered Address], Mumbai, Maharashtra, India
@@ -364,7 +364,7 @@ const LegalInfo = ({ type = "terms" }) => {
             <>
               <Paragraph>
                 This Privacy Policy governs the collection, use, storage, and
-                disclosure of personal data by <strong>CineNotes</strong>, a
+                disclosure of personal data by <strong>DimeCine</strong>, a
                 platform operated by <strong>ItsABlog Private Limited</strong>,
                 a company incorporated under the laws of India, with its
                 registered office at [Insert Registered Address], Mumbai,
@@ -535,7 +535,7 @@ const LegalInfo = ({ type = "terms" }) => {
                 - Right to object to or restrict certain data processing
                 activities. - Right to opt out of personalized recommendations
                 or analytics, including through cookie management. To exercise
-                these rights, contact us at support@cinenotes.in or through the
+                these rights, contact us at support@DimeCine.in or through the
                 Platform’s reporting interface. We will respond within 30 days
                 or as required by law.
               </Paragraph>
@@ -551,7 +551,7 @@ const LegalInfo = ({ type = "terms" }) => {
                 <strong>Indian Residents</strong>: Under the DPDP Act, you may
                 withdraw consent for data processing, request correction or
                 erasure of your data, and file grievances regarding data
-                handling. Contact us at support@cinenotes.in for such requests.
+                handling. Contact us at support@DimeCine.in for such requests.
               </Paragraph>
             </>
           ),
@@ -593,7 +593,7 @@ const LegalInfo = ({ type = "terms" }) => {
               For questions, concerns, or requests regarding this Privacy Policy
               or your personal data, please contact:
               <br />
-              <strong>Email</strong>: support@cinenotes.in
+              <strong>Email</strong>: support@DimeCine.in
               <br />
               <strong>Address</strong>: ItsABlog Private Limited, [Insert
               Registered Address], Mumbai, Maharashtra, India

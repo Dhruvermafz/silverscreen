@@ -153,8 +153,8 @@ const Navbar = () => {
           aria-label="Open menu"
         />
         <Title level={4} className="navbar-logo">
-          <Link to="/" aria-label="Cinenotes Homepage">
-            Cinenotes
+          <Link to="/" aria-label="DimeCine Homepage">
+            DimeCine
           </Link>
         </Title>
       </Space>
@@ -220,7 +220,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer */}
       <Drawer
-        title="Cinenotes"
+        title="DimeCine"
         placement="left"
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}

@@ -31,18 +31,18 @@ const socialMedia = [
   {
     label: "Twitter",
     icon: <TwitterOutlined />,
-    url: "https://twitter.com/Cinenotes",
+    url: "https://twitter.com/DimeCine",
   },
   {
     label: "Instagram",
     icon: <InstagramOutlined />,
-    url: "https://instagram.com/Cinenotes",
+    url: "https://instagram.com/DimeCine",
   },
   {
     label: "Email",
     icon: <MailOutlined />,
     url: `mailto:${
-      process.env.REACT_APP_SUPPORT_EMAIL || "support@cinenotes.com"
+      process.env.REACT_APP_SUPPORT_EMAIL || "support@DimeCine.com"
     }`,
   },
 ];
@@ -60,7 +60,7 @@ const AppFooter = () => {
     }
     // Simulate newsletter signup (replace with API call)
     console.log("Newsletter subscription:", email);
-    toast.success("Subscribed to Cinenotes newsletter!", {
+    toast.success("Subscribed to DimeCine newsletter!", {
       position: "top-right",
       autoClose: 2000,
     });
@@ -74,10 +74,10 @@ const AppFooter = () => {
           {/* Branding Section */}
           <Col xs={24} sm={12} md={8}>
             <Title level={4} className="footer-title">
-              Cinenotes
+              DimeCine
             </Title>
             <Text className="footer-description">
-              Join the Cinenotes community to rate films, discuss in groups,
+              Join the DimeCine community to rate films, discuss in groups,
               track box office, and share your movie blogs. Pure cinema, no
               distractions.
             </Text>
@@ -136,7 +136,7 @@ const AppFooter = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="footer-social-icon"
-                  aria-label={`Follow Cinenotes on ${social.label}`}
+                  aria-label={`Follow DimeCine on ${social.label}`}
                 >
                   {social.icon}
                 </a>
@@ -147,7 +147,7 @@ const AppFooter = () => {
 
         {/* Bottom Section */}
         <Text className="footer-bottom">
-          © {new Date().getFullYear()} Cinenotes. All rights reserved.
+          © {new Date().getFullYear()} DimeCine. All rights reserved.
         </Text>
       </div>
     </Footer>

@@ -46,7 +46,7 @@ const Login = () => {
       }}
     >
       <Title level={3} style={{ textAlign: "center" }}>
-        Welcome Back to SilverScreen
+        Welcome Back to DimeCine
       </Title>
 
       <Form onFinish={handleLogin}>
