@@ -1,3 +1,4 @@
+/* Existing Main Content and Moodboard Styles (unchanged) */
 .main-content {
   padding: 24px;
   background-color: #f9f9f9; /* Light YouTube-like background */
@@ -47,7 +48,7 @@
   height: 20px;
 }
 
-/* Moodboard Styles */
+/* Moodboard Styles (unchanged) */
 .moodboard {
   position: fixed;
   bottom: 24px;
@@ -103,9 +104,11 @@
   background-color: #003087 !important;
 }
 
-/* MovieCard Styles */
+/* Updated MovieCard Styles */
 .movie-card {
   transition: transform 0.2s ease-in-out;
+  width: 100%;
+  max-width: 200px; /* Constrain card width for consistency */
 }
 
 .movie-card:hover {
@@ -113,17 +116,43 @@
 }
 
 .movie-card-image {
-  height: 200px;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  aspect-ratio: 2 / 3; /* Standard movie poster aspect ratio */
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
+  position: relative;
+  background-color: #e0e0e0; /* Fallback background for placeholder */
+}
+
+.movie-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Maintain aspect ratio, crop if necessary */
+  display: block;
+}
+
+.movie-card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e0e0e0;
+  color: #606060;
+  font-size: 14px;
+  text-align: center;
+  border-radius: 8px;
 }
 
 .movie-card-overlay {
-  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
+  pointer-events: none;
 }
 
 .movie-card-content {
@@ -134,6 +163,7 @@
   font-size: 16px !important;
   font-weight: 600 !important;
   margin-bottom: 8px !important;
+  color: #1a1a1a; /* Match main content title color */
 }
 
 .movie-card-meta,
@@ -145,4 +175,32 @@
 
 .movie-card-actions button {
   pointer-events: auto;
+  background-color: #065fd4;
+  border: none;
+  color: #fff;
+  border-radius: 4px;
+}
+
+.movie-card-actions button:hover {
+  background-color: #003087;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .movie-card {
+    max-width: 150px; /* Smaller cards on mobile */
+  }
+
+  .movie-card-image {
+    aspect-ratio: 2 / 3;
+  }
+
+  .movie-card-title {
+    font-size: 14px !important;
+  }
+
+  .movie-card-meta,
+  .movie-card-rating {
+    font-size: 12px;
+  }
 }

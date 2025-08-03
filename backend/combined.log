@@ -1008,3 +1008,12 @@
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-08-03T14:34:15.067Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 {"ip":"::1","level":"info","message":"Incoming request: GET /api/reviews/undefined","timestamp":"2025-08-03T14:34:35.175Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
 {"level":"info","message":"Received shutdown signal. Closing server...","timestamp":"2025-08-03T14:47:12.103Z"}
+{"level":"info","message":"Starting server.js...","timestamp":"2025-08-03T14:48:56.543Z"}
+{"level":"info","message":"Attempting to connect to MongoDB","redactedUri":"mongodb+srv://<credentials>@cluster0.vphyde3.mongodb.net/silverscreen?retryWrites=true&w=majority&appName=Cluster0","timestamp":"2025-08-03T14:48:56.552Z","uri":"Set"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-08-03T14:48:57.178Z"}
+{"level":"info","message":"Server running on port 5000 in development mode","timestamp":"2025-08-03T14:48:57.184Z"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-08-03T14:50:51.793Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-08-03T14:54:12.096Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-08-03T15:16:14.267Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/users/profile","timestamp":"2025-08-03T15:16:30.486Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
+{"ip":"::1","level":"info","message":"Incoming request: GET /api/lists","timestamp":"2025-08-03T15:16:35.883Z","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"}
