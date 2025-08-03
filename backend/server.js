@@ -90,7 +90,7 @@ app.use("/api/groups", groupRoutes);
 app.use("/api/newsroom", newsroomRoutes);
 app.use("/api/tags", tagsRoutes);
 app.use("/api/contacts", contactRoutes);
-
+app.use("/api/bugs", require("./routes/bugRoute"));
 // 404 Handler
 app.use((req, res) => {
   logger.warn(`404 - Route not found: ${req.method} ${req.url}`);

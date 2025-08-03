@@ -103,7 +103,7 @@ const AppFooter = () => {
           </Col>
 
           {/* Legal Links */}
-          <Col xs={12} sm={6} md={4}>
+          <Col xs={12} sm={6} md={2}>
             <Text className="footer-subtitle">Legal</Text>
             <nav aria-label="Legal navigation">
               <Space direction="vertical" size="small">
@@ -125,8 +125,23 @@ const AppFooter = () => {
             </nav>
           </Col>
 
+          <Col xs={12} sm={6} md={2}>
+            <Text className="footer-subtitle">Reports</Text>
+            <nav aria-label="Legal navigation">
+              <Space direction="vertical" size="small">
+                <Link
+                  to="/report-a-bug"
+                  className="footer-link"
+                  aria-label="Report a bug"
+                >
+                  Report a bug
+                </Link>
+              </Space>
+            </nav>
+          </Col>
+
           {/* Social Media */}
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={12} sm={6} md={2}>
             <Text className="footer-subtitle">Connect</Text>
             <Space size="middle" className="footer-social">
               {socialMedia.map((social) => (

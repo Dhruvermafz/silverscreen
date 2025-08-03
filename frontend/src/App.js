@@ -41,6 +41,7 @@ import FilmWrapper from "./components/admin/Catalog/FilmWrapper";
 import TrendingMovies from "./components/Home/TrendingMovies";
 import GenreMovies from "./components/Home/GenreMovies";
 import ReviewWrapper from "./components/admin/Reviews/ReviewsWrapper";
+import FindABug from "./components/Common/FindABug";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ function App() {
           <Route path="/admin/films" element={<FilmWrapper />} />
           <Route path="/admin/reviews" element={<ReviewWrapper />} />
           <Route path="/box-office" element={<BoxOfficeWrapper />} />
+          <Route path="/report-a-bug" element={<FindABug />} />
           {/* Onboarding Route */}
           <Route
             path="/onboarding"

@@ -9,6 +9,7 @@ import { groupApi } from "../actions/groupApi";
 import authReducer from "../actions/slices/authSlices";
 import { adminApi } from "../actions/adminApi";
 import { flagApi } from "../actions/flagApi";
+import { bugReportApi } from "../actions/bugApi";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -21,9 +22,11 @@ const store = configureStore({
     [newsroomApi.reducerPath]: newsroomApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
     [flagApi.reducerPath]: flagApi.reducer,
+    [bugReportApi.reducerPath]: bugReportApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
+      bugReportApi.middleware,
       authApi.middleware,
       userApi.middleware,
       listApi.middleware,
