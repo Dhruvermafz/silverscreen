@@ -38,6 +38,8 @@ import UserWrapper from "./components/admin/Users/UserWrapper";
 import TermsAndPrivacy from "./components/Common/TermsAndPrivacy";
 import BoxOfficeWrapper from "./components/BoxOffice/BoxOfficeWrapper";
 import FilmWrapper from "./components/admin/Catalog/FilmWrapper";
+import TrendingMovies from "./components/Home/TrendingMovies";
+import GenreMovies from "./components/Home/GenreMovies";
 import ReviewWrapper from "./components/admin/Reviews/ReviewsWrapper";
 function App() {
   const dispatch = useDispatch();
@@ -113,6 +115,8 @@ function App() {
           <Route path="/newsrooms" element={<NewsroomPage />} />
           <Route path="/newsrooms/:id" element={<NewsroomDetailPage />} />
           <Route path="/movies/:id" element={<MoviePage />} />
+          <Route path="/movies/trending" element={<TrendingMovies />} />
+          <Route path="/movies/genre/:genreId" element={<GenreMovies />} />
           <Route path="/settings" element={<SettingsWrapper />} />
           <Route path="/movie-request" element={<AddMovieRequest />} />
           <Route

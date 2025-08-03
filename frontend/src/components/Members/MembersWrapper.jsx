@@ -17,6 +17,8 @@ import {
   Dropdown,
   Menu,
   Badge,
+  Tooltip,
+  Pagination,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -25,11 +27,12 @@ import {
   MessageOutlined,
   FlagOutlined,
   StarOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
-import "./members.css"; // Updated CSS file
+import "./members.css";
 import { useGetAllUsersQuery } from "../../actions/userApi";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
@@ -40,6 +43,8 @@ const MembersWrapper = () => {
   const [sortBy, setSortBy] = useState("joined");
   const [roleFilter, setRoleFilter] = useState("all");
   const [followedUsers, setFollowedUsers] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12; // Number of members per page
 
   const roles = [
     { value: "all", label: "All" },
@@ -100,6 +105,25 @@ const MembersWrapper = () => {
     .filter((user) => (user.postCount || 0) > 5)
     .slice(0, 5);
 
+  // Pagination logic
+  const totalMembers = sortedMembers.length;
+  const paginatedMembers = sortedMembers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  // Mock movie match logic (replace with actual API logic if available)
+  const getMovieMatch = (user) => {
+    const matches = members.filter(
+      (other) =>
+        other._id !== user._id &&
+        user.favoriteMovies?.some((movie) =>
+          other.favoriteMovies?.includes(movie)
+        )
+    );
+    return matches.length > 0 ? matches[0].username : "No matches yet";
+  };
+
   const dropdownMenu = (user) => (
     <Menu className="members-dropdown-menu">
       <Menu.Item key="message" onClick={() => handleMessage(user._id)}>
@@ -113,175 +137,8 @@ const MembersWrapper = () => {
 
   return (
     <section className="members-page" aria-label="Community members">
-      <div className="members-header">
-        <Title level={2} className="members-title">
-          Community Members
-        </Title>
-        <Space className="members-filters" wrap>
-          <Search
-            placeholder="Search members by username"
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="members-search"
-            aria-label="Search members by username"
-            enterButton={<Button type="primary">Search</Button>}
-          />
-          <Select
-            defaultValue="all"
-            onChange={setRoleFilter}
-            className="members-select"
-            aria-label="Filter by role"
-          >
-            {roles.map((role) => (
-              <Option key={role.value} value={role.value}>
-                {role.label}
-              </Option>
-            ))}
-          </Select>
-          <Select
-            defaultValue="joined"
-            onChange={setSortBy}
-            className="members-select"
-            aria-label="Sort members"
-          >
-            <Option value="joined">Recently Joined</Option>
-            <Option value="rating">Highest Rated</Option>
-            <Option value="activity">Most Active</Option>
-          </Select>
-        </Space>
-      </div>
-      <Row gutter={[16, 16]} className="members-container">
-        <Col xs={24} lg={16}>
-          <Row gutter={[16, 16]} className="members-grid">
-            {sortedMembers.length > 0 ? (
-              sortedMembers.map((user) => (
-                <Col key={user._id} xs={24} sm={12} md={8} lg={6}>
-                  <Card
-                    hoverable
-                    className="member-card"
-                    actions={[
-                      <Button
-                        key="follow"
-                        type={
-                          followedUsers.has(user._id) ? "default" : "primary"
-                        }
-                        icon={
-                          followedUsers.has(user._id) ? (
-                            <UserDeleteOutlined />
-                          ) : (
-                            <UserAddOutlined />
-                          )
-                        }
-                        onClick={() => handleFollow(user._id)}
-                        className="member-action-button"
-                        aria-label={
-                          followedUsers.has(user._id)
-                            ? `Unfollow ${user.username}`
-                            : `Follow ${user.username}`
-                        }
-                      >
-                        {followedUsers.has(user._id) ? "Unfollow" : "Follow"}
-                      </Button>,
-                      <Button
-                        key="view"
-                        onClick={() => navigate(`/u/${user._id}`)}
-                        className="member-action-button"
-                        aria-label={`View ${user.username}'s profile`}
-                      >
-                        View Profile
-                      </Button>,
-                      <Dropdown
-                        key="more"
-                        overlay={dropdownMenu(user)}
-                        trigger={["click"]}
-                        overlayClassName="members-dropdown"
-                      >
-                        <Button
-                          className="member-action-button"
-                          aria-label="More actions"
-                        >
-                          More
-                        </Button>
-                      </Dropdown>,
-                    ]}
-                  >
-                    <div className="member-card-content">
-                      <Badge
-                        count={
-                          user.role === "creator" ? (
-                            <StarOutlined style={{ color: "#fadb14" }} />
-                          ) : (
-                            0
-                          )
-                        }
-                        offset={[-10, 10]}
-                      >
-                        <Avatar
-                          src={
-                            user.avatar ||
-                            `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
-                          }
-                          alt={`Avatar of ${user.username}`}
-                          size={64}
-                          className="member-avatar"
-                        />
-                      </Badge>
-                      <Title level={5} className="member-username">
-                        <Link
-                          to={`/u/${user._id}`}
-                          className="member-username-link"
-                        >
-                          {user.username}
-                        </Link>
-                        {user.role && (
-                          <Tag
-                            className="member-role-tag"
-                            color={
-                              user.role === "creator"
-                                ? "gold"
-                                : user.role === "moderator"
-                                ? "blue"
-                                : "green"
-                            }
-                          >
-                            {user.role.charAt(0).toUpperCase() +
-                              user.role.slice(1)}
-                          </Tag>
-                        )}
-                      </Title>
-                      <Paragraph ellipsis={{ rows: 2 }} className="member-bio">
-                        {user.bio || "No bio provided."}
-                      </Paragraph>
-                      <Space direction="vertical" className="member-stats">
-                        <Rate
-                          disabled
-                          allowHalf
-                          value={user.rating || 0}
-                          className="member-rating"
-                        />
-                        <Text type="secondary">
-                          Favorite Movies: {user.favoriteMovies?.length || 0}
-                        </Text>
-                        <Text type="secondary">
-                          Joined: {new Date(user.joinedAt).toLocaleDateString()}
-                        </Text>
-                        <Text type="secondary">
-                          Posts: {user.postCount || 0}
-                        </Text>
-                      </Space>
-                    </div>
-                  </Card>
-                </Col>
-              ))
-            ) : (
-              <Col xs={24}>
-                <Text className="members-empty-text">
-                  No members found matching your criteria.
-                </Text>
-              </Col>
-            )}
-          </Row>
-        </Col>
-        <Col xs={24} lg={8}>
+      <Row className="members-container">
+        <Col xs={24} md={6} className="members-sidebar">
           <Card
             title="Community Stats"
             className="members-sidebar-card"
@@ -351,6 +208,180 @@ const MembersWrapper = () => {
               )}
             />
           </Card>
+        </Col>
+        <Col xs={24} md={18} className="members-main">
+          <div className="members-header">
+            <Title level={2} className="members-title">
+              Community Members
+            </Title>
+            <Space className="members-filters" wrap>
+              <Search
+                placeholder="Search members by username"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="members-search"
+                aria-label="Search members by username"
+                enterButton={<Button type="primary">Search</Button>}
+              />
+              <Select
+                defaultValue="all"
+                onChange={setRoleFilter}
+                className="members-select"
+                aria-label="Filter by role"
+              >
+                {roles.map((role) => (
+                  <Option key={role.value} value={role.value}>
+                    {role.label}
+                  </Option>
+                ))}
+              </Select>
+              <Select
+                defaultValue="joined"
+                onChange={setSortBy}
+                className="members-select"
+                aria-label="Sort members"
+              >
+                <Option value="joined">Recently Joined</Option>
+                <Option value="rating">Highest Rated</Option>
+                <Option value="activity">Most Active</Option>
+              </Select>
+            </Space>
+          </div>
+          <div className="members-grid">
+            {paginatedMembers.length > 0 ? (
+              paginatedMembers.map((user) => (
+                <Tooltip
+                  key={user._id}
+                  title={
+                    <div className="members-tooltip">
+                      <Text strong>{user.username}</Text>
+                      <Text>{user.bio || "No bio provided"}</Text>
+                      <Text>
+                        Favorite Movies:{" "}
+                        {user.favoriteMovies?.join(", ") || "None"}
+                      </Text>
+                      <Text>Movie Match: {getMovieMatch(user)}</Text>
+                    </div>
+                  }
+                  placement="right"
+                >
+                  <Card
+                    className="member-card"
+                    onClick={() => navigate(`/u/${user._id}`)}
+                  >
+                    <div className="member-card-content">
+                      <Badge
+                        count={
+                          user.role === "creator" ? (
+                            <StarOutlined style={{ color: "#fadb14" }} />
+                          ) : (
+                            0
+                          )
+                        }
+                        offset={[-10, 10]}
+                      >
+                        <Avatar
+                          src={
+                            user.avatar ||
+                            `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
+                          }
+                          alt={`Avatar of ${user.username}`}
+                          size={48}
+                          className="member-avatar"
+                        />
+                      </Badge>
+                      <div className="member-info">
+                        <Text strong className="member-username">
+                          {user.username}
+                          {user.role && (
+                            <Tag
+                              className="member-role-tag"
+                              color={
+                                user.role === "creator"
+                                  ? "gold"
+                                  : user.role === "moderator"
+                                  ? "blue"
+                                  : "green"
+                              }
+                            >
+                              {user.role.charAt(0).toUpperCase() +
+                                user.role.slice(1)}
+                            </Tag>
+                          )}
+                        </Text>
+                        <Text className="member-bio" ellipsis>
+                          {user.bio || "No bio provided"}
+                        </Text>
+                        <Space className="member-stats">
+                          <Rate
+                            disabled
+                            allowHalf
+                            value={user.rating || 0}
+                            className="member-rating"
+                          />
+                          <Text>
+                            <VideoCameraOutlined />{" "}
+                            {user.favoriteMovies?.length || 0}
+                          </Text>
+                          <Text>Posts: {user.postCount || 0}</Text>
+                        </Space>
+                      </div>
+                      <div className="member-actions">
+                        <Button
+                          type={
+                            followedUsers.has(user._id) ? "default" : "primary"
+                          }
+                          icon={
+                            followedUsers.has(user._id) ? (
+                              <UserDeleteOutlined />
+                            ) : (
+                              <UserAddOutlined />
+                            )
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleFollow(user._id);
+                          }}
+                          aria-label={
+                            followedUsers.has(user._id)
+                              ? `Unfollow ${user.username}`
+                              : `Follow ${user.username}`
+                          }
+                        />
+                        <Dropdown
+                          overlay={dropdownMenu(user)}
+                          trigger={["click"]}
+                          overlayClassName="members-dropdown"
+                        >
+                          <Button
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label="More actions"
+                          >
+                            ...
+                          </Button>
+                        </Dropdown>
+                      </div>
+                    </div>
+                  </Card>
+                </Tooltip>
+              ))
+            ) : (
+              <Text className="members-empty-text">
+                No members found matching your criteria.
+              </Text>
+            )}
+          </div>
+          {totalMembers > pageSize && (
+            <div className="members-pagination">
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={totalMembers}
+                onChange={(page) => setCurrentPage(page)}
+                showSizeChanger={false}
+                aria-label="Pagination for community members"
+              />
+            </div>
+          )}
         </Col>
       </Row>
     </section>

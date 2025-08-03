@@ -53,6 +53,7 @@ app.use(
       "https://cinenotes.vercel.app",
       "https://silverscreen.vercel.app",
       "http://localhost:3001",
+      "https://www.dimecine.com",
     ], // Configurable CORS
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],

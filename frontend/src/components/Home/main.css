@@ -1,22 +1,14 @@
 .main-content {
   padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background: #ffffff;
-  color: #ffffff;
+  background-color: #f9f9f9; /* Light YouTube-like background */
+  min-height: 100vh;
 }
 
-.main-content-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
-.main-content-title {
-  font-size: 20px;
-  font-weight: 500;
-  margin-bottom: 8px;
+.main-content-section-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 16px !important;
 }
 
 .main-content-slider {
@@ -27,71 +19,130 @@
   padding: 0 8px;
 }
 
-.main-content-empty {
-  font-size: 14px;
-  opacity: 0.8;
-  display: block;
-  margin-bottom: 16px;
-}
-
 .main-content-view-all {
-  font-size: 14px;
-  color: #1890ff;
+  font-size: 16px !important;
+  color: #065fd4 !important; /* YouTube blue */
+  padding: 0 !important;
+  margin-top: 8px !important;
 }
 
 .main-content-view-all:hover {
-  text-decoration: underline;
+  color: #003087 !important;
+  text-decoration: underline !important;
+}
+
+.main-content-empty {
+  font-size: 16px;
+  color: #606060;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.main-content-spinner {
+  display: block;
+  margin: 24px auto;
 }
 
 .main-content-loader {
   height: 20px;
 }
 
-/* Custom slider arrows */
-.main-content-slider .slick-prev,
-.main-content-slider .slick-next {
-  z-index: 1;
-  width: 32px;
-  height: 32px;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
+/* Moodboard Styles */
+.moodboard {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
 }
 
-.main-content-slider .slick-prev:before,
-.main-content-slider .slick-next:before {
-  color: #ffffff;
+.moodboard.maximized {
+  width: 300px;
+  max-width: 90vw;
 }
 
-.main-content-slider .slick-prev {
-  left: -40px;
+.moodboard.minimized {
+  width: auto;
 }
 
-.main-content-slider .slick-next {
-  right: -40px;
+.moodboard-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 16px;
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 16px;
-  }
+.moodboard-title {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #1a1a1a !important;
+  margin-bottom: 8px !important;
+}
 
-  .main-content-title {
-    font-size: 18px;
-  }
+.moodboard-select .ant-select-selector {
+  border-radius: 6px !important;
+  padding: 6px !important;
+  font-size: 14px !important;
+  background-color: #fff !important;
+  border: 1px solid #d9d9d9 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
 
-  .main-content-empty {
-    font-size: 12px;
-  }
+.moodboard-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #606060 !important;
+}
 
-  .main-content-view-all {
-    font-size: 12px;
-  }
+.moodboard-toggle {
+  background-color: #065fd4 !important;
+}
 
-  .main-content-slider .slick-prev {
-    left: -20px;
-  }
+.moodboard-toggle:hover {
+  background-color: #003087 !important;
+}
 
-  .main-content-slider .slick-next {
-    right: -20px;
-  }
+/* MovieCard Styles */
+.movie-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.movie-card:hover {
+  transform: translateY(-4px); /* YouTube-like hover effect */
+}
+
+.movie-card-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.movie-card-overlay {
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
+}
+
+.movie-card-content {
+  padding: 12px;
+}
+
+.movie-card-title {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  margin-bottom: 8px !important;
+}
+
+.movie-card-meta,
+.movie-card-rating {
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.movie-card-actions button {
+  pointer-events: auto;
 }

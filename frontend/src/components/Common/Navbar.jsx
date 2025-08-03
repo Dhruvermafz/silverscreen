@@ -26,7 +26,7 @@ import { useGetProfileQuery } from "../../actions/userApi";
 import { toast } from "react-toastify";
 import "./navbar.css";
 import { useLogoutMutation } from "../../actions/authApi";
-
+import logo from "../../assets/img/logo.jpeg";
 const { Title } = Typography;
 const { Search } = Input;
 

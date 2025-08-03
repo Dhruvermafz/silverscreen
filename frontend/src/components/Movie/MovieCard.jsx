@@ -20,7 +20,11 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
   const { data: lists = [] } = useGetListsQuery();
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
 
-  const handleToggleLike = () => {
+  // Log movie data to verify
+  console.log("Movie data:", movie);
+
+  const handleToggleLike = (e) => {
+    e.stopPropagation();
     setIsLiked(!isLiked);
     toast.success(isLiked ? "Removed from likes" : "Liked movie", {
       position: "top-right",
@@ -28,7 +32,8 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
     });
   };
 
-  const handleShare = () => {
+  const handleShare = (e) => {
+    e.stopPropagation();
     const shareUrl = `${window.location.origin}/movies/${movie.id}`;
     navigator.clipboard.writeText(shareUrl);
     toast.success("Movie URL copied to clipboard", {
@@ -79,7 +84,18 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
             movie.posterUrl || "https://via.placeholder.com/300"
           })`,
         }}
-        onClick={() => navigate(`/movies/${movie.id}`)}
+        onClick={() => {
+          if (!movie.id) {
+            console.error("Movie ID is undefined:", movie);
+            toast.error("Invalid movie ID", {
+              position: "top-right",
+              autoClose: 2000,
+            });
+            return;
+          }
+          console.log("Navigating to:", `/movies/${movie.id}`);
+          navigate(`/movies/${movie.id}`);
+        }}
         role="img"
         aria-label={movie.title}
       >
@@ -114,10 +130,7 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
                       size="small"
                       icon={isLiked ? <HeartFilled /> : <HeartOutlined />}
                       type={isLiked ? "primary" : "default"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggleLike();
-                      }}
+                      onClick={handleToggleLike}
                       aria-label={
                         isLiked
                           ? `Unlike ${movie.title}`
@@ -139,10 +152,7 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
                     <Button
                       size="small"
                       icon={<ShareAltOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleShare();
-                      }}
+                      onClick={handleShare}
                       aria-label={`Share ${movie.title}`}
                     />
                   </Tooltip>
@@ -153,7 +163,6 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
         </div>
       </div>
 
-      {/* Render MovieReview for modal functionality */}
       {showReviewModal && (
         <MovieReview
           movieId={movie.id}
