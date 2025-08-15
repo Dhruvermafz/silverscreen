@@ -1,0 +1,98 @@
+.movie-card {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.movie-card:hover {
+  transform: translateY(-4px);
+}
+
+.movie-card-compact {
+  display: flex;
+  align-items: center;
+}
+
+.movie-card-image {
+  width: 100%;
+  height: 300px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.movie-card-compact .movie-card-image {
+  width: 100px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.movie-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 16px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.movie-card-compact .movie-card-overlay {
+  display: none;
+}
+
+.movie-card-content {
+  width: 100%;
+  color: #ffffff;
+}
+
+.movie-card-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 4px;
+  cursor: pointer;
+}
+
+.movie-card-meta,
+.movie-card-rating {
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 0 0 4px;
+}
+
+.movie-card-actions {
+  margin-top: 8px;
+}
+
+.movie-card-actions .ant-btn {
+  border-radius: 4px;
+}
+
+.movie-card-review-input {
+  margin-top: 8px;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .movie-card-image {
+    height: 200px;
+  }
+
+  .movie-card-compact .movie-card-image {
+    width: 80px;
+    height: 120px;
+  }
+
+  .movie-card-title {
+    font-size: 14px;
+  }
+
+  .movie-card-meta,
+  .movie-card-rating {
+    font-size: 10px;
+  }
+}

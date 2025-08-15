@@ -1,0 +1,300 @@
+/* General Styles */
+.mn-genre-page {
+  font-family: 'Roboto', sans-serif;
+ /* Dark cinematic theme */
+  color: #e0e0e0;
+  padding: 40px 0;
+}
+
+.mn-genre-page .container {
+  max-width: 1200px;
+}
+
+/* Title Section */
+.mn-title {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.mn-title h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 15px;
+}
+
+.mn-title h2 span {
+  color: #e50914; /* Red accent */
+}
+
+.mn-title h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.mn-title p {
+  font-size: 1rem;
+  color: #b0b0b0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Genre Cards */
+.mn-genre-card {
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.mn-genre-card:hover {
+  transform: translateY(-5px);
+}
+
+.mn-profile-img {
+  position: relative;
+  overflow: hidden;
+}
+
+.mn-profile-img img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+.mn-profile-detail {
+  padding: 15px;
+}
+
+.mn-profile-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.mn-profile-title a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.mn-profile-title a:hover {
+  color: #e50914;
+}
+
+.mn-profile-text {
+  font-size: 0.95rem;
+  color: #b0b0b0;
+  margin-bottom: 0;
+}
+
+.mn-text-muted {
+  color: #666666 !important;
+  text-align: center;
+}
+
+/* Film Cards */
+.mn-options {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.mn-options a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+  color: #ffffff;
+}
+
+.mn-options a:hover {
+  background-color: #e50914;
+}
+
+/* Buttons */
+.mn-btn-1 {
+  background-color: #e50914;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.mn-btn-1.mn-btn-secondary {
+  background-color: #4a4a4a;
+}
+
+.mn-btn-1.mn-btn-secondary:hover {
+  background-color: #5a5a5a;
+}
+
+.mn-btn-1:hover {
+  background-color: #c10812;
+}
+
+.mn-btn-1 i {
+  margin-right: 5px;
+}
+
+/* Quick View Modal (Reused from ProfileWrapper) */
+.quickview-modal .modal-dialog {
+  max-width: 800px;
+}
+
+.quickview-modal .modal-content {
+
+  border-radius: 8px;
+}
+
+.qty-close {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.qty-close:hover {
+  color: #e50914;
+}
+
+.single-pro-img img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.quickview-pro-content {
+  padding: 20px;
+}
+
+.mn-quick-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.mn-quick-title a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.mn-quick-title a:hover {
+  color: #e50914;
+}
+
+.mn-pro-rating {
+  margin-bottom: 10px;
+}
+
+.mn-pro-rating i {
+  color: #f0ad4e;
+  font-size: 1rem;
+}
+
+.mn-pro-rating i.grey {
+  color: #666666;
+}
+
+.mn-quickview-desc {
+  font-size: 0.95rem;
+  color: #b0b0b0;
+  margin-bottom: 15px;
+}
+
+.mn-quickview-price {
+  font-size: 1rem;
+  color: #e0e0e0;
+  margin-bottom: 15px;
+}
+
+.mn-quickview-price .new-price {
+  color: #e50914;
+}
+
+.mn-pro-variations ul {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 15px;
+}
+
+.mn-pro-variations li a {
+  padding: 5px 12px;
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.mn-pro-variations li.active a {
+  background-color: #e50914;
+  color: #ffffff;
+}
+
+.mn-quickview-qty .mn-btn-1 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 991px) {
+  .mn-title h2 {
+    font-size: 2rem;
+  }
+
+  .mn-title h3 {
+    font-size: 1.5rem;
+  }
+
+  .mn-profile-img img {
+    height: 150px;
+  }
+
+  .mn-profile-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .mn-title h2 {
+    font-size: 1.8rem;
+  }
+
+  .mn-title h3 {
+    font-size: 1.3rem;
+  }
+
+  .mn-profile-img img {
+    height: 120px;
+  }
+
+  .quickview-modal .modal-dialog {
+    max-width: 95%;
+  }
+
+  .single-pro-img img {
+    height: 200px;
+  }
+
+  .mn-btn-1 {
+    width: 100%;
+    text-align: center;
+  }
+}

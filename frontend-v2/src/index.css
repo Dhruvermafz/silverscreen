@@ -1,0 +1,49 @@
+@import url("./assets/css/style.css");
+@import url("assets/css/vendor/animate.min.css");
+@import url("assets/css/vendor/owl.carousel.min.css");
+@import url("assets/css/vendor/slick.min.css");
+@import url("assets/css/vendor/swiper-bundle.min.css");
+@import url("assets/css/vendor/nouislider.css");
+
+    .page-not-found {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        padding: 0 16px;
+
+        img {
+            vertical-align: middle;
+            border-style: none;
+        }
+
+        .image {
+            max-width: 100%;
+            margin-bottom: 32px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .title {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 24px;
+            line-height: 32px;
+            font-weight: 700;
+        }
+
+        .text {
+            text-align: center;
+            max-width: 650px;
+            margin-bottom: 24px;
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: 400;
+            color: #6D7081;
+        }
+
+
+    }
+   
