@@ -1,9 +1,10 @@
+// src/components/Auth/Signup.js
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { message } from "antd";
 import { useRegisterMutation } from "../../actions/authApi";
 
-const Signup = () => {
+const Signup = ({ onNext }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -64,16 +65,21 @@ const Signup = () => {
         username,
         password,
       }).unwrap();
+      const { userId } = response; // Assuming the API returns userId
 
       message.success({
         content:
-          "Registration Successful! You have successfully registered! Please log in.",
+          "Registration Successful! You have successfully registered! Please continue.",
         duration: 2,
       });
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 1000);
+      if (onNext) {
+        onNext(userId); // Pass userId to onNext
+      } else {
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
+      }
     } catch (err) {
       message.error({
         content:
@@ -190,7 +196,10 @@ const Signup = () => {
         </div>
         <div className="mn-login-box d-n-991">
           <div className="mn-login-img">
-            <img src="assets/imgs/page/login-1.png" alt="Signup illustration" />
+            <img
+              src="/assets/imgs/page/login-1.png"
+              alt="Signup illustration"
+            />
           </div>
         </div>
       </div>

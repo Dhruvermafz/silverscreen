@@ -1,7 +1,6 @@
-// FilmWrapper.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { message } from "antd";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { message, Slider, Select } from "antd";
 import {
   useGetListsQuery,
   useAddMovieToListMutation,
@@ -10,42 +9,105 @@ import { useGetProfileQuery } from "../../actions/userApi";
 import {
   getMoviesFromAPI,
   getGenresFromAPI,
+  getLanguagesFromAPI, // New API call for languages
 } from "../../actions/getMoviesFromAPI";
 import debounce from "lodash.debounce";
-import ProductCard from "./MovieCard";
+import MovieCard from "./MovieCard";
 import Pagination from "../Common/Pagination";
+import { getCustomCategories } from "../../actions/getMoviesFromAPI";
 const FilmWrapper = () => {
   const [movies, setMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedFilter, setSelectedFilter] = useState({
     genres: [],
     sort: "popularity.desc",
     yearRange: [1900, new Date().getFullYear()],
+    language: "",
+    runtimeRange: [0, 300], // Runtime in minutes
+    voteAverageRange: [0, 10], // Vote average 0-10
   });
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isGridView, setIsGridView] = useState(true);
   const [genres, setGenres] = useState([]);
+  const [languages, setLanguages] = useState([]);
   const [addMovieToList] = useAddMovieToListMutation();
   const { data: lists = [] } = useGetListsQuery();
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Fetch genres
+  // Parse query parameters
   useEffect(() => {
-    const fetchGenres = async () => {
+    const queryParams = new URLSearchParams(location.search);
+    const genre = queryParams.get("genre");
+    const year = queryParams.get("year");
+    const language = queryParams.get("language");
+    const sort = queryParams.get("sort");
+
+    let newFilter = { ...selectedFilter };
+
+    if (genre) {
+      const genreObj = genres.find(
+        (g) => g.name.toLowerCase() === genre.toLowerCase()
+      );
+      if (genreObj) newFilter.genres = [genreObj.id.toString()];
+    }
+    if (year && !isNaN(year)) {
+      newFilter.yearRange = [Number(year), Number(year)];
+    }
+    if (language) {
+      newFilter.language = language;
+    }
+    if (sort) {
+      newFilter.sort = sort;
+    }
+
+    setSelectedFilter(newFilter);
+    setPage(1);
+  }, [location.search, genres]);
+
+  // Fetch genres and languages
+  useEffect(() => {
+    const fetchData = async () => {
       try {
-        const fetchedGenres = await getGenresFromAPI();
+        const [fetchedGenres, fetchedLanguages] = await Promise.all([
+          getGenresFromAPI(),
+          getLanguagesFromAPI(),
+        ]);
         setGenres(fetchedGenres);
+        setLanguages(fetchedLanguages);
       } catch (error) {
-        message.error("Failed to load genres", 2);
+        message.error("Failed to load genres or languages", 2);
       }
     };
-    fetchGenres();
+    fetchData();
   }, []);
 
-  // Memoized fetchMovies
+  // Update URL with current filters
+  const updateURL = useCallback(() => {
+    const params = new URLSearchParams();
+    if (selectedFilter.genres.length > 0) {
+      const genre = genres.find(
+        (g) => g.id.toString() === selectedFilter.genres[0]
+      );
+      if (genre) params.set("genre", genre.name.toLowerCase());
+    }
+    if (selectedFilter.yearRange[0] === selectedFilter.yearRange[1]) {
+      params.set("year", selectedFilter.yearRange[0]);
+    }
+    if (selectedFilter.language) {
+      params.set("language", selectedFilter.language);
+    }
+    if (selectedFilter.sort !== "popularity.desc") {
+      params.set("sort", selectedFilter.sort);
+    }
+    navigate(`/explore?${params.toString()}`, { replace: true });
+  }, [selectedFilter, genres, navigate]);
+
+  // Fetch movies
   const fetchMovies = useCallback(async () => {
     if (loading) return;
     setLoading(true);
@@ -60,12 +122,13 @@ const FilmWrapper = () => {
       if (response.movies.length === 0 && page === 1) {
         message.info("No movies found", 2);
       }
+      updateURL();
     } catch (error) {
       message.error("Failed to fetch movies", 2);
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, selectedFilter]);
+  }, [page, searchQuery, selectedFilter, updateURL]);
 
   // Debounced search handler
   const debouncedSearch = useCallback(
@@ -76,15 +139,14 @@ const FilmWrapper = () => {
     []
   );
 
-  // Immediate search handler
   const handleSearch = (e) => {
     e.preventDefault();
     debouncedSearch.cancel();
     setSearchQuery(e.target.value);
     setPage(1);
+    navigate("/explore");
   };
 
-  // Fetch movies on mount and when dependencies change
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
@@ -105,8 +167,8 @@ const FilmWrapper = () => {
     }
   };
 
-  const handleFilterChange = useCallback((filters) => {
-    setSelectedFilter(filters);
+  const handleFilterChange = useCallback((newFilters) => {
+    setSelectedFilter(newFilters);
     setPage(1);
   }, []);
 
@@ -127,6 +189,30 @@ const FilmWrapper = () => {
 
   const handleYearRangeChange = (value) => {
     handleFilterChange({ ...selectedFilter, yearRange: value });
+  };
+
+  const handleLanguageChange = (value) => {
+    handleFilterChange({ ...selectedFilter, language: value });
+  };
+
+  const handleRuntimeRangeChange = (value) => {
+    handleFilterChange({ ...selectedFilter, runtimeRange: value });
+  };
+
+  const handleVoteAverageChange = (value) => {
+    handleFilterChange({ ...selectedFilter, voteAverageRange: value });
+  };
+
+  const resetFilters = () => {
+    handleFilterChange({
+      genres: [],
+      sort: "popularity.desc",
+      yearRange: [1900, new Date().getFullYear()],
+      language: "",
+      runtimeRange: [0, 300],
+      voteAverageRange: [0, 10],
+    });
+    navigate("/explore");
   };
 
   const handlePageChange = (newPage) => {
@@ -187,13 +273,21 @@ const FilmWrapper = () => {
               <div className="mn-sidebar-block">
                 <div className="mn-sb-title">
                   <h3 className="mn-sidebar-title">Filters</h3>
-                  <a
-                    href="javascript:void(0)"
-                    className="filter-close"
-                    onClick={toggleSidebar}
-                  >
-                    <i className="ri-close-large-line"></i>
-                  </a>
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={resetFilters}
+                    >
+                      Reset Filters
+                    </button>
+                    <a
+                      href="javascript:void(0)"
+                      className="filter-close"
+                      onClick={toggleSidebar}
+                    >
+                      <i className="ri-close-large-line"></i>
+                    </a>
+                  </div>
                 </div>
                 <div className="mn-sb-block-content p-t-15">
                   <h5 className="section-title style-1 mb-30">Genres</h5>
@@ -219,38 +313,83 @@ const FilmWrapper = () => {
                     ))}
                   </ul>
                 </div>
+                // Add to sidebar (before Genres section)
+                <div className="mn-sb-block-content p-t-15">
+                  <h5 className="section-title style-1 mb-30">Vibe Check</h5>
+                  <Select
+                    style={{ width: "100%" }}
+                    value={selectedCategory}
+                    onChange={(value) => {
+                      setSelectedCategory(value);
+                      handleFilterChange({
+                        ...selectedFilter,
+                        category: value,
+                      });
+                    }}
+                    placeholder="Pick a vibe"
+                    allowClear
+                  >
+                    {getCustomCategories().map((cat) => (
+                      <Select.Option key={cat.key} value={cat.key}>
+                        {cat.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
                 <div className="mn-sb-block-content">
                   <h5 className="section-title style-1 mb-30">Year Range</h5>
-                  <div className="d-flex gap-2">
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={selectedFilter.yearRange[0]}
-                      onChange={(e) =>
-                        handleYearRangeChange([
-                          Number(e.target.value),
-                          selectedFilter.yearRange[1],
-                        ])
-                      }
-                      min="1900"
-                      max={new Date().getFullYear()}
-                      aria-label="Start year"
-                    />
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={selectedFilter.yearRange[1]}
-                      onChange={(e) =>
-                        handleYearRangeChange([
-                          selectedFilter.yearRange[0],
-                          Number(e.target.value),
-                        ])
-                      }
-                      min="1900"
-                      max={new Date().getFullYear()}
-                      aria-label="End year"
-                    />
-                  </div>
+                  <Slider
+                    range
+                    min={1900}
+                    max={new Date().getFullYear()}
+                    value={selectedFilter.yearRange}
+                    onChange={handleYearRangeChange}
+                    tooltip={{ formatter: (value) => value }}
+                  />
+                </div>
+                <div className="mn-sb-block-content">
+                  <h5 className="section-title style-1 mb-30">Language</h5>
+                  <Select
+                    style={{ width: "100%" }}
+                    value={selectedFilter.language}
+                    onChange={handleLanguageChange}
+                    placeholder="Select language"
+                    allowClear
+                  >
+                    {languages.map((lang) => (
+                      <Select.Option
+                        key={lang.iso_639_1}
+                        value={lang.iso_639_1}
+                      >
+                        {lang.english_name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
+                <div className="mn-sb-block-content">
+                  <h5 className="section-title style-1 mb-30">
+                    Runtime (minutes)
+                  </h5>
+                  <Slider
+                    range
+                    min={0}
+                    max={300}
+                    value={selectedFilter.runtimeRange}
+                    onChange={handleRuntimeRangeChange}
+                    tooltip={{ formatter: (value) => `${value} min` }}
+                  />
+                </div>
+                <div className="mn-sb-block-content">
+                  <h5 className="section-title style-1 mb-30">Vote Average</h5>
+                  <Slider
+                    range
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    value={selectedFilter.voteAverageRange}
+                    onChange={handleVoteAverageChange}
+                    tooltip={{ formatter: (value) => value.toFixed(1) }}
+                  />
                 </div>
               </div>
             </div>
@@ -297,16 +436,30 @@ const FilmWrapper = () => {
                   value={selectedFilter.sort}
                   onChange={(e) => handleSortChange(e.target.value)}
                 >
-                  <option value="popularity.desc">Popularity</option>
-                  <option value="release_date.desc">Newest</option>
-                  <option value="vote_average.desc">Rating</option>
+                  <option value="popularity.desc">
+                    Popularity (High to Low)
+                  </option>
+                  <option value="popularity.asc">
+                    Popularity (Low to High)
+                  </option>
+                  <option value="release_date.desc">Newest First</option>
+                  <option value="release_date.asc">Oldest First</option>
+                  <option value="vote_average.desc">
+                    Rating (High to Low)
+                  </option>
+                  <option value="vote_average.asc">Rating (Low to High)</option>
+                  <option value="revenue.desc">Revenue (High to Low)</option>
+                  <option value="revenue.asc">Revenue (Low to High)</option>
+                  <option value="vote_count.desc">Most Voted</option>
+                  <option value="original_title.asc">Title (A-Z)</option>
+                  <option value="original_title.desc">Title (Z-A)</option>
                 </select>
               </div>
             </div>
           </div>
 
           {/* Select Bar */}
-          <div className="mn-select-bar d-flex">
+          <div className="mn-select-bar d-flex flex-wrap">
             {selectedFilter.genres.map((genreId) => {
               const genre = genres.find((g) => g.id.toString() === genreId);
               return genre ? (
@@ -322,12 +475,79 @@ const FilmWrapper = () => {
                 </span>
               ) : null;
             })}
-            {selectedFilter.genres.length > 0 && (
+            {selectedFilter.language && (
+              <span className="mn-select-btn">
+                Language:{" "}
+                {
+                  languages.find((l) => l.iso_639_1 === selectedFilter.language)
+                    ?.english_name
+                }
+                <a
+                  className="mn-select-cancel"
+                  href="javascript:void(0)"
+                  onClick={() => handleLanguageChange("")}
+                >
+                  ×
+                </a>
+              </span>
+            )}
+            {(selectedFilter.yearRange[0] !== 1900 ||
+              selectedFilter.yearRange[1] !== new Date().getFullYear()) && (
+              <span className="mn-select-btn">
+                Year: {selectedFilter.yearRange[0]} -{" "}
+                {selectedFilter.yearRange[1]}
+                <a
+                  className="mn-select-cancel"
+                  href="javascript:void(0)"
+                  onClick={() =>
+                    handleYearRangeChange([1900, new Date().getFullYear()])
+                  }
+                >
+                  ×
+                </a>
+              </span>
+            )}
+            {(selectedFilter.runtimeRange[0] !== 0 ||
+              selectedFilter.runtimeRange[1] !== 300) && (
+              <span className="mn-select-btn">
+                Runtime: {selectedFilter.runtimeRange[0]} -{" "}
+                {selectedFilter.runtimeRange[1]} min
+                <a
+                  className="mn-select-cancel"
+                  href="javascript:void(0)"
+                  onClick={() => handleRuntimeRangeChange([0, 300])}
+                >
+                  ×
+                </a>
+              </span>
+            )}
+            {(selectedFilter.voteAverageRange[0] !== 0 ||
+              selectedFilter.voteAverageRange[1] !== 10) && (
+              <span className="mn-select-btn">
+                Rating: {selectedFilter.voteAverageRange[0].toFixed(1)} -{" "}
+                {selectedFilter.voteAverageRange[1].toFixed(1)}
+                <a
+                  className="mn-select-cancel"
+                  href="javascript:void(0)"
+                  onClick={() => handleVoteAverageChange([0, 10])}
+                >
+                  ×
+                </a>
+              </span>
+            )}
+            {(selectedFilter.genres.length > 0 ||
+              selectedFilter.language ||
+              selectedFilter.yearRange[0] !== 1900 ||
+              selectedFilter.yearRange[1] !== new Date().getFullYear() ||
+              selectedFilter.runtimeRange[0] !== 0 ||
+              selectedFilter.runtimeRange[1] !== 300 ||
+              selectedFilter.voteAverageRange[0] !== 0 ||
+              selectedFilter.voteAverageRange[1] !== 10) && (
               <span className="mn-select-btn mn-select-btn-clear">
                 <a
                   className="mn-select-clear"
                   href="javascript:void(0)"
-                  onClick={handleClearGenres}
+                  onClick={resetFilters}
                 >
                   Clear All
                 </a>
@@ -369,7 +589,7 @@ const FilmWrapper = () => {
                 </div>
               ) : (
                 movies.map((movie) => (
-                  <ProductCard
+                  <MovieCard
                     key={movie.id}
                     movie={movie}
                     lists={lists}

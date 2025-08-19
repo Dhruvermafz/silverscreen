@@ -7,57 +7,55 @@ import {
   getGenresFromAPI,
   getMoviesFromAPI,
 } from "../../actions/getMoviesFromAPI";
-
+import MovieCard from "../Films/MovieCard";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import { Navigation, Autoplay } from "swiper/modules";
 const HomeWrapper = () => {
   const [genres, setGenres] = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [moviesByGenre, setMoviesByGenre] = useState({});
   const [totalItemsByGenre, setTotalItemsByGenre] = useState({});
   const [trendingMovies, setTrendingMovies] = useState([]);
-  const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
+  const [newReleases, setNewReleases] = useState([]);
   const [topRatedMovies, setTopRatedMovies] = useState([]);
-  const [loadingGenres, setLoadingGenres] = useState(false);
   const [loadingTrending, setLoadingTrending] = useState(false);
-  const [loadingNowPlaying, setLoadingNowPlaying] = useState(false);
+  const [loadingNewReleases, setLoadingNewReleases] = useState(false);
   const [loadingTopRated, setLoadingTopRated] = useState(false);
   const [loadingMovies, setLoadingMovies] = useState({});
   const [pageByGenre, setPageByGenre] = useState({});
-  const [isMoodboardMaximized, setIsMoodboardMaximized] = useState(true);
   const [currentPage, setCurrentPage] = useState({
     trending: 1,
-    nowPlaying: 1,
+    newReleases: 1,
     topRated: 1,
   });
+  const [likedMovies, setLikedMovies] = useState(new Set());
+  const [reviewModals, setReviewModals] = useState({});
+  const [lists, setLists] = useState([]);
   const pageSize = 8;
   const navigate = useNavigate();
-  const { data: authUser } = useGetProfileQuery();
+  const { data: authUser, isLoading: profileLoading } = useGetProfileQuery();
 
-  // Fetch genres on mount and prefill from user preferences
+  // Fetch genres
   useEffect(() => {
     const fetchGenres = async () => {
-      setLoadingGenres(true);
       try {
         const fetchedGenres = await getGenresFromAPI();
         setGenres(fetchedGenres || []);
-        const initialPages = fetchedGenres.reduce(
-          (acc, genre) => ({ ...acc, [genre.id]: 1 }),
-          {}
-        );
-        setPageByGenre(initialPages);
-        if (authUser?.favoriteGenres) {
-          const userGenreIds = fetchedGenres
-            .filter((g) => authUser.favoriteGenres.includes(g.name))
-            .map((g) => g.id);
-          setSelectedGenres(userGenreIds);
-        }
       } catch (error) {
         console.error("Error fetching genres:", error);
         message.error("Failed to load genres", 2);
-      } finally {
-        setLoadingGenres(false);
       }
     };
     fetchGenres();
+  }, []);
+
+  // Fetch user lists
+  useEffect(() => {
+    if (authUser?.lists) {
+      setLists(authUser.lists || []);
+    }
   }, [authUser]);
 
   // Fetch trending movies
@@ -69,9 +67,7 @@ const HomeWrapper = () => {
         { sort: "popularity.desc" },
         currentPage.trending
       );
-      setTrendingMovies(
-        Array.isArray(trendingData?.movies) ? trendingData.movies : []
-      );
+      setTrendingMovies(trendingData.movies || []);
     } catch (error) {
       console.error("Error fetching trending movies:", error);
       message.error("Failed to load trending movies", 2);
@@ -85,46 +81,42 @@ const HomeWrapper = () => {
     fetchTrendingMovies();
   }, [fetchTrendingMovies]);
 
-  // Fetch now playing movies
-  const fetchNowPlayingMovies = useCallback(async () => {
-    setLoadingNowPlaying(true);
+  // Fetch new releases
+  const fetchNewReleases = useCallback(async () => {
+    setLoadingNewReleases(true);
     try {
-      const nowPlayingData = await getMoviesFromAPI(
+      const newReleaseData = await getMoviesFromAPI(
         "",
-        { now_playing: true },
-        currentPage.nowPlaying
+        { yearRange: [new Date().getFullYear() - 1, new Date().getFullYear()] },
+        currentPage.newReleases
       );
-      setNowPlayingMovies(
-        Array.isArray(nowPlayingData?.movies) ? nowPlayingData.movies : []
-      );
+      setNewReleases(newReleaseData.movies || []);
     } catch (error) {
-      console.error("Error fetching now playing movies:", error);
-      message.error("Failed to load now playing movies", 2);
-      setNowPlayingMovies([]);
+      console.error("Error fetching new releases:", error);
+      message.error("Failed to load new releases", 2);
+      setNewReleases([]);
     } finally {
-      setLoadingNowPlaying(false);
+      setLoadingNewReleases(false);
     }
-  }, [currentPage.nowPlaying]);
+  }, [currentPage.newReleases]);
 
   useEffect(() => {
-    fetchNowPlayingMovies();
-  }, [fetchNowPlayingMovies]);
+    fetchNewReleases();
+  }, [fetchNewReleases]);
 
-  // Fetch top rated movies
+  // Fetch top-rated movies
   const fetchTopRatedMovies = useCallback(async () => {
     setLoadingTopRated(true);
     try {
       const topRatedData = await getMoviesFromAPI(
         "",
-        { sort: "vote_average.desc" },
+        { sort: "vote_average.desc", voteAverageRange: [7, 10] },
         currentPage.topRated
       );
-      setTopRatedMovies(
-        Array.isArray(topRatedData?.movies) ? topRatedData.movies : []
-      );
+      setTopRatedMovies(topRatedData.movies || []);
     } catch (error) {
-      console.error("Error fetching top rated movies:", error);
-      message.error("Failed to load top rated movies", 2);
+      console.error("Error fetching top-rated movies:", error);
+      message.error("Failed to load top-rated movies", 2);
       setTopRatedMovies([]);
     } finally {
       setLoadingTopRated(false);
@@ -150,13 +142,11 @@ const HomeWrapper = () => {
           try {
             const data = await getMoviesFromAPI(
               "",
-              { genre: genreId },
+              { genres: [genreId] },
               pageByGenre[genreId] || 1
             );
-            newMoviesData[genreId] = Array.isArray(data?.movies)
-              ? data.movies.slice(0, pageSize)
-              : [];
-            newTotalItems[genreId] = data?.totalResults || 100;
+            newMoviesData[genreId] = data.movies.slice(0, pageSize);
+            newTotalItems[genreId] = data.totalResults || 100;
           } catch (error) {
             console.error(`Error fetching movies for genre ${genreId}:`, error);
             message.error(`Failed to load movies for this genre`, 2);
@@ -181,11 +171,7 @@ const HomeWrapper = () => {
     }
   }, [selectedGenres, pageByGenre]);
 
-  const handleGenreChange = (e) => {
-    const value = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    ).map(Number);
+  const handleGenreChange = (value) => {
     setSelectedGenres(value);
     const newPages = { ...pageByGenre };
     value.forEach((genreId) => {
@@ -200,134 +186,55 @@ const HomeWrapper = () => {
     setPageByGenre((prev) => ({ ...prev, [genreId]: page }));
   };
 
-  const toggleMoodboard = () => {
-    setIsMoodboardMaximized(!isMoodboardMaximized);
+  const handleToggleLike = (movie) => () => {
+    setLikedMovies((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(movie.id)) {
+        newSet.delete(movie.id);
+        message.info(`Removed ${movie.title} from favorites`, 2);
+      } else {
+        newSet.add(movie.id);
+        message.info(`Added ${movie.title} to favorites`, 2);
+      }
+      return newSet;
+    });
   };
 
-  const handleQuickView = (movie) => {
-    navigate(`/movies/${movie.id}`);
+  const handleAddToList = (movie, listId) => {
+    message.info(`Added ${movie.title} to list`, 2);
+    // Implement API call to add movie to list if needed
+  };
+
+  const handleReviewClick = (movie) => () => {
+    setReviewModals((prev) => ({ ...prev, [movie.id]: true }));
+  };
+
+  const handleModalClose = (movie) => () => {
+    setReviewModals((prev) => ({ ...prev, [movie.id]: false }));
   };
 
   const renderMovieCard = (movie, index) => {
     if (!movie?.id || !movie?.title) return null;
     return (
-      <div className="col-lg-3 col-md-4 col-sm-6 col-12 mb-4" key={movie.id}>
-        <div className="mn-product-card">
-          <div className="mn-product-img">
-            <div className="lbl">
-              <span
-                className={
-                  index % 3 === 0
-                    ? "trending"
-                    : index % 2 === 0
-                    ? "new"
-                    : "sale"
-                }
-              >
-                {index % 3 === 0
-                  ? "Trending"
-                  : index % 2 === 0
-                  ? "New"
-                  : "Popular"}
-              </span>
-            </div>
-            <div className="mn-img">
-              <Link to={`/movies/${movie.id}`} className="image">
-                <img
-                  className="main-img"
-                  src={movie.posterUrl || "/assets/imgs/placeholder.png"}
-                  alt={movie.title}
-                />
-                <img
-                  className="hover-img"
-                  src={
-                    movie.backdrop_path
-                      ? `https://image.tmdb.org/t/p/w300${movie.backdrop_path}`
-                      : movie.posterUrl || "/assets/imgs/placeholder.png"
-                  }
-                  alt={movie.title}
-                />
-              </Link>
-              <div className="mn-options">
-                <ul>
-                  <li>
-                    <a
-                      href="javascript:void(0)"
-                      data-tooltip="Quick View"
-                      onClick={() => handleQuickView(movie)}
-                      aria-label={`View details for ${movie.title}`}
-                    >
-                      <i className="ri-eye-line"></i>
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="javascript:void(0)"
-                      data-tooltip="Compare"
-                      className="mn-compare"
-                      onClick={() => message.info("Added to compare", 2)}
-                      aria-label={`Compare ${movie.title}`}
-                    >
-                      <i className="ri-repeat-line"></i>
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="javascript:void(0)"
-                      data-tooltip="Add To Watchlist"
-                      className="mn-add-cart"
-                      onClick={() => message.info("Added to watchlist", 2)}
-                      aria-label={`Add ${movie.title} to watchlist`}
-                    >
-                      <i className="ri-heart-line"></i>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="mn-product-detail">
-            <div className="cat">
-              <Link to={`/movies/${movie.id}`}>{movie.title}</Link>
-              <ul>
-                <li>{movie.release_date?.split("-")[0] || "N/A"}</li>
-              </ul>
-            </div>
-            <h5>
-              <Link to={`/movies/${movie.id}`}>{movie.title}</Link>
-            </h5>
-            <div className="mn-price">
-              <div className="mn-price-new">
-                {movie.rating?.toFixed(1) || "N/A"}/10
-              </div>
-            </div>
-            <div className="mn-pro-option">
-              <div className="mn-pro-color">
-                <ul className="mn-opt-swatch">
-                  <li>
-                    <a
-                      href="#"
-                      className="mn-opt-clr-img"
-                      data-tooltip="Rating"
-                    >
-                      <span style={{ backgroundColor: "#f3f3f3" }}></span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <a
-                href="javascript:void(0)"
-                className="mn-wishlist"
-                data-tooltip="Wishlist"
-                onClick={() => message.info("Added to watchlist", 2)}
-                aria-label={`Add ${movie.title} to watchlist`}
-              >
-                <i className="ri-heart-line"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MovieCard
+        key={movie.id}
+        movie={{
+          ...movie,
+          isNew: movie.release_date
+            ? new Date(movie.release_date).getFullYear() ===
+              new Date().getFullYear()
+            : false,
+          isLiked: likedMovies.has(movie.id),
+          showReviewModal: reviewModals[movie.id] || false,
+        }}
+        lists={lists}
+        profile={authUser}
+        isGridView={true}
+        handleToggleLike={handleToggleLike}
+        handleAddToList={handleAddToList}
+        handleReviewClick={handleReviewClick}
+        handleModalClose={handleModalClose}
+      />
     );
   };
 
@@ -347,38 +254,48 @@ const HomeWrapper = () => {
               No trending movies available.
             </p>
           ) : (
-            <div className="row">
-              {trendingMovies.slice(0, 5).map((movie, index) =>
-                movie?.id && movie?.title && movie?.backdrop_path ? (
-                  <div
-                    key={movie.id}
-                    className="col-lg-12 mb-3"
-                    style={{
-                      backgroundImage: `url(https://image.tmdb.org/t/p/w1280${movie.backdrop_path})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      minHeight: "300px",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <div className="mn-hero-detail p-4">
-                      <p className="label">
-                        <span>{movie.rating?.toFixed(1) || "N/A"}/10</span>
-                      </p>
-                      <h1>{movie.title}</h1>
-                      <p>
-                        {movie.overview?.slice(0, 100) ||
-                          "No description available"}
-                        ...
-                      </p>
-                      <Link to={`/movies/${movie.id}`} className="mn-btn-2">
-                        <span>Watch Now</span>
-                      </Link>
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              navigation
+              autoplay={{ delay: 3000 }}
+              loop
+            >
+              {trendingMovies.slice(0, 5).map((movie) =>
+                movie?.id && movie?.title && movie?.posterUrl ? (
+                  <SwiperSlide key={movie.id}>
+                    <div
+                      className="mn-hero-slide"
+                      style={{
+                        backgroundImage: `url(${
+                          movie.backdrop_path
+                            ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+                            : movie.posterUrl
+                        })`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        minHeight: "300px",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <div className="mn-hero-detail">
+                        <p className="label">
+                          <span>{movie.rating.toFixed(1)} / 10</span>
+                        </p>
+                        <h1>{movie.title}</h1>
+                        <p>
+                          {movie.overview?.slice(0, 100) ||
+                            "No description available"}
+                          ...
+                        </p>
+                        <Link to={`/movies/${movie.id}`} className="mn-btn-2">
+                          <span>Watch Now</span>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
+                  </SwiperSlide>
                 ) : null
               )}
-            </div>
+            </Swiper>
           )}
           <Pagination
             totalItems={trendingMovies.length}
@@ -390,134 +307,35 @@ const HomeWrapper = () => {
           />
         </section>
 
-        {/* Moodboard */}
-        <section
-          className={`mn-category p-tb-15 ${
-            isMoodboardMaximized ? "" : "d-none"
-          }`}
-        >
-          <div className="mn-title">
-            <h2>
-              What's Your <span>Mood Today?</span>
-            </h2>
-          </div>
-          {loadingGenres ? (
-            <div className="text-center">
-              <div className="spinner-border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : (
-            <select
-              multiple
-              className="form-select"
-              value={selectedGenres}
-              onChange={handleGenreChange}
-              aria-label="Select genres"
-            >
-              {genres.map((genre) => (
-                <option key={genre.id} value={String(genre.id)}>
-                  {genre.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            className="mn-btn-2 mt-2"
-            onClick={toggleMoodboard}
-            aria-label="Minimize moodboard"
-          >
-            <span>Minimize</span>
-          </button>
-        </section>
-        {!isMoodboardMaximized && (
-          <button
-            className="mn-btn-2 position-fixed bottom-0 end-0 m-3"
-            onClick={toggleMoodboard}
-            aria-label="Open moodboard"
-          >
-            <span>Moodboard</span>
-          </button>
-        )}
-
-        {/* Category Section */}
-        <section className="mn-category p-tb-15">
-          <div className="mn-title">
-            <h2>
-              Explore <span>Genres</span>
-            </h2>
-          </div>
-          <div className="row">
-            {genres.map((genre, index) => (
-              <div
-                key={genre.id}
-                className="col-lg-3 col-md-4 col-sm-6 col-12 mb-4"
-              >
-                <div className={`mn-cat-card cat-card-${index + 1}`}>
-                  <p className="lbl">
-                    <span>{genre.name}</span>
-                  </p>
-                  <span className="bg">{genre.name}</span>
-                  <h4>Movies</h4>
-                  <h3>{genre.name}</h3>
-                  <p>Items ({totalItemsByGenre[genre.id] || 0})</p>
-                  <ul className="d-flex flex-wrap">
-                    {moviesByGenre[genre.id]?.slice(0, 3).map((movie) => (
-                      <li key={movie.id} className="me-2">
-                        <Link to={`/movies/${movie.id}`}>
-                          <img
-                            src={
-                              movie.posterUrl || "/assets/imgs/placeholder.png"
-                            }
-                            alt={movie.title}
-                            style={{
-                              width: "50px",
-                              height: "75px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Now Playing Movies */}
+        {/* New Releases */}
         <section className="mn-new-product p-tb-15">
           <div className="mn-title">
             <h2>
-              Now <span>Playing</span>
+              New <span>Releases</span>
             </h2>
           </div>
-          {loadingNowPlaying ? (
+          {loadingNewReleases ? (
             <div className="text-center">
               <div className="spinner-border" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-          ) : !Array.isArray(nowPlayingMovies) ||
-            nowPlayingMovies.length === 0 ? (
-            <p className="text-center text-muted">
-              No now playing movies available.
-            </p>
+          ) : !Array.isArray(newReleases) || newReleases.length === 0 ? (
+            <p className="text-center text-muted">No new releases available.</p>
           ) : (
-            <div className="row">{nowPlayingMovies.map(renderMovieCard)}</div>
+            <div className="row">{newReleases.map(renderMovieCard)}</div>
           )}
           <Pagination
-            totalItems={totalItemsByGenre.nowPlaying || nowPlayingMovies.length}
+            totalItems={newReleases.length}
             itemsPerPage={pageSize}
             onPageChange={(page) =>
-              setCurrentPage({ ...currentPage, nowPlaying: page })
+              setCurrentPage({ ...currentPage, newReleases: page })
             }
-            currentPage={currentPage.nowPlaying}
+            currentPage={currentPage.newReleases}
           />
         </section>
 
-        {/* Top Rated Movies */}
+        {/* Top Rated */}
         <section className="mn-new-product p-tb-15">
           <div className="mn-title">
             <h2>
@@ -532,13 +350,13 @@ const HomeWrapper = () => {
             </div>
           ) : !Array.isArray(topRatedMovies) || topRatedMovies.length === 0 ? (
             <p className="text-center text-muted">
-              No top rated movies available.
+              No top-rated movies available.
             </p>
           ) : (
             <div className="row">{topRatedMovies.map(renderMovieCard)}</div>
           )}
           <Pagination
-            totalItems={totalItemsByGenre.topRated || topRatedMovies.length}
+            totalItems={topRatedMovies.length}
             itemsPerPage={pageSize}
             onPageChange={(page) =>
               setCurrentPage({ ...currentPage, topRated: page })
@@ -547,7 +365,7 @@ const HomeWrapper = () => {
           />
         </section>
 
-        {/* Movies by Selected Genres */}
+        {/* Selected Genres */}
         {selectedGenres.map((genreId) => {
           const genre = genres.find((g) => g.id === genreId);
           return (

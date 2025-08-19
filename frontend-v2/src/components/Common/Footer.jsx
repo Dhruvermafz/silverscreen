@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { message } from "antd";
+import logo_dark from "../../assets/img/logo/logo_dark.png";
 import { getGenresFromAPI } from "../../actions/getMoviesFromAPI";
-
+import logo from "../../assets/img/logo/logo.png";
 const quickLinks = [
-  { label: "Films", path: "/films" },
+  { label: "Films", path: "/explore" },
   { label: "Groups", path: "/groups" },
   { label: "Box Office", path: "/box-office" },
   { label: "Reviews", path: "/reviews" }, // Added Reviews to align with Header
@@ -122,7 +123,7 @@ const Footer = () => {
             </Link>
           </li>
           <li>
-            <Link to="/films" className="mn-main-user" aria-label="Films">
+            <Link to="/explore" className="mn-main-user" aria-label="Films">
               <i class="ri-clapperboard-fill"></i>
             </Link>
           </li>
@@ -138,12 +139,12 @@ const Footer = () => {
                 <div className="mn-footer-widget mn-footer-company">
                   <Link to="/">
                     <img
-                      src="/assets/imgs/theme/logo.svg"
+                      src={logo}
                       className="mn-footer-logo"
                       alt="DimeCine logo"
                     />
                     <img
-                      src="/assets/imgs/theme/logo-dark.svg"
+                      src={logo_dark}
                       className="mn-footer-dark-logo"
                       alt="DimeCine dark logo"
                     />
@@ -153,22 +154,6 @@ const Footer = () => {
                     community engagement. Discover films, share reviews, and
                     connect with cinephiles.
                   </p>
-                  <form
-                    onSubmit={handleNewsletterSubmit}
-                    className="d-flex mt-3"
-                  >
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="form-control me-2"
-                      aria-label="Newsletter email"
-                    />
-                    <button type="submit" className="mn-btn-1">
-                      Subscribe
-                    </button>
-                  </form>
                 </div>
               </div>
               <div className="col-sm-12 col-lg-2 mn-footer-info">
@@ -215,19 +200,13 @@ const Footer = () => {
                   <div className="mn-footer-links mn-footer-dropdown">
                     <ul className="align-items-center">
                       <li className="mn-footer-link">
-                        <Link to="/login">Sign In</Link>
+                        <Link to="/faqs">Help & Support</Link>
                       </li>
                       <li className="mn-footer-link">
-                        <Link to="/register">Register</Link>
+                        <Link to="/terms-and-conditions">Terms of Use</Link>
                       </li>
                       <li className="mn-footer-link">
-                        <Link to="/faq">Help & Support</Link>
-                      </li>
-                      <li className="mn-footer-link">
-                        <Link to="/terms">Terms of Use</Link>
-                      </li>
-                      <li className="mn-footer-link">
-                        <Link to="/privacy">Privacy Policy</Link>
+                        <Link to="/privacy-policy">Privacy Policy</Link>
                       </li>
                     </ul>
                   </div>

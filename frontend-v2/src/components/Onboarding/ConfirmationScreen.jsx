@@ -8,8 +8,9 @@ import {
 import { Link } from "react-router-dom";
 
 const ConfirmationScreen = ({ userId, role, preferences, onComplete }) => {
-  const [updatePreferences] = useUpdatePreferencesMutation();
-  const [updateRole] = useUpdateRoleMutation();
+  const [updatePreferences, { isLoading: isPrefsLoading }] =
+    useUpdatePreferencesMutation();
+  const [updateRole, { isLoading: isRoleLoading }] = useUpdateRoleMutation();
   const [agreed, setAgreed] = useState(false);
 
   const handleSubmit = async () => {
@@ -28,7 +29,10 @@ const ConfirmationScreen = ({ userId, role, preferences, onComplete }) => {
       <h3 className="mb-4">You’re Almost There!</h3>
       <p className="mb-2">
         Welcome! You’re a <strong>{role}</strong> who loves{" "}
-        {preferences.genres?.join(", ") || "cinema"}.
+        {preferences.genres?.length > 0
+          ? preferences.genres.join(", ")
+          : "cinema"}
+        .
       </p>
       <p className="mb-4">
         Our community is a sanctuary for cinema lovers. Keep it about films—no
@@ -51,11 +55,11 @@ const ConfirmationScreen = ({ userId, role, preferences, onComplete }) => {
       </div>
       <button
         className="btn btn-primary"
-        disabled={!agreed}
+        disabled={!agreed || isPrefsLoading || isRoleLoading}
         onClick={handleSubmit}
         aria-label="Join the community"
       >
-        Join the Community
+        {isPrefsLoading || isRoleLoading ? "Saving..." : "Join the Community"}
       </button>
     </div>
   );

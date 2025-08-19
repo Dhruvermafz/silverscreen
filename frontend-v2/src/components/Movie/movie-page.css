@@ -1,7 +1,6 @@
-.movie-page.tmdb {
-  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
-  background-color: #fff;
+.tmdb-movie-page {
+  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f5f5f5;
   color: #000;
 }
 
@@ -15,11 +14,7 @@
 }
 
 .tmdb-backdrop-overlay {
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.7),
-    rgba(0, 0, 0, 0.9)
-  );
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
   position: absolute;
   top: 0;
   left: 0;
@@ -75,13 +70,6 @@
   font-size: 0.9em;
 }
 
-.tmdb-genre {
-  background: transparent !important;
-  color: #fff !important;
-  border: 1px solid #fff !important;
-  font-size: 0.9em;
-}
-
 .tmdb-rating {
   margin-bottom: 16px;
 }
@@ -89,6 +77,7 @@
 .tmdb-rating-text {
   color: #fff;
   font-size: 0.9em;
+  margin-left: 8px;
 }
 
 .tmdb-actions {
@@ -102,6 +91,10 @@
   width: 40px;
   height: 40px;
   font-size: 1.2em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tmdb-action-btn:hover {
@@ -116,6 +109,7 @@
   height: 40px;
   font-size: 1em;
   border-radius: 20px;
+  padding: 0 20px;
 }
 
 .tmdb-action-btn-primary:hover {
@@ -128,15 +122,15 @@
   margin: 0 auto;
   padding: 20px;
   background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tmdb-tabs {
-  margin-bottom: 24px;
-}
-
+/* Tabs */
 .tmdb-tabs .ant-tabs-nav {
   background: #f5f5f5;
   padding: 0 16px;
+  border-radius: 4px;
 }
 
 .tmdb-tabs .ant-tabs-tab {
@@ -145,7 +139,7 @@
   color: #000;
 }
 
-.tmdb-tabs .ant-tabs-tab-active {
+.tmdb-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #01b4e4 !important;
 }
 
@@ -157,6 +151,12 @@
 
 .tmdb-details {
   font-size: 0.95em;
+  list-style: none;
+  padding: 0;
+}
+
+.tmdb-details li {
+  margin-bottom: 8px;
 }
 
 .tmdb-trailer-iframe {
@@ -165,6 +165,38 @@
   height: 360px;
   border: none;
   border-radius: 4px;
+}
+
+/* Cast & Crew Face Cards */
+.tmdb-cast-crew {
+  margin-bottom: 24px;
+}
+
+.tmdb-face-card {
+  text-align: center;
+}
+
+.tmdb-face-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e3e3e3;
+  margin-bottom: 8px;
+}
+
+.tmdb-face-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.tmdb-face-info .ant-typography {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+.tmdb-face-info .ant-typography:first-child {
+  font-weight: 600;
 }
 
 /* Sidebar */
@@ -178,11 +210,26 @@
 .tmdb-facts {
   font-size: 0.9em;
   line-height: 1.8;
+  list-style: none;
+  padding: 0;
 }
 
-/* Sections */
-.tmdb-section {
-  margin-top: 24px;
+.tmdb-facts li {
+  margin-bottom: 8px;
+}
+
+.tmdb-facts a {
+  color: #01b4e4;
+  text-decoration: none;
+}
+
+.tmdb-facts a:hover {
+  text-decoration: underline;
+}
+
+/* Movie List */
+.tmdb-movie-list .ant-col {
+  display: flex;
 }
 
 .tmdb-section h4 {
@@ -190,13 +237,19 @@
   margin-bottom: 16px;
 }
 
-/* Movie List */
-.tmdb-movie-list {
-  margin-top: 16px;
+/* Review Form */
+.tmdb-review-form .ant-form-item {
+  margin-bottom: 16px;
 }
 
-.tmdb-movie-list .ant-col {
-  display: flex;
+.tmdb-review-form .ant-btn-primary {
+  background: #01b4e4;
+  border-color: #01b4e4;
+}
+
+.tmdb-review-form .ant-btn-primary:hover {
+  background: #0398c2;
+  border-color: #0398c2;
 }
 
 /* Responsive Design */
@@ -230,11 +283,40 @@
   .tmdb-tabs .ant-tabs-nav {
     padding: 0 8px;
   }
+
+  .tmdb-face-image {
+    width: 80px;
+    height: 80px;
+  }
 }
 
 @media (max-width: 576px) {
   .tmdb-movie-list .ant-col {
     flex: 0 0 50%;
     max-width: 50%;
+  }
+
+  .tmdb-face-image {
+    width: 60px;
+    height: 60px;
+  }
+}
+/* Face Card Grid */
+.mn-face-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 991px) {
+  .mn-face-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .mn-face-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }

@@ -306,51 +306,6 @@ const ListWrapper = () => {
     <div className="row">
       <div className="col-xxl-12">
         <section className="mn-shop">
-          {/* Shop Banners */}
-          <div className="m-b-30">
-            <div className="row">
-              <div className="col-md-6">
-                <div className="mn-ofr-banners">
-                  <div className="mn-bnr-body">
-                    <div className="mn-bnr-img">
-                      <span className="lbl">New</span>
-                      <img src="/assets/img/banner/5.jpg" alt="banner" />
-                    </div>
-                    <div className="mn-bnr-detail">
-                      <h5>Create Your Movie Lists</h5>
-                      <p>Organize your favorite films.</p>
-                      <button
-                        className="mn-btn-2"
-                        onClick={() => setIsCreateModalVisible(true)}
-                        disabled={!user}
-                        aria-label="Create new list"
-                      >
-                        <span>Create Now</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="mn-ofr-banners m-t-767">
-                  <div className="mn-bnr-body">
-                    <div className="mn-bnr-img">
-                      <span className="lbl">Share</span>
-                      <img src="/assets/img/banner/6.jpg" alt="banner" />
-                    </div>
-                    <div className="mn-bnr-detail">
-                      <h5>Share Your Lists</h5>
-                      <p>Let friends see your movie picks.</p>
-                      <Link to="/lists" className="mn-btn-2">
-                        <span>Explore Lists</span>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="row">
             {/* Sidebar */}
             <div

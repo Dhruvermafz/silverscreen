@@ -14,10 +14,6 @@ const Pagination = ({ page, total, pageSize, handlePageChange }) => {
 
   return (
     <div className="mn-pro-pagination m-b-15">
-      <span>
-        Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)}{" "}
-        of {total} item(s)
-      </span>
       <ul className="mn-pro-pagination-inner">
         {page > 1 && (
           <li>

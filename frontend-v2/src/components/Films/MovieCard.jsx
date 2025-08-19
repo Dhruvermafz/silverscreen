@@ -1,10 +1,10 @@
-// ProductCard.jsx
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { message } from "antd";
 import MovieReview from "./MovieReview";
+import { Dropdown, DropdownButton } from "react-bootstrap"; // Import react-bootstrap
 
-const ProductCard = ({
+const MovieCard = ({
   movie,
   lists,
   profile,
@@ -14,9 +14,19 @@ const ProductCard = ({
   handleReviewClick,
   handleModalClose,
 }) => {
+  const navigate = useNavigate();
+
+  const handleGenreClick = (genreName) => {
+    navigate(`/explore?genre=${encodeURIComponent(genreName)}`);
+  };
+
+  const handleYearClick = (year) => {
+    navigate(`/explore?year=${year}`);
+  };
+
   return (
     <div
-      className={`col-lg-3 col-md-4 col-sm-6 col-12 m-b-24 mn-product-box pro-gl-content ${
+      className={`col-lg-2 col-md-3 col-sm-4 col-6 m-b-24 mn-product-box pro-gl-content ${
         isGridView ? "" : "width-50"
       }`}
     >
@@ -44,10 +54,27 @@ const ProductCard = ({
         </div>
         <div className="mn-product-detail">
           <div className="cat">
-            <Link to={`/movies/${movie.id}`}>
-              {movie.genres?.map((g) => g.name).join(", ") || "N/A"}
-            </Link>
+            {movie.genres?.length > 0
+              ? movie.genres.map((g, index) => (
+                  <span key={g.id}>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleGenreClick(g.name);
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {g.name}
+                    </a>
+                    {index < movie.genres.length - 1 && ", "}
+                  </span>
+                ))
+              : "N/A"}
           </div>
+          {movie.categoryLabel && (
+            <span className="category-badge">{movie.categoryLabel}</span>
+          )}
           <h5>
             <Link to={`/movies/${movie.id}`}>{movie.title}</Link>
           </h5>
@@ -56,7 +83,18 @@ const ProductCard = ({
           </p>
           <div className="mn-price">
             <div className="mn-price-new">
-              {movie.release_date?.substring(0, 4) || "Unknown"}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleYearClick(
+                    movie.release_date?.substring(0, 4) || "Unknown"
+                  );
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                {movie.release_date?.substring(0, 4) || "Unknown"}
+              </a>
             </div>
           </div>
           <div className="mn-pro-option">
@@ -68,35 +106,27 @@ const ProductCard = ({
             >
               <i className="ri-heart-line"></i>
             </a>
-            <a
-              href="javascript:void(0)"
-              data-tooltip
-              title="Add to List"
-              className="mn-add-cart"
-            >
-              <i className="ri-play-list-add-line"></i>
-            </a>
             {profile && (
-              <ul className="dropdown-menu show">
+              <DropdownButton
+                id={`dropdown-${movie.id}`}
+                title={<i className="ri-play-list-add-line"></i>}
+                variant="link"
+                className="mn-add-cart"
+                align="end"
+              >
                 {lists.length === 0 ? (
-                  <li>
-                    <span className="dropdown-item disabled">
-                      No lists available
-                    </span>
-                  </li>
+                  <Dropdown.Item disabled>No lists available</Dropdown.Item>
                 ) : (
                   lists.map((list) => (
-                    <li key={list._id}>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => handleAddToList(movie, list._id)}
-                      >
-                        {list.name}
-                      </button>
-                    </li>
+                    <Dropdown.Item
+                      key={list._id}
+                      onClick={() => handleAddToList(movie, list._id)}
+                    >
+                      {list.name}
+                    </Dropdown.Item>
                   ))
                 )}
-              </ul>
+              </DropdownButton>
             )}
             <a
               className="mn-wishlist"
@@ -111,12 +141,12 @@ const ProductCard = ({
       {movie.showReviewModal && (
         <MovieReview
           movieId={movie.id}
-          visible={movie.showReviewModal}
-          onClose={handleModalClose(movie)}
+          triggerModal={movie.showReviewModal}
+          onModalClose={handleModalClose(movie)}
         />
       )}
     </div>
   );
 };
 
-export default ProductCard;
+export default MovieCard;

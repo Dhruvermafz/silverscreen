@@ -1,9 +1,10 @@
+// src/components/Auth/Login.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { message } from "antd";
 import { useLoginMutation } from "../../actions/authApi";
-import Link from "antd/es/typography/Link";
-const Login = () => {
+
+const Login = ({ onNext }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -16,11 +17,15 @@ const Login = () => {
 
     try {
       const response = await login({ email, password }).unwrap();
-      const token = response.token;
+      const { token, userId } = response; // Assuming the API returns userId
       localStorage.setItem("token", token);
 
       message.success("Logged in successfully!");
-      navigate("/");
+      if (onNext) {
+        onNext(userId); // Pass userId to onNext
+      } else {
+        navigate("/"); // Fallback to homepage if no onNext
+      }
     } catch (err) {
       message.error(err?.data?.error || "Login failed");
     }
@@ -32,7 +37,7 @@ const Login = () => {
         <h2>
           Login<span></span>
         </h2>
-        <p>Get access to your Orders, Wishlist and Recommendations.</p>
+        <p>Get access to your Orders, Wishlist, and Recommendations.</p>
       </div>
       <div className="mn-login-content">
         <div className="mn-login-box">
@@ -76,12 +81,12 @@ const Login = () => {
                       </label>
                     </span>
                     <label>
-                      <a href="/forgot-password">Forgot Password?</a>
+                      <Link to="/forgot-password">Forgot Password?</Link>
                     </label>
                   </span>
                   <span className="mn-login-wrap mn-login-btn">
                     <span>
-                      <Link to="/register">Create Account?</Link>
+                      <Link to="/signup">Create Account?</Link>
                     </span>
                     <button
                       className="mn-btn-1 btn"
@@ -103,7 +108,7 @@ const Login = () => {
         </div>
         <div className="mn-login-box d-n-991">
           <div className="mn-login-img">
-            <img src="assets/imgs/page/login-1.png" alt="Login illustration" />
+            <img src="/assets/imgs/page/login-1.png" alt="Login illustration" />
           </div>
         </div>
       </div>

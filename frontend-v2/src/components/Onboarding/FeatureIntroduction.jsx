@@ -35,12 +35,18 @@ const FeatureIntroduction = ({ onNext }) => {
       <div
         id="featureCarousel"
         className="carousel slide"
-        data-bs-ride="carousel"
+        data-bs-ride="false" // Disable auto-play
+        data-bs-interval="false"
       >
         <div className="carousel-inner">
           {features.map((f, i) => (
             <div key={i} className={`carousel-item ${i === 0 ? "active" : ""}`}>
-              <img src={f.image} className="d-block w-100" alt={f.title} />
+              <img
+                src={f.image}
+                className="d-block w-100"
+                alt={f.title}
+                onError={(e) => (e.target.src = "/assets/fallback.jpg")} // Fallback image
+              />
               <div className="carousel-caption d-none d-md-block">
                 <h4>{f.title}</h4>
                 <p>{f.description}</p>

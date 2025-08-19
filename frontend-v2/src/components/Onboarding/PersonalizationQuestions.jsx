@@ -1,5 +1,6 @@
 // src/components/Onboarding/PersonalizationQuestions.js
 import React, { useState } from "react";
+import { message } from "antd";
 
 const PersonalizationQuestions = ({ onNext }) => {
   const [prefs, setPrefs] = useState({
@@ -39,6 +40,22 @@ const PersonalizationQuestions = ({ onNext }) => {
   const languages = ["English", "Hindi", "Tamil", "Telugu"];
 
   const handleChange = (key, value) => setPrefs({ ...prefs, [key]: value });
+
+  const handleSubmit = () => {
+    // Optional validation: require at least one genre or cinema
+    if (prefs.genres.length === 0 && prefs.cinemas.length === 0) {
+      message.warning(
+        "Please select at least one genre or cinema, or skip to continue.",
+        2
+      );
+      return;
+    }
+    onNext(prefs);
+  };
+
+  const handleSkip = () => {
+    onNext({}); // Pass empty preferences if skipped
+  };
 
   return (
     <div className="personalization-questions text-center">
@@ -157,13 +174,22 @@ const PersonalizationQuestions = ({ onNext }) => {
           ))}
         </div>
       </div>
-      <button
-        className="btn btn-primary"
-        onClick={() => onNext(prefs)}
-        aria-label="Proceed to next step"
-      >
-        Next
-      </button>
+      <div className="d-flex justify-content-center gap-3">
+        <button
+          className="btn btn-outline-secondary"
+          onClick={handleSkip}
+          aria-label="Skip personalization"
+        >
+          Skip
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={handleSubmit}
+          aria-label="Proceed to next step"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 };

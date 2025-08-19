@@ -35,6 +35,10 @@ import MoviePage from "./components/Movie/MoviePage";
 import GenrePage from "./components/Films/GenreWrapper";
 import GroupDetailPage from "./components/Groups/GroupDetailPage";
 import SearchPage from "./components/Search/SearchWrapper";
+import About from "./components/Common/About";
+import Faqs from "./components/Common/Faqs";
+import ActorProfile from "./components/Movie/ActorProfile";
+import DirectorProfile from "./components/Movie/DirectorProfile";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -99,8 +103,9 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
+          <Route path="/about" element={<About />} />
           {/* Protected Routes */}
-          <Route path="/films" element={<FilmWrapper />} />
+          <Route path="/explore" element={<FilmWrapper />} />
           <Route path="/movies/:id" element={<MoviePage />} />
           <Route path="/lists" element={<ListWrapper />} />
           <Route path="/groups" element={<GroupsPage />} />
@@ -132,7 +137,11 @@ function App() {
               />
             }
           />
+
+          <Route path="/actor/:id" element={<ActorProfile />} />
+          <Route path="/director/:id" element={<DirectorProfile />} />
           <Route path="/genres" element={<GenrePage />} />
+          <Route path="/faqs" element={<Faqs />} />
           {/* 404 Route */}
           <Route path="*" element={<Error404 />} />
           <Route path="/search" element={<SearchPage />} />

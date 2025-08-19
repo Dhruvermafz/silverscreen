@@ -6,7 +6,6 @@ import {
   getGenresFromAPI,
   getMoviesFromAPI,
 } from "../../actions/getMoviesFromAPI";
-import "./genre.css";
 
 const GenrePage = () => {
   const [genres, setGenres] = useState([]);
