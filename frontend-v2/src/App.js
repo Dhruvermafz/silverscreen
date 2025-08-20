@@ -42,6 +42,13 @@ import DirectorProfile from "./components/Movie/DirectorProfile";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isAuthPage = [
+    "/login",
+    "/signup",
+    "/404",
+    "/reset-password",
+    "/forgot-password",
+  ].includes(location.pathname);
   const { userId, isAuthenticated, role, cameFromSignup } = useSelector(
     (state) => state.auth
   );
@@ -91,8 +98,7 @@ function App() {
   const isAdmin = () => role === "admin";
   return (
     <main class="wrapper sb-default">
-      <Header />
-
+      {!isAuthPage && <Header />}
       <div class="mn-main-content">
         <Routes>
           {/* Public Routes */}

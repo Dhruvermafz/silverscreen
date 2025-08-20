@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { message } from "antd";
 import { useRegisterMutation } from "../../actions/authApi";
-
+import login_banner from "../../assets/img/banner/login.jpg";
 const Signup = ({ onNext }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -196,10 +196,7 @@ const Signup = ({ onNext }) => {
         </div>
         <div className="mn-login-box d-n-991">
           <div className="mn-login-img">
-            <img
-              src="/assets/imgs/page/login-1.png"
-              alt="Signup illustration"
-            />
+            <img src={login_banner} alt="Signup illustration" />
           </div>
         </div>
       </div>
