@@ -269,21 +269,8 @@ const Header = () => {
                         <li className="non-drop">
                           <Link to="/explore">Explore Films</Link>
                         </li>
-                        <li>
-                          <Dropdown
-                            overlay={categoriesMenu}
-                            trigger={["click"]}
-                          >
-                            <a
-                              onClick={(e) => e.preventDefault()}
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              Categories
-                            </a>
-                          </Dropdown>
+                        <li className="non-drop">
+                          <Link to="/categories"> Categories</Link>
                         </li>
                         <li>
                           {isLoading ? (

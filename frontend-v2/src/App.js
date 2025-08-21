@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -39,9 +40,11 @@ import About from "./components/Common/About";
 import Faqs from "./components/Common/Faqs";
 import ActorProfile from "./components/Movie/ActorProfile";
 import DirectorProfile from "./components/Movie/DirectorProfile";
+import CategoriesPage from "./components/Films/CategoriesPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAuthPage = [
     "/login",
     "/signup",
@@ -110,6 +113,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
           <Route path="/about" element={<About />} />
+          <Route path="/categories" element={<CategoriesPage />} />
           {/* Protected Routes */}
           <Route path="/explore" element={<FilmWrapper />} />
           <Route path="/movies/:id" element={<MoviePage />} />

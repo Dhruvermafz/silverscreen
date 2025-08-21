@@ -58,6 +58,35 @@ export const reviewApi = createApi({
               movieTitle: review.movieTitle || "Unknown",
             })),
     }),
+    // Get a review by ID
+    getReviewById: builder.query({
+      query: (reviewId) => `/reviews/review/${reviewId}`,
+      transformResponse: (response) => ({
+        ...response,
+        id: response._id,
+        content: response.comment,
+        author: response.user?.username || "Anonymous",
+        movieTitle: response.movieTitle || "Unknown",
+      }),
+    }),
+    // Update a review
+    updateReview: builder.mutation({
+      query: ({ reviewId, ...reviewData }) => ({
+        url: `/reviews/${reviewId}`,
+        method: "PUT",
+        body: {
+          ...reviewData,
+          comment: reviewData.comment || reviewData.content,
+        },
+      }),
+      transformResponse: (response) => ({
+        ...response,
+        id: response._id,
+        content: response.comment,
+        author: response.user?.username || "Anonymous",
+        movieTitle: response.movieTitle || "Unknown",
+      }),
+    }),
     // Delete a review by ID
     deleteReview: builder.mutation({
       query: (reviewId) => ({
@@ -81,4 +110,6 @@ export const {
   useGetReviewsQuery,
   useDeleteReviewMutation,
   useToggleReviewStatusMutation,
+  useGetReviewByIdQuery,
+  useUpdateReviewMutation,
 } = reviewApi;

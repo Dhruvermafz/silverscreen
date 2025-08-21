@@ -11,24 +11,19 @@ import {
   Tooltip,
   Dropdown,
   Menu,
-  Form,
-  Input,
   Tabs,
+  Carousel,
 } from "antd";
 import axios from "axios";
-import MovieReview from "./MovieReview";
+import MovieReview from "../Films/MovieReview";
 import MovieCard from "./MovieCard";
 import ActorProfile from "./ActorProfile";
 import DirectorProfile from "./DirectorProfile";
-import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
-import {
-  useAddMovieToListMutation,
-  useGetListsQuery,
-} from "../../actions/listApi";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./movie-page.css";
-
+import { useAddMovieToListMutation } from "../../actions/listApi";
+import { useGetListsQuery } from "../../actions/listApi";
 const { TabPane } = Tabs;
 const { Title, Paragraph, Text } = Typography;
 
@@ -66,6 +61,7 @@ const MoviePage = () => {
       const response = await axios.get(
         `${TMDB_API_URL}/movie/${id}?api_key=${TMDB_API_KEY}&language=en-US&append_to_response=credits,release_dates,images,videos`
       );
+      console.log("Movie Details Response:", response.data);
       setMovie(response.data);
       const trailer = response.data.videos.results.find(
         (v) => v.type === "Trailer"
@@ -79,6 +75,7 @@ const MoviePage = () => {
         position: "top-right",
         autoClose: 2000,
       });
+      setMovie(null);
     } finally {
       setIsMovieLoading(false);
     }
@@ -91,6 +88,7 @@ const MoviePage = () => {
       const response = await axios.get(
         `${TMDB_API_URL}/movie/${id}/recommendations?api_key=${TMDB_API_KEY}&language=en-US&page=1`
       );
+      console.log("Recommended Movies Response:", response.data);
       setRecommendedMovies(response.data.results.slice(0, 6));
     } catch (error) {
       console.error("Error fetching recommended movies:", error);
@@ -98,6 +96,7 @@ const MoviePage = () => {
         position: "top-right",
         autoClose: 2000,
       });
+      setRecommendedMovies([]);
     } finally {
       setIsRecsLoading(false);
     }
@@ -107,18 +106,18 @@ const MoviePage = () => {
   const fetchTrendingMovies = useCallback(async () => {
     setIsTrendingLoading(true);
     try {
-      const response = await getMoviesFromAPI(
-        "",
-        { sort: "popularity.desc" },
-        1
+      const response = await axios.get(
+        `${TMDB_API_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=en-US`
       );
-      setTrendingMovies(response.movies.slice(0, 6));
+      console.log("Trending Movies Response:", response.data);
+      setTrendingMovies(response.data.results.slice(0, 6));
     } catch (error) {
       console.error("Error fetching trending movies:", error);
       toast.error("Failed to load trending movies", {
         position: "top-right",
         autoClose: 2000,
       });
+      setTrendingMovies([]);
     } finally {
       setIsTrendingLoading(false);
     }
@@ -131,6 +130,7 @@ const MoviePage = () => {
       const response = await axios.get(
         `${TMDB_API_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=en-US&append_to_response=movie_credits`
       );
+      console.log("Actor Details Response:", response.data);
       setActor(response.data);
     } catch (error) {
       console.error("Error fetching actor details:", error);
@@ -138,6 +138,7 @@ const MoviePage = () => {
         position: "top-right",
         autoClose: 2000,
       });
+      setActor(null);
     } finally {
       setIsActorLoading(false);
     }
@@ -150,6 +151,7 @@ const MoviePage = () => {
       const response = await axios.get(
         `${TMDB_API_URL}/person/${directorId}?api_key=${TMDB_API_KEY}&language=en-US&append_to_response=movie_credits`
       );
+      console.log("Director Details Response:", response.data);
       setDirector(response.data);
     } catch (error) {
       console.error("Error fetching director details:", error);
@@ -157,6 +159,7 @@ const MoviePage = () => {
         position: "top-right",
         autoClose: 2000,
       });
+      setDirector(null);
     } finally {
       setIsDirectorLoading(false);
     }
@@ -165,6 +168,8 @@ const MoviePage = () => {
   // Fetch Wikipedia data
   const fetchWikiData = useCallback(async (name, type) => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       const searchQuery = `${name} ${
         type === "actor" ? "actor" : "film director"
       }`;
@@ -176,7 +181,9 @@ const MoviePage = () => {
           format: "json",
           origin: "*",
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const page = searchResponse.data.query.search[0];
       if (!page) {
         setWikiData({
@@ -197,7 +204,9 @@ const MoviePage = () => {
           format: "json",
           origin: "*",
         },
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const extract = pageResponse.data.query.pages[page.pageid].extract;
 
       setWikiData({
@@ -206,16 +215,19 @@ const MoviePage = () => {
         news: [],
       });
     } catch (error) {
+      console.error("Error fetching Wikipedia data:", error);
       setWikiData({
-        biography: "Failed to load Wikipedia data",
+        biography:
+          error.name === "AbortError"
+            ? "Wikipedia request timed out"
+            : "Failed to load Wikipedia data",
         works: [],
         news: [],
       });
-      console.error("Error fetching Wikipedia data:", error);
     }
   }, []);
 
-  // Fetch actor and director details when movie data is available
+  // Fetch actor and director details
   useEffect(() => {
     if (movie?.credits) {
       const leadActor = movie.credits.cast[0];
@@ -225,17 +237,19 @@ const MoviePage = () => {
         fetchActorDetails(leadActor.id);
       } else {
         setIsActorLoading(false);
+        setActor(null);
       }
 
       if (director?.id) {
         fetchDirectorDetails(director.id);
       } else {
         setIsDirectorLoading(false);
+        setDirector(null);
       }
     }
   }, [movie, fetchActorDetails, fetchDirectorDetails]);
 
-  // Fetch Wikipedia data for actor and director
+  // Fetch Wikipedia data
   useEffect(() => {
     if (actor?.name) {
       fetchWikiData(actor.name, "actor");
@@ -248,7 +262,7 @@ const MoviePage = () => {
     }
   }, [director, fetchWikiData]);
 
-  // Fetch movie-related data on mount
+  // Fetch movie-related data
   useEffect(() => {
     fetchMovieDetails();
     fetchRecommendedMovies();
@@ -353,7 +367,9 @@ const MoviePage = () => {
                             <div className="single-slide zoom-image-hover">
                               <img
                                 className="img-responsive"
-                                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                src={`https://image.tmdb.org/t/p/w500${
+                                  movie.poster_path || "/placeholder.jpg"
+                                }`}
                                 alt={movie.title}
                               />
                             </div>
@@ -395,10 +411,12 @@ const MoviePage = () => {
                             <ul>
                               <li>
                                 <strong>Genres:</strong>{" "}
-                                {movie.genres?.map((g) => g.name).join(", ")}
+                                {movie.genres?.map((g) => g.name).join(", ") ||
+                                  "N/A"}
                               </li>
                               <li>
-                                <strong>Runtime:</strong> {movie.runtime} min
+                                <strong>Runtime:</strong>{" "}
+                                {movie.runtime || "N/A"} min
                               </li>
                               <li>
                                 <strong>Director:</strong>{" "}
@@ -492,13 +510,14 @@ const MoviePage = () => {
                     <Tabs defaultActiveKey="details">
                       <TabPane tab="Detail" key="details">
                         <div className="mn-single-pro-tab-desc">
-                          <p>{movie.overview}</p>
+                          <p>{movie.overview || "No overview available"}</p>
                           <ul>
                             <li>
                               Genres:{" "}
-                              {movie.genres?.map((g) => g.name).join(", ")}
+                              {movie.genres?.map((g) => g.name).join(", ") ||
+                                "N/A"}
                             </li>
-                            <li>Runtime: {movie.runtime} min</li>
+                            <li>Runtime: {movie.runtime || "N/A"} min</li>
                             <li>
                               Director:{" "}
                               {movie.credits?.crew?.find(
@@ -560,79 +579,6 @@ const MoviePage = () => {
                           <div className="mn-t-review-wrapper mt-0">
                             <MovieReview movieId={id} />
                           </div>
-                          <div className="mn-ratting-content">
-                            <h3>Add a Review</h3>
-                            <div className="mn-ratting-form">
-                              <Form
-                                onFinish={(values) => {
-                                  toast.success("Review submitted", {
-                                    position: "top-right",
-                                    autoClose: 2000,
-                                  });
-                                }}
-                              >
-                                <div className="mn-ratting-star">
-                                  <span>Your rating:</span>
-                                  <Form.Item name="rating" initialValue={0}>
-                                    <Rate />
-                                  </Form.Item>
-                                </div>
-                                <div className="mn-ratting-input">
-                                  <Form.Item
-                                    name="name"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter your name",
-                                      },
-                                    ]}
-                                  >
-                                    <Input placeholder="Name" />
-                                  </Form.Item>
-                                </div>
-                                <div className="mn-ratting-input">
-                                  <Form.Item
-                                    name="email"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter your email",
-                                      },
-                                      {
-                                        type: "email",
-                                        message: "Please enter a valid email",
-                                      },
-                                    ]}
-                                  >
-                                    <Input placeholder="Email*" />
-                                  </Form.Item>
-                                </div>
-                                <div className="mn-ratting-input form-submit">
-                                  <Form.Item
-                                    name="comment"
-                                    rules={[
-                                      {
-                                        required: true,
-                                        message: "Please enter your comment",
-                                      },
-                                    ]}
-                                  >
-                                    <Input.TextArea
-                                      placeholder="Enter Your Comment"
-                                      rows={4}
-                                    />
-                                  </Form.Item>
-                                  <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    className="mn-btn-2"
-                                  >
-                                    <span>Submit</span>
-                                  </Button>
-                                </div>
-                              </Form>
-                            </div>
-                          </div>
                         </div>
                       </TabPane>
                     </Tabs>
@@ -644,24 +590,25 @@ const MoviePage = () => {
                       Recommended <span>Movies</span>
                     </h2>
                   </div>
-                  <div className="mn-related owl-carousel">
+                  <Carousel dots={true} slidesToShow={3} slidesToScroll={1}>
                     {isRecsLoading ? (
                       <Skeleton active paragraph={{ rows: 2 }} />
                     ) : recommendedMovies.length > 0 ? (
                       recommendedMovies.map((rec) => (
-                        <MovieCard
-                          key={rec.id}
-                          movie={rec}
-                          onAddToList={() => handleAddToList(rec.id)}
-                          onToggleLike={() => handleToggleLike(rec.id)}
-                          isLiked={isLiked}
-                          navigate={navigate}
-                        />
+                        <div key={rec.id}>
+                          <MovieCard
+                            movie={rec}
+                            onAddToList={() => handleAddToList(rec.id)}
+                            onToggleLike={() => handleToggleLike(rec.id)}
+                            isLiked={isLiked}
+                            navigate={navigate}
+                          />
+                        </div>
                       ))
                     ) : (
-                      <Text>No recommendations available.</Text>
+                      <Text>No recommended movies available at this time.</Text>
                     )}
-                  </div>
+                  </Carousel>
                 </section>
                 <section className="mn-related-product m-t-30">
                   <div className="mn-title">
@@ -669,25 +616,26 @@ const MoviePage = () => {
                       Trending <span>Now</span>
                     </h2>
                   </div>
-                  <div className="mn-related owl-carousel">
+                  <Carousel dots={true} slidesToShow={3} slidesToScroll={1}>
                     {isTrendingLoading ? (
                       <Skeleton active paragraph={{ rows: 2 }} />
                     ) : trendingMovies.length > 0 ? (
                       trendingMovies.map((trend) => (
-                        <MovieCard
-                          key={trend.id}
-                          movie={trend}
-                          onAddToList={() => handleAddToList(trend.id)}
-                          onToggleLike={() => handleToggleLike(trend.id)}
-                          isLiked={isLiked}
-                          navigate={navigate}
-                          isTrending
-                        />
+                        <div key={trend.id}>
+                          <MovieCard
+                            movie={trend}
+                            onAddToList={() => handleAddToList(trend.id)}
+                            onToggleLike={() => handleToggleLike(trend.id)}
+                            isLiked={isLiked}
+                            navigate={navigate}
+                            isTrending
+                          />
+                        </div>
                       ))
                     ) : (
-                      <Text>No trending movies available.</Text>
+                      <Text>No trending movies available at this time.</Text>
                     )}
-                  </div>
+                  </Carousel>
                 </section>
               </div>
             </div>
