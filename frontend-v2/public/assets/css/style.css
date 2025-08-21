@@ -1,58 +1,3 @@
-/*-----------------------------------------------------------------------------------
-
-    Item Name: Mantu - eCommerce HTML Template
-    Author: Maraviya Infotech
-    Version: 1.0
-    Copyright 2025
-
------------------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------------
-    Included CSS INDEX
------------------------------------------------------------------------------------
-
-01. Typography
-02. Components
-    - Breadcrumb
-    - Cart Sidebar
-    - Wishlist
-    - Search Sidebar
-    - Common
-    - Main Content
-    - Header
-    - Sidebar
-    - Footer
-    - Footer Nav
-    - Quickview
-    - Shop Sidebar
-
-03. Layout 
-    - Hero-1
-    - Category
-    - Product
-    - Service
-    - Banner
-    - Blog
-    - Testimonial
-    - Instagram
-
-04. Pages
-    - About Page
-    - Shop Page
-    - Product Page
-    - Blog Page
-    - FAQ Page
-    - Contact Page
-    - Cart Page
-    - Checkout Page
-    - Compare Page
-    - Login Page
-    - Register Page
-    - Terms Page
-    - Track Order Page
-    - Wishlist Page
------------------------------------------------------------------------------------*/
-/*=== Typography ===*/
-/*--  Poppins font  --*/
 @font-face {
   font-family: "Poppins, sans-serif";
   src: url("../fonts/poppins/Poppins-Thin.html") format("truetype");
@@ -1049,7 +994,7 @@ p {
 }
 
 .main-bg {
-  background-image: url("../img/bg/bg.html");
+ 
 }
 
 .mn-btn-1 {
@@ -2229,7 +2174,7 @@ header {
   height: auto;
 }
 .mn-header .mn-header-items .right-header .mn-main-menu ul li .mega-menu.bg {
-  background-image: url(../img/bg/3.html);
+
   background-size: 300px;
   background-repeat: no-repeat;
   background-position: right bottom;
@@ -3345,14 +3290,14 @@ footer {
     width: 30px;
     height: 30px;
     top: -30px;
-    background-image: url("../img/footer/1.html");
+
     background-size: 30px;
   }
   .mn-footer:after {
     width: 30px;
     height: 30px;
     top: -30px;
-    background-image: url("../img/footer/1.html");
+
     background-size: 30px;
   }
   .mn-footer .footer-top .mn-footer-widget .mn-footer-links .mn-footer-link a {
@@ -3378,14 +3323,13 @@ footer {
     width: 15px;
     height: 15px;
     top: -15px;
-    background-image: url("../img/footer/1.html");
-    background-size: 15px;
+     background-size: 15px;
   }
   .mn-footer:after {
     width: 15px;
     height: 15px;
     top: -15px;
-    background-image: url("../img/footer/1.html");
+ 
     background-size: 15px;
   }
   .mn-footer .footer-top .mn-footer-company {
@@ -4507,7 +4451,7 @@ button.btn-close.qty_close {
   border-radius: 5px;
 }
 .mn-banner-side .mn-banner-block-side-2 {
-  background-image: url(../img/banner/7.html);
+
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -4619,7 +4563,7 @@ button.btn-close.qty_close {
   position: absolute;
   top: 50%;
   left: 0;
-  background-image: url("../img/hero/shape-1.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%);
@@ -4667,7 +4611,7 @@ button.btn-close.qty_close {
   position: absolute;
   left: -15px;
   bottom: -6px;
-  background-image: url("../img/hero/shape-2.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%) rotate(270deg);
@@ -4680,7 +4624,7 @@ button.btn-close.qty_close {
   position: absolute;
   right: -17px;
   bottom: -8px;
-  background-image: url("../img/hero/shape-2.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%);
@@ -5171,7 +5115,7 @@ button.btn-close.qty_close {
   position: absolute;
   left: -16px;
   bottom: -8px;
-  background-image: url("../img/product/bg/shape-2.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%) rotate(180deg);
@@ -5184,7 +5128,7 @@ button.btn-close.qty_close {
   position: absolute;
   right: -16px;
   bottom: -8px;
-  background-image: url("../img/product/bg/shape-2.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%) scaleX(-1) rotate(180deg);
@@ -5248,7 +5192,7 @@ button.btn-close.qty_close {
   position: absolute;
   left: -16px;
   bottom: -1px;
-  background-image: url("../img/product/bg/shape-1.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
   -webkit-transform: translateY(-50%) rotate(270deg);
@@ -5261,7 +5205,7 @@ button.btn-close.qty_close {
   position: absolute;
   right: -18px;
   bottom: 5px;
-  background-image: url("../img/product/bg/shape-1.png");
+
   background-repeat: no-repeat;
   background-size: 100%;
 }
