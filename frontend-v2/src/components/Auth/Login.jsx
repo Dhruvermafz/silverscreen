@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { message } from "antd";
 import { useLoginMutation } from "../../actions/authApi";
 import login_banner from "../../assets/img/banner/login.jpg";
+import MovieSlider from "../MovieSlider";
 const Login = ({ onNext }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,12 +34,7 @@ const Login = ({ onNext }) => {
 
   return (
     <section className="mn-login p-b-15">
-      <div className="mn-title">
-        <h2>
-          Login<span></span>
-        </h2>
-        <p>Get access to your Orders, Wishlist, and Recommendations.</p>
-      </div>
+      <MovieSlider /> {/* Replace static image with slider */}
       <div className="mn-login-content">
         <div className="mn-login-box">
           <div className="mn-login-wrapper">
@@ -104,11 +100,6 @@ const Login = ({ onNext }) => {
                 </form>
               </div>
             </div>
-          </div>
-        </div>
-        <div className="mn-login-box d-n-991">
-          <div className="mn-login-img">
-            <img src={login_banner} alt="Login illustration" />
           </div>
         </div>
       </div>
