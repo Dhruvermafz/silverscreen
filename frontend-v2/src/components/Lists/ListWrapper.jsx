@@ -1,6 +1,32 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { message } from "antd";
+import {
+  message,
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Row,
+  Modal,
+  Input,
+  Select,
+  Space,
+  Tag,
+  Empty,
+  Spin,
+  Drawer,
+  Badge,
+} from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ShareAltOutlined,
+  EyeOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import debounce from "lodash.debounce";
+
 import {
   useGetListsQuery,
   useGetListsByUserIdQuery,
@@ -11,1009 +37,538 @@ import {
   useRemoveMovieFromListMutation,
 } from "../../actions/listApi";
 import { useGetProfileQuery } from "../../actions/userApi";
+
 import axios from "axios";
-import placehold from "../../assets/img/banner/1.jpg";
+
+const { Search } = Input;
+
+const TMDB_API_KEY = "967df4e131f467edcdd674b650bf257c";
+const POSTER_BASE = "https://image.tmdb.org/t/p/w200";
+const BACKDROP_BASE = "https://image.tmdb.org/t/p/w500";
 
 const ListWrapper = () => {
-  const { data: user } = useGetProfileQuery();
-  const userId = user?._id || null;
+  const { data: authUser } = useGetProfileQuery();
+  const userId = authUser?._id;
 
-  const {
-    data: publicLists = [],
-    refetch: refetchPublic,
-    isLoading: publicListsLoading,
-    error: publicListsError,
-  } = useGetListsQuery();
+  const { data: publicLists = [], isLoading: publicLoading } =
+    useGetListsQuery();
   const {
     data: userLists = [],
+    isLoading: userLoading,
     refetch: refetchUser,
-    isLoading: userListsLoading,
-    error: userListsError,
   } = useGetListsByUserIdQuery(userId, { skip: !userId });
 
   const lists = userId ? userLists : publicLists;
-  const refetch = userId ? refetchUser : refetchPublic;
-  const listsLoading = userId ? userListsLoading : publicListsLoading;
-  const listsError = userId ? userListsError : publicListsError;
+  const isLoading = userId ? userLoading : publicLoading;
 
-  const [createList, { isLoading: createLoading }] = useCreateListMutation();
-  const [deleteList, { isLoading: deleteLoading }] = useDeleteListMutation();
-  const [addMovieToList, { isLoading: addMovieLoading }] =
-    useAddMovieToListMutation();
-  const [updateList, { isLoading: updateLoading }] = useUpdateListMutation();
-  const [removeMovieFromList, { isLoading: removeMovieLoading }] =
-    useRemoveMovieFromListMutation();
+  const [createList] = useCreateListMutation();
+  const [deleteList] = useDeleteListMutation();
+  const [addMovieToList] = useAddMovieToListMutation();
+  const [updateList] = useUpdateListMutation();
+  const [removeMovieFromList] = useRemoveMovieFromListMutation();
 
-  const TMDB_API_URL = "https://api.themoviedb.org/3";
-  const API_KEY = "967df4e131f467edcdd674b650bf257c";
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedList, setSelectedList] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [movieSearch, setMovieSearch] = useState("");
 
-  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
-  const [selectedList, setSelectedList] = useState(null);
-  const [isMoviesModalVisible, setIsMoviesModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [editListName, setEditListName] = useState("");
-  const [editIsPrivate, setEditIsPrivate] = useState(false);
-  const [movieDetails, setMovieDetails] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isGridView, setIsGridView] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState({
-    privacy: [], // "public", "private"
-    sort: "createdAt.desc",
-  });
-  const [currentListPage, setCurrentListPage] = useState(1);
-  const [currentMoviePage, setCurrentMoviePage] = useState(1);
-  const pageSize = 8; // Lists per page
-  const moviesPageSize = 5; // Movies per page
+  const [editName, setEditName] = useState("");
+  const [editPrivate, setEditPrivate] = useState(false);
 
-  useEffect(() => {
-    if (listsError) {
-      message.error(listsError?.data?.message || "Failed to load lists", 2);
-    }
-  }, [listsError]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
-  const fetchMovieDetails = async (movieId) => {
-    try {
-      const response = await axios.get(
-        `${TMDB_API_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US`
-      );
-      return {
-        title: response.data.title,
-        posterUrl: response.data.poster_path
-          ? `https://image.tmdb.org/t/p/w200${response.data.poster_path}`
-          : placehold,
-        tmdbUrl: `https://www.themoviedb.org/movie/${movieId}`,
-      };
-    } catch (error) {
-      console.error("Error fetching movie details", error);
-      return null;
-    }
-  };
-
-  const searchMovies = async (query) => {
-    if (!query) return;
-    try {
-      const response = await axios.get(
-        `${TMDB_API_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-          query
-        )}`
-      );
-      setSearchResults(
-        response.data.results.map((movie) => ({
-          value: movie.id.toString(),
-          label: movie.title,
-          movie,
-        }))
-      );
-    } catch (error) {
-      console.error("Error searching movies", error);
-      message.error("Failed to search movies", 2);
-    }
-  };
-
-  const validateListName = (name) => {
-    if (!name.trim()) return "List name cannot be empty";
-    if (!/^[a-zA-Z0-9\s_-]{3,50}$/.test(name))
-      return "List name must be 3-50 characters and contain only letters, numbers, spaces, underscores, or hyphens";
-    return null;
-  };
+  // Debounced TMDB search
+  const searchTMDB = useCallback(
+    debounce(async (query) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        return;
+      }
+      try {
+        const res = await axios.get(
+          `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(
+            query
+          )}`
+        );
+        setSearchResults(res.data.results.slice(0, 8));
+      } catch (err) {
+        message.error("Failed to search movies");
+        setSearchResults([]);
+      }
+    }, 500),
+    []
+  );
 
   const handleCreateList = async () => {
-    const validationError = validateListName(newListName);
-    if (validationError) {
-      message.warning(validationError, 2);
+    if (!newListName.trim()) {
+      message.warning("List name is required");
       return;
     }
     try {
-      await createList({ name: newListName, isPrivate }).unwrap();
+      await createList({ name: newListName.trim(), isPrivate }).unwrap();
+      message.success("List created!");
+      setCreateModalOpen(false);
       setNewListName("");
       setIsPrivate(false);
-      setIsCreateModalVisible(false);
-      refetch();
-      message.success("List created successfully", 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to create list", 2);
+      refetchUser?.();
+    } catch {
+      message.error("Failed to create list");
+    }
+  };
+
+  const handleUpdateList = async () => {
+    if (!editName.trim()) return;
+    try {
+      await updateList({
+        listId: selectedList._id,
+        name: editName.trim(),
+        isPrivate: editPrivate,
+      }).unwrap();
+      message.success("List updated");
+      setEditModalOpen(false);
+      refetchUser?.();
+    } catch {
+      message.error("Failed to update");
     }
   };
 
   const handleDeleteList = async (id) => {
-    try {
-      await deleteList(id).unwrap();
-      refetch();
-      message.success("List deleted successfully", 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to delete list", 2);
-    }
+    Modal.confirm({
+      title: "Delete this list?",
+      content: "This action cannot be undone.",
+      okText: "Delete",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          await deleteList(id).unwrap();
+          message.success("List deleted");
+          refetchUser?.();
+        } catch {
+          message.error("Failed to delete");
+        }
+      },
+    });
   };
 
-  const handleEditList = async () => {
-    const validationError = validateListName(editListName);
-    if (validationError) {
-      message.warning(validationError, 2);
-      return;
-    }
+  const handleAddMovie = async (movie) => {
     try {
-      await updateList({
-        listId: selectedList._id,
-        name: editListName,
-        isPrivate: editIsPrivate,
-      }).unwrap();
-      setIsEditModalVisible(false);
-      refetch();
-      message.success("List updated successfully", 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to update list", 2);
-    }
-  };
-
-  const handleAddMovie = async (movieId) => {
-    try {
-      const selectedMovie = searchResults.find(
-        (result) => result.value === movieId
-      )?.movie;
-      if (!selectedMovie) {
-        message.error("Invalid movie selected", 2);
-        return;
-      }
       await addMovieToList({
         listId: selectedList._id,
         movie: {
-          id: selectedMovie.id,
-          title: selectedMovie.title,
-          poster_path: selectedMovie.poster_path,
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
         },
       }).unwrap();
-      refetch();
-      setSearchQuery("");
+      message.success(`${movie.title} added!`);
+      setMovieSearch("");
       setSearchResults([]);
-      message.success("Movie added to list", 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to add movie", 2);
+      refetchUser?.();
+    } catch {
+      message.error("Failed to add movie");
     }
   };
 
   const handleRemoveMovie = async (movieId) => {
     try {
-      await removeMovieFromList({
-        listId: selectedList._id,
-        movieId,
-      }).unwrap();
-      refetch();
-      message.success("Movie removed from list", 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to remove movie", 2);
+      await removeMovieFromList({ listId: selectedList._id, movieId }).unwrap();
+      message.success("Movie removed");
+      refetchUser?.();
+    } catch {
+      message.error("Failed to remove");
     }
   };
 
-  const handleShareList = () => {
-    if (selectedList.isPrivate) {
-      message.warning(
-        "This is a private list and can only be viewed by you.",
-        2
-      );
-      return;
-    }
-    const shareUrl = `${window.location.origin}/lists/${selectedList._id}`;
-    navigator.clipboard.writeText(shareUrl);
-    message.success("List URL copied to clipboard", 2);
-  };
-
-  const handleCardClick = async (list) => {
+  const openViewModal = (list) => {
     setSelectedList(list);
-    setEditListName(list.name);
-    setEditIsPrivate(list.isPrivate);
-    setIsMoviesModalVisible(true);
-    setCurrentMoviePage(1);
-
-    const details = {};
-    for (const movie of list.movies) {
-      const data = await fetchMovieDetails(movie.movieId);
-      if (data) details[movie._id] = data;
-    }
-    setMovieDetails(details);
+    setViewModalOpen(true);
+    setMovieSearch("");
+    setSearchResults([]);
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
+  const openEditModal = (list) => {
+    setSelectedList(list);
+    setEditName(list.name);
+    setEditPrivate(list.isPrivate);
+    setEditModalOpen(true);
   };
 
-  const handleFilterChange = useCallback((filters) => {
-    setSelectedFilter(filters);
-    setCurrentListPage(1);
-  }, []);
+  const paginatedLists = lists.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
-  const handlePrivacyChange = (value) => {
-    const newPrivacy = selectedFilter.privacy.includes(value)
-      ? selectedFilter.privacy.filter((p) => p !== value)
-      : [...selectedFilter.privacy, value];
-    handleFilterChange({ ...selectedFilter, privacy: newPrivacy });
-  };
-
-  const handleClearFilters = () => {
-    handleFilterChange({ privacy: [], sort: "createdAt.desc" });
-  };
-
-  const handleSortChange = (value) => {
-    handleFilterChange({ ...selectedFilter, sort: value });
-  };
-
-  // Filter and sort lists
-  const filteredLists = lists
-    .filter((list) => {
-      if (selectedFilter.privacy.length === 0) return true;
-      return selectedFilter.privacy.includes(
-        list.isPrivate ? "private" : "public"
+  const getListCoverImages = (movies) => {
+    if (movies.length === 0) return ["/assets/imgs/placeholder.png"];
+    return movies
+      .slice(0, 4)
+      .map((m) =>
+        m.poster_path
+          ? `${POSTER_BASE}${m.poster_path}`
+          : "/assets/imgs/placeholder.png"
       );
-    })
-    .sort((a, b) => {
-      if (selectedFilter.sort === "createdAt.desc") {
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      } else if (selectedFilter.sort === "createdAt.asc") {
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      } else if (selectedFilter.sort === "name.asc") {
-        return a.name.localeCompare(b.name);
-      } else if (selectedFilter.sort === "name.desc") {
-        return b.name.localeCompare(a.name);
-      }
-      return 0;
-    });
-
-  const paginatedLists = filteredLists.slice(
-    (currentListPage - 1) * pageSize,
-    currentListPage * pageSize
-  );
-  const paginatedMovies = selectedList
-    ? selectedList.movies.slice(
-        (currentMoviePage - 1) * moviesPageSize,
-        currentMoviePage * moviesPageSize
-      )
-    : [];
-
-  const totalPages = Math.ceil(filteredLists.length / pageSize);
-  const maxPagesToShow = 8;
-  const currentPageGroup = Math.floor((currentListPage - 1) / maxPagesToShow);
-  const startPage = currentPageGroup * maxPagesToShow + 1;
-  const endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
-  const pages = Array.from(
-    { length: endPage - startPage + 1 },
-    (_, i) => startPage + i
-  );
+  };
 
   return (
-    <div className="row">
-      <div className="col-xxl-12">
-        <section className="mn-shop">
-          <div className="row">
-            {/* Sidebar */}
-            <div
-              className={`filter-sidebar-overlay ${
-                isSidebarOpen ? "active" : ""
-              }`}
-              onClick={toggleSidebar}
-            ></div>
-            <div
-              className={`mn-shop-sidebar mn-filter-sidebar col-lg-3 col-md-12 ${
-                isSidebarOpen ? "active" : ""
-              }`}
-            >
-              <div id="shop_sidebar">
-                <div className="mn-sidebar-wrap">
-                  <div className="mn-sidebar-block">
-                    <div className="mn-sb-title">
-                      <h3 className="mn-sidebar-title">Filters</h3>
-                      <a
-                        href="javascript:void(0)"
-                        className="filter-close"
-                        onClick={toggleSidebar}
-                      >
-                        <i className="ri-close-large-line"></i>
-                      </a>
-                    </div>
-                    <div className="mn-sb-block-content p-t-15">
-                      <h5 className="section-title style-1 mb-30">Privacy</h5>
-                      <ul>
-                        <li>
-                          <div className="mn-sidebar-block-item">
-                            <input
-                              type="checkbox"
-                              value="public"
-                              checked={selectedFilter.privacy.includes(
-                                "public"
-                              )}
-                              onChange={() => handlePrivacyChange("public")}
-                              id="privacy-public"
-                            />
-                            <label htmlFor="privacy-public">
-                              <span>Public</span>
-                            </label>
-                            <span className="checked"></span>
-                          </div>
-                        </li>
-                        {user && (
-                          <li>
-                            <div className="mn-sidebar-block-item">
-                              <input
-                                type="checkbox"
-                                value="private"
-                                checked={selectedFilter.privacy.includes(
-                                  "private"
-                                )}
-                                onChange={() => handlePrivacyChange("private")}
-                                id="privacy-private"
-                              />
-                              <label htmlFor="privacy-private">
-                                <span>Private</span>
-                              </label>
-                              <span className="checked"></span>
-                            </div>
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="mn-shop-rightside col-md-12 m-t-991">
-              {/* Shop Top */}
-              <div className="mn-pro-list-top d-flex">
-                <div className="col-md-6 mn-grid-list">
-                  <div className="mn-gl-btn">
-                    <button
-                      className="grid-btn filter-toggle-icon"
-                      onClick={toggleSidebar}
-                      aria-label="Toggle filters"
-                    >
-                      <i className="ri-filter-2-line"></i>
-                    </button>
-                    <button
-                      className={`grid-btn btn-grid-50 ${
-                        isGridView ? "active" : ""
-                      }`}
-                      onClick={() => setIsGridView(true)}
-                      aria-label="Grid view"
-                    >
-                      <i className="ri-gallery-view-2"></i>
-                    </button>
-                    <button
-                      className={`grid-btn btn-list-50 ${
-                        !isGridView ? "active" : ""
-                      }`}
-                      onClick={() => setIsGridView(false)}
-                      aria-label="List view"
-                    >
-                      <i className="ri-list-check-2"></i>
-                    </button>
-                  </div>
-                </div>
-                <div className="col-md-6 mn-sort-select">
-                  <div className="mn-select-inner">
-                    <select
-                      name="mn-select"
-                      id="mn-select"
-                      value={selectedFilter.sort}
-                      onChange={(e) => handleSortChange(e.target.value)}
-                    >
-                      <option value="createdAt.desc">Newest</option>
-                      <option value="createdAt.asc">Oldest</option>
-                      <option value="name.asc">Name (A-Z)</option>
-                      <option value="name.desc">Name (Z-A)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Select Bar */}
-              <div className="mn-select-bar d-flex">
-                {selectedFilter.privacy.map((privacy) => (
-                  <span key={privacy} className="mn-select-btn">
-                    {privacy.charAt(0).toUpperCase() + privacy.slice(1)}
-                    <a
-                      className="mn-select-cancel"
-                      href="javascript:void(0)"
-                      onClick={() => handlePrivacyChange(privacy)}
-                    >
-                      ×
-                    </a>
-                  </span>
-                ))}
-                {selectedFilter.privacy.length > 0 && (
-                  <span className="mn-select-btn mn-select-btn-clear">
-                    <a
-                      className="mn-select-clear"
-                      href="javascript:void(0)"
-                      onClick={handleClearFilters}
-                    >
-                      Clear All
-                    </a>
-                  </span>
-                )}
-              </div>
-
-              {/* Shop Content */}
-              <div className="shop-pro-content">
-                <div className="row">
-                  <div className="col-12 mb-3">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        searchMovies(searchQuery);
-                      }}
-                    >
-                      <div className="input-group">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Search lists by name..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          aria-label="Search lists"
-                        />
-                        <button type="submit" className="btn btn-primary">
-                          <i className="ri-search-line"></i>
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-              <div
-                className={`shop-pro-inner ${isGridView ? "" : "list-view-50"}`}
-              >
-                <div className="row">
-                  {listsLoading ? (
-                    <div className="col-12 text-center">
-                      <p>Loading lists...</p>
-                    </div>
-                  ) : paginatedLists.length === 0 ? (
-                    <div className="col-12 text-center">
-                      <p>
-                        No lists found.{" "}
-                        {user
-                          ? "Create a new list to get started!"
-                          : "Please log in to view your lists."}
-                      </p>
-                    </div>
-                  ) : (
-                    paginatedLists.map((list) => (
-                      <div
-                        key={list._id}
-                        className={`col-lg-3 col-md-4 col-sm-6 col-12 m-b-24 mn-product-box pro-gl-content ${
-                          isGridView ? "" : "width-50"
-                        }`}
-                      >
-                        <div className="mn-product-card">
-                          <div className="mn-product-img">
-                            <div className="lbl">
-                              <span className={list.isPrivate ? "new" : "hot"}>
-                                {list.isPrivate ? "Private" : "Public"}
-                              </span>
-                            </div>
-                            <div className="mn-img">
-                              <Link to={`/lists/${list._id}`} className="image">
-                                <img
-                                  className="main-img"
-                                  src={
-                                    list.movies[0]?.poster_path
-                                      ? `https://image.tmdb.org/t/p/w200${list.movies[0].poster_path}`
-                                      : placehold
-                                  }
-                                  alt={list.name}
-                                />
-                                <img
-                                  className="hover-img"
-                                  src={
-                                    list.movies[0]?.poster_path
-                                      ? `https://image.tmdb.org/t/p/w200${list.movies[0].poster_path}`
-                                      : placehold
-                                  }
-                                  alt={list.name}
-                                />
-                              </Link>
-                              <div className="mn-options">
-                                <ul>
-                                  <li>
-                                    <a
-                                      href="javascript:void(0)"
-                                      data-tooltip
-                                      title="View Movies"
-                                      onClick={() => handleCardClick(list)}
-                                    >
-                                      <i className="ri-eye-line"></i>
-                                    </a>
-                                  </li>
-                                  <li>
-                                    <a
-                                      href="javascript:void(0)"
-                                      data-tooltip
-                                      title="Share"
-                                      onClick={() => {
-                                        setSelectedList(list);
-                                        handleShareList();
-                                      }}
-                                    >
-                                      <i className="ri-share-line"></i>
-                                    </a>
-                                  </li>
-                                  {user && list.userId === userId && (
-                                    <li>
-                                      <a
-                                        href="javascript:void(0)"
-                                        data-tooltip
-                                        title="Edit List"
-                                        onClick={() => {
-                                          setSelectedList(list);
-                                          setEditListName(list.name);
-                                          setEditIsPrivate(list.isPrivate);
-                                          setIsEditModalVisible(true);
-                                        }}
-                                      >
-                                        <i className="ri-pencil-line"></i>
-                                      </a>
-                                    </li>
-                                  )}
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mn-product-detail">
-                            <div className="cat">
-                              <Link to={`/lists/${list._id}`}>
-                                Created{" "}
-                                {new Date(list.createdAt).toLocaleDateString()}
-                              </Link>
-                            </div>
-                            <h5>
-                              <Link to={`/lists/${list._id}`}>{list.name}</Link>
-                            </h5>
-                            <p className="mn-info">
-                              {list.movies.length} movie
-                              {list.movies.length !== 1 ? "s" : ""}
-                            </p>
-                            <div className="mn-pro-option">
-                              {user && list.userId === userId && (
-                                <a
-                                  href="javascript:void(0);"
-                                  className="mn-wishlist"
-                                  data-tooltip
-                                  title="Delete List"
-                                  onClick={() => handleDeleteList(list._id)}
-                                  disabled={deleteLoading}
-                                >
-                                  <i className="ri-trash-line"></i>
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-              <div className="mn-pro-pagination m-b-15">
-                <span>
-                  Showing {(currentListPage - 1) * pageSize + 1}-
-                  {Math.min(currentListPage * pageSize, filteredLists.length)}{" "}
-                  of {filteredLists.length} item(s)
-                </span>
-                <ul className="mn-pro-pagination-inner">
-                  {currentListPage > 1 && (
-                    <li>
-                      <a
-                        href="javascript:void(0)"
-                        onClick={() => setCurrentListPage(currentListPage - 1)}
-                      >
-                        <i className="ri-arrow-left-double-line"></i> Prev
-                      </a>
-                    </li>
-                  )}
-                  {pages.map((p) => (
-                    <li key={p}>
-                      <a
-                        className={p === currentListPage ? "active" : ""}
-                        href="javascript:void(0)"
-                        onClick={() => setCurrentListPage(p)}
-                      >
-                        {p}
-                      </a>
-                    </li>
-                  ))}
-                  {endPage < totalPages && (
-                    <>
-                      <li>
-                        <span>...</span>
-                      </li>
-                      <li>
-                        <a
-                          href="javascript:void(0)"
-                          onClick={() =>
-                            setCurrentListPage(currentListPage + 1)
-                          }
-                        >
-                          Next <i className="ri-arrow-right-double-line"></i>
-                        </a>
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Create List Modal */}
-        <div
-          className={`modal fade ${isCreateModalVisible ? "show d-block" : ""}`}
-          tabIndex="-1"
-          aria-labelledby="createListModalLabel"
-          aria-hidden={!isCreateModalVisible}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="createListModalLabel">
-                  Create New List
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setIsCreateModalVisible(false)}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label htmlFor="newListName" className="form-label">
-                    List Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="newListName"
-                    value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    placeholder="Enter list name"
-                    aria-label="List name"
-                  />
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="isPrivate"
-                    checked={isPrivate}
-                    onChange={(e) => setIsPrivate(e.target.checked)}
-                    aria-label="Private list"
-                  />
-                  <label className="form-check-label" htmlFor="isPrivate">
-                    Private List
-                  </label>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setIsCreateModalVisible(false)}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleCreateList}
-                  disabled={createLoading}
-                  aria-label="Create list"
-                >
-                  {createLoading ? "Creating..." : "Create"}
-                </button>
-              </div>
-            </div>
-          </div>
+    <div className="lists-page container py-5">
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-5">
+        <div>
+          <h1 className="mb-1">My Lists</h1>
+          <p className="text-muted mb-0">
+            {lists.length} list{lists.length !== 1 ? "s" : ""} • Organize your
+            favorite movies
+          </p>
         </div>
 
-        {/* Edit List Modal */}
-        <div
-          className={`modal fade ${isEditModalVisible ? "show d-block" : ""}`}
-          tabIndex="-1"
-          aria-labelledby="editListModalLabel"
-          aria-hidden={!isEditModalVisible}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="editListModalLabel">
-                  Edit List
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setIsEditModalVisible(false)}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label htmlFor="editListName" className="form-label">
-                    List Name
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="editListName"
-                    value={editListName}
-                    onChange={(e) => setEditListName(e.target.value)}
-                    placeholder="Enter new list name"
-                    aria-label="New list name"
-                  />
-                </div>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="editIsPrivate"
-                    checked={editIsPrivate}
-                    onChange={(e) => setEditIsPrivate(e.target.checked)}
-                    aria-label="Private list"
-                  />
-                  <label className="form-check-label" htmlFor="editIsPrivate">
-                    Private List
-                  </label>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setIsEditModalVisible(false)}
-                  aria-label="Cancel"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleEditList}
-                  disabled={updateLoading}
-                  aria-label="Save changes"
-                >
-                  {updateLoading ? "Saving..." : "Save"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Movies Modal */}
-        <div
-          className={`modal fade ${isMoviesModalVisible ? "show d-block" : ""}`}
-          tabIndex="-1"
-          aria-labelledby="moviesModalLabel"
-          aria-hidden={!isMoviesModalVisible}
-        >
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title" id="moviesModalLabel">
-                  {selectedList?.name} - Movies
-                </h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={() => setIsMoviesModalVisible(false)}
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-                {user && selectedList?.userId === userId && (
-                  <div className="mb-3">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        searchMovies(searchQuery);
-                      }}
-                    >
-                      <div className="input-group">
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Search movies to add..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          aria-label="Search movies"
-                        />
-                        <button type="submit" className="btn btn-primary">
-                          <i className="ri-search-line"></i>
-                        </button>
-                      </div>
-                    </form>
-                    {searchResults.length > 0 && (
-                      <ul className="list-group mt-2">
-                        {searchResults.map((result) => (
-                          <li
-                            key={result.value}
-                            className="list-group-item list-group-item-action"
-                            onClick={() => handleAddMovie(result.value)}
-                            style={{ cursor: "pointer" }}
-                          >
-                            {result.label}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-                {paginatedMovies.length === 0 ? (
-                  <p>No movies in this list yet.</p>
-                ) : (
-                  <div className="row">
-                    {paginatedMovies.map((movie) => (
-                      <div key={movie._id} className="col-md-4 mb-3">
-                        <div className="mn-product-card">
-                          <div className="mn-product-img">
-                            <div className="mn-img">
-                              <a
-                                href={movieDetails[movie._id]?.tmdbUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="image"
-                              >
-                                <img
-                                  className="main-img"
-                                  src={
-                                    movieDetails[movie._id]?.posterUrl ||
-                                    placehold
-                                  }
-                                  alt={
-                                    movieDetails[movie._id]?.title ||
-                                    movie.title
-                                  }
-                                />
-                                <img
-                                  className="hover-img"
-                                  src={
-                                    movieDetails[movie._id]?.posterUrl ||
-                                    placehold
-                                  }
-                                  alt={
-                                    movieDetails[movie._id]?.title ||
-                                    movie.title
-                                  }
-                                />
-                              </a>
-                            </div>
-                          </div>
-                          <div className="mn-product-detail">
-                            <h5>
-                              <a
-                                href={movieDetails[movie._id]?.tmdbUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {movieDetails[movie._id]?.title || movie.title}
-                              </a>
-                            </h5>
-                            {user && selectedList?.userId === userId && (
-                              <div className="mn-pro-option">
-                                <a
-                                  href="javascript:void(0);"
-                                  className="mn-wishlist"
-                                  data-tooltip
-                                  title="Remove Movie"
-                                  onClick={() =>
-                                    handleRemoveMovie(movie.movieId)
-                                  }
-                                  disabled={removeMovieLoading}
-                                >
-                                  <i className="ri-trash-line"></i>
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="mn-pro-pagination m-b-15">
-                  <span>
-                    Showing {(currentMoviePage - 1) * moviesPageSize + 1}-
-                    {Math.min(
-                      currentMoviePage * moviesPageSize,
-                      selectedList?.movies.length || 0
-                    )}{" "}
-                    of {selectedList?.movies.length || 0} item(s)
-                  </span>
-                  <ul className="mn-pro-pagination-inner">
-                    {currentMoviePage > 1 && (
-                      <li>
-                        <a
-                          href="javascript:void(0)"
-                          onClick={() =>
-                            setCurrentMoviePage(currentMoviePage - 1)
-                          }
-                        >
-                          <i className="ri-arrow-left-double-line"></i> Prev
-                        </a>
-                      </li>
-                    )}
-                    {Array.from(
-                      {
-                        length: Math.ceil(
-                          (selectedList?.movies.length || 0) / moviesPageSize
-                        ),
-                      },
-                      (_, i) => i + 1
-                    ).map((p) => (
-                      <li key={p}>
-                        <a
-                          className={p === currentMoviePage ? "active" : ""}
-                          href="javascript:void(0)"
-                          onClick={() => setCurrentMoviePage(p)}
-                        >
-                          {p}
-                        </a>
-                      </li>
-                    ))}
-                    {currentMoviePage <
-                      Math.ceil(
-                        (selectedList?.movies.length || 0) / moviesPageSize
-                      ) && (
-                      <li>
-                        <a
-                          href="javascript:void(0)"
-                          onClick={() =>
-                            setCurrentMoviePage(currentMoviePage + 1)
-                          }
-                        >
-                          Next <i className="ri-arrow-right-double-line"></i>
-                        </a>
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setIsMoviesModalVisible(false)}
-                  aria-label="Close"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        {authUser && (
+          <Button
+            type="primary"
+            size="large"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateModalOpen(true)}
+          >
+            Create New List
+          </Button>
+        )}
       </div>
+
+      {/* Loading State */}
+      {isLoading ? (
+        <Row gutter={[24, 24]}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Col xs={24} sm={12} md={8} lg={6} key={i}>
+              <Card loading style={{ borderRadius: 12 }} />
+            </Col>
+          ))}
+        </Row>
+      ) : lists.length === 0 ? (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            authUser
+              ? "You haven't created any lists yet"
+              : "Log in to create and manage your own lists"
+          }
+        >
+          {authUser && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateModalOpen(true)}
+            >
+              Create Your First List
+            </Button>
+          )}
+        </Empty>
+      ) : (
+        <>
+          {/* Lists Grid */}
+          <Row gutter={[24, 32]}>
+            {paginatedLists.map((list) => {
+              const coverImages = getListCoverImages(list.movies);
+              const isOwner = authUser && list.userId === userId;
+
+              return (
+                <Col xs={24} sm={12} md={8} lg={6} key={list._id}>
+                  <Card
+                    hoverable
+                    style={{ borderRadius: 16, overflow: "hidden" }}
+                    bodyStyle={{ padding: 0 }}
+                    cover={
+                      <div
+                        className="position-relative"
+                        style={{ height: 280, cursor: "pointer" }}
+                        onClick={() => openViewModal(list)}
+                      >
+                        <div className="d-flex flex-wrap h-100">
+                          {coverImages.map((src, i) => (
+                            <div
+                              key={i}
+                              className="flex-fill"
+                              style={{
+                                backgroundImage: `url(${src})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                                minHeight: i < 2 ? 140 : 140,
+                              }}
+                            />
+                          ))}
+                          {coverImages.length < 4 &&
+                            Array.from({ length: 4 - coverImages.length }).map(
+                              (_, i) => (
+                                <div
+                                  key={`empty-${i}`}
+                                  className="flex-fill d-flex align-items-center justify-content-center bg-dark"
+                                  style={{ minHeight: 140 }}
+                                >
+                                  <span className="text-white opacity-50">
+                                    No poster
+                                  </span>
+                                </div>
+                              )
+                            )}
+                        </div>
+
+                        {/* Overlay */}
+                        <div
+                          className="position-absolute bottom-0 start-0 end-0 p-4 text-white"
+                          style={{
+                            background:
+                              "linear-gradient(transparent, rgba(0,0,0,0.8))",
+                          }}
+                        >
+                          <h4 className="mb-1">{list.name}</h4>
+                          <Space size="small">
+                            <Tag color={list.isPrivate ? "red" : "green"}>
+                              {list.isPrivate ? "Private" : "Public"}
+                            </Tag>
+                            <span>{list.movies.length} movies</span>
+                          </Space>
+                        </div>
+
+                        {/* Owner Actions */}
+                        {isOwner && (
+                          <div className="position-absolute top-0 end-0 p-3">
+                            <Space>
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                size="small"
+                                style={{ color: "white" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditModal(list);
+                                }}
+                              />
+                              <Button
+                                type="text"
+                                icon={<DeleteOutlined />}
+                                size="small"
+                                danger
+                                style={{ color: "white" }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteList(list._id);
+                                }}
+                              />
+                            </Space>
+                          </div>
+                        )}
+                      </div>
+                    }
+                    actions={[
+                      <Button
+                        type="text"
+                        icon={<EyeOutlined />}
+                        onClick={() => openViewModal(list)}
+                      >
+                        View Movies
+                      </Button>,
+                      <Button
+                        type="text"
+                        icon={<ShareAltOutlined />}
+                        onClick={() => {
+                          if (list.isPrivate) {
+                            message.warning(
+                              "Private lists cannot be shared publicly"
+                            );
+                          } else {
+                            navigator.clipboard.writeText(
+                              `${window.location.origin}/lists/${list._id}`
+                            );
+                            message.success("Link copied!");
+                          }
+                        }}
+                      >
+                        Share
+                      </Button>,
+                    ]}
+                  >
+                    <Card.Meta
+                      description={
+                        <small className="text-muted">
+                          Created{" "}
+                          {new Date(list.createdAt).toLocaleDateString()}
+                        </small>
+                      }
+                    />
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+
+          {/* Pagination */}
+          {/* Add your Pagination component here */}
+        </>
+      )}
+
+      {/* Create List Modal */}
+      <Modal
+        title="Create New List"
+        open={createModalOpen}
+        onCancel={() => {
+          setCreateModalOpen(false);
+          setNewListName("");
+          setIsPrivate(false);
+        }}
+        footer={null}
+      >
+        <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Input
+            placeholder="Enter list name (e.g., 'Mind-Bending Sci-Fi')"
+            value={newListName}
+            onChange={(e) => setNewListName(e.target.value)}
+            size="large"
+          />
+          <Select
+            value={isPrivate}
+            onChange={setIsPrivate}
+            placeholder="Visibility"
+            size="large"
+            style={{ width: "100%" }}
+          >
+            <Select.Option value={false}>
+              Public (visible to everyone)
+            </Select.Option>
+            <Select.Option value={true}>Private (only you)</Select.Option>
+          </Select>
+          <Button type="primary" size="large" block onClick={handleCreateList}>
+            Create List
+          </Button>
+        </Space>
+      </Modal>
+
+      {/* Edit List Modal */}
+      <Modal
+        title="Edit List"
+        open={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        footer={null}
+      >
+        <Space direction="vertical" style={{ width: "100%" }} size="large">
+          <Input
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            size="large"
+          />
+          <Select
+            value={editPrivate}
+            onChange={setEditPrivate}
+            size="large"
+            style={{ width: "100%" }}
+          >
+            <Select.Option value={false}>Public</Select.Option>
+            <Select.Option value={true}>Private</Select.Option>
+          </Select>
+          <Button type="primary" size="large" block onClick={handleUpdateList}>
+            Save Changes
+          </Button>
+        </Space>
+      </Modal>
+
+      {/* View List Movies Modal */}
+      <Drawer
+        title={`${selectedList?.name} (${selectedList?.movies.length} movies)`}
+        placement="right"
+        width={600}
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+      >
+        {authUser && selectedList?.userId === userId && (
+          <div className="mb-4">
+            <Search
+              placeholder="Search movies to add..."
+              allowClear
+              onSearch={searchTMDB}
+              onChange={(e) => searchTMDB(e.target.value)}
+              enterButton
+              size="large"
+            />
+            {searchResults.length > 0 && (
+              <div className="mt-3">
+                <h6>Click to add:</h6>
+                <Row gutter={[12, 12]}>
+                  {searchResults.map((movie) => (
+                    <Col span={12} key={movie.id}>
+                      <Card
+                        size="small"
+                        hoverable
+                        onClick={() => handleAddMovie(movie)}
+                        cover={
+                          <img
+                            alt={movie.title}
+                            src={
+                              movie.poster_path
+                                ? `${POSTER_BASE}${movie.poster_path}`
+                                : "/assets/imgs/placeholder.png"
+                            }
+                            style={{ height: 180, objectFit: "cover" }}
+                          />
+                        }
+                      >
+                        <Card.Meta
+                          title={movie.title}
+                          description={`(${
+                            movie.release_date?.split("-")[0] || "N/A"
+                          })`}
+                        />
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+            )}
+          </div>
+        )}
+
+        <Row gutter={[16, 24]}>
+          {selectedList?.movies.map((item) => (
+            <Col span={12} key={item._id}>
+              <Card
+                hoverable
+                cover={
+                  <img
+                    alt={item.title}
+                    src={
+                      item.poster_path
+                        ? `${POSTER_BASE}${item.poster_path}`
+                        : "/assets/imgs/placeholder.png"
+                    }
+                    style={{ height: 300, objectFit: "cover" }}
+                  />
+                }
+                actions={
+                  authUser && selectedList?.userId === userId
+                    ? [
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleRemoveMovie(item.movieId)}
+                        >
+                          Remove
+                        </Button>,
+                      ]
+                    : undefined
+                }
+              >
+                <Card.Meta title={item.title} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {selectedList?.movies.length === 0 && (
+          <Empty description="No movies in this list yet" />
+        )}
+      </Drawer>
     </div>
   );
 };

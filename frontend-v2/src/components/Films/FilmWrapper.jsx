@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { message, Slider, Select } from "antd";
+import { message, Slider, Select, Input, Button, Tag, Space } from "antd";
 import {
   useGetListsQuery,
   useAddMovieToListMutation,
@@ -9,23 +9,27 @@ import { useGetProfileQuery } from "../../actions/userApi";
 import {
   getMoviesFromAPI,
   getGenresFromAPI,
-  getLanguagesFromAPI, // New API call for languages
+  getLanguagesFromAPI,
+  getCustomCategories,
 } from "../../actions/getMoviesFromAPI";
 import debounce from "lodash.debounce";
 import MovieCard from "./MovieCard";
 import Pagination from "../Common/Pagination";
-import { getCustomCategories } from "../../actions/getMoviesFromAPI";
+
+const { Search } = Input;
+
 const FilmWrapper = () => {
   const [movies, setMovies] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState({
+  const [filters, setFilters] = useState({
     genres: [],
     sort: "popularity.desc",
     yearRange: [1900, new Date().getFullYear()],
     language: "",
-    runtimeRange: [0, 300], // Runtime in minutes
-    voteAverageRange: [0, 10], // Vote average 0-10
+    runtimeRange: [0, 300],
+    voteAverageRange: [0, 10],
+    category: "", // For custom vibes
   });
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -33,123 +37,110 @@ const FilmWrapper = () => {
   const [isGridView, setIsGridView] = useState(true);
   const [genres, setGenres] = useState([]);
   const [languages, setLanguages] = useState([]);
-  const [addMovieToList] = useAddMovieToListMutation();
-  const { data: lists = [] } = useGetListsQuery();
-  const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Parse query parameters
+  const { data: lists = [] } = useGetListsQuery();
+  const { data: profile } = useGetProfileQuery();
+  const [addMovieToList] = useAddMovieToListMutation();
+
+  const customCategories = useMemo(() => getCustomCategories(), []);
+
+  // Parse URL params on mount or change
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const genre = queryParams.get("genre");
-    const year = queryParams.get("year");
-    const language = queryParams.get("language");
-    const sort = queryParams.get("sort");
+    const params = new URLSearchParams(location.search);
+    const genreParam = params.get("genre");
+    const yearParam = params.get("year");
 
-    let newFilter = { ...selectedFilter };
+    let newFilters = { ...filters };
 
-    if (genre) {
-      const genreObj = genres.find(
-        (g) => g.name.toLowerCase() === genre.toLowerCase()
+    if (genreParam && genres.length > 0) {
+      const genre = genres.find(
+        (g) => g.name.toLowerCase() === genreParam.toLowerCase()
       );
-      if (genreObj) newFilter.genres = [genreObj.id.toString()];
-    }
-    if (year && !isNaN(year)) {
-      newFilter.yearRange = [Number(year), Number(year)];
-    }
-    if (language) {
-      newFilter.language = language;
-    }
-    if (sort) {
-      newFilter.sort = sort;
+      if (genre) newFilters.genres = [genre.id.toString()];
     }
 
-    setSelectedFilter(newFilter);
+    if (yearParam && !isNaN(yearParam)) {
+      const year = Number(yearParam);
+      newFilters.yearRange = [year, year];
+    }
+
+    setFilters(newFilters);
     setPage(1);
   }, [location.search, genres]);
 
-  // Fetch genres and languages
+  // Fetch genres & languages
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
         const [fetchedGenres, fetchedLanguages] = await Promise.all([
           getGenresFromAPI(),
           getLanguagesFromAPI(),
         ]);
-        setGenres(fetchedGenres);
-        setLanguages(fetchedLanguages);
-      } catch (error) {
-        message.error("Failed to load genres or languages", 2);
+        setGenres(fetchedGenres || []);
+        setLanguages(fetchedLanguages || []);
+      } catch (err) {
+        message.error("Failed to load filters");
       }
     };
-    fetchData();
+    fetchInitialData();
   }, []);
 
-  // Update URL with current filters
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams();
-    if (selectedFilter.genres.length > 0) {
-      const genre = genres.find(
-        (g) => g.id.toString() === selectedFilter.genres[0]
-      );
-      if (genre) params.set("genre", genre.name.toLowerCase());
-    }
-    if (selectedFilter.yearRange[0] === selectedFilter.yearRange[1]) {
-      params.set("year", selectedFilter.yearRange[0]);
-    }
-    if (selectedFilter.language) {
-      params.set("language", selectedFilter.language);
-    }
-    if (selectedFilter.sort !== "popularity.desc") {
-      params.set("sort", selectedFilter.sort);
-    }
-    navigate(`/explore?${params.toString()}`, { replace: true });
-  }, [selectedFilter, genres, navigate]);
+  // Debounced search
+  const debouncedFetch = useCallback(
+    debounce((query) => {
+      setSearchQuery(query);
+      setPage(1);
+    }, 500),
+    []
+  );
 
   // Fetch movies
   const fetchMovies = useCallback(async () => {
-    if (loading) return;
     setLoading(true);
     try {
       const response = await getMoviesFromAPI(
         searchQuery,
-        selectedFilter,
+        { ...filters, category: selectedCategory || undefined },
         page
       );
       setMovies(response.movies || []);
       setTotal(response.totalResults || 0);
+
       if (response.movies.length === 0 && page === 1) {
-        message.info("No movies found", 2);
+        message.info("No movies found matching your filters");
       }
-      updateURL();
-    } catch (error) {
-      message.error("Failed to fetch movies", 2);
+    } catch (err) {
+      message.error("Failed to load movies");
+      setMovies([]);
     } finally {
       setLoading(false);
     }
-  }, [page, searchQuery, selectedFilter, updateURL]);
-
-  // Debounced search handler
-  const debouncedSearch = useCallback(
-    debounce((value) => {
-      setSearchQuery(value);
-      setPage(1);
-    }, 300),
-    []
-  );
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    debouncedSearch.cancel();
-    setSearchQuery(e.target.value);
-    setPage(1);
-    navigate("/explore");
-  };
+  }, [searchQuery, filters, selectedCategory, page]);
 
   useEffect(() => {
     fetchMovies();
   }, [fetchMovies]);
+
+  const updateFilters = (newFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  };
+
+  const handleCategoryChange = (value) => {
+    setSelectedCategory(value || "");
+    updateFilters({ ...filters, category: value || "" });
+  };
+
+  const handleGenreToggle = (genreId) => {
+    const newGenres = filters.genres.includes(genreId.toString())
+      ? filters.genres.filter((id) => id !== genreId.toString())
+      : [...filters.genres, genreId.toString()];
+    updateFilters({ ...filters, genres: newGenres });
+  };
 
   const handleAddToList = async (movie, listId) => {
     try {
@@ -158,80 +149,24 @@ const FilmWrapper = () => {
         movie: {
           id: movie.id,
           title: movie.title,
-          poster_path: movie.poster_path,
+          poster_path: movie.poster_path || movie.posterUrl?.split("/w500")[1],
         },
       }).unwrap();
-      message.success(`${movie.title} added to list`, 2);
-    } catch (error) {
-      message.error(error?.data?.message || "Failed to add movie to list", 2);
+      message.success(`Added "${movie.title}" to list`);
+    } catch (err) {
+      message.error("Failed to add to list");
     }
   };
 
-  const handleFilterChange = useCallback((newFilters) => {
-    setSelectedFilter(newFilters);
-    setPage(1);
-  }, []);
-
-  const handleGenreChange = (genreId) => {
-    const newGenres = selectedFilter.genres.includes(genreId.toString())
-      ? selectedFilter.genres.filter((id) => id !== genreId.toString())
-      : [...selectedFilter.genres, genreId.toString()];
-    handleFilterChange({ ...selectedFilter, genres: newGenres });
-  };
-
-  const handleClearGenres = () => {
-    handleFilterChange({ ...selectedFilter, genres: [] });
-  };
-
-  const handleSortChange = (value) => {
-    handleFilterChange({ ...selectedFilter, sort: value });
-  };
-
-  const handleYearRangeChange = (value) => {
-    handleFilterChange({ ...selectedFilter, yearRange: value });
-  };
-
-  const handleLanguageChange = (value) => {
-    handleFilterChange({ ...selectedFilter, language: value });
-  };
-
-  const handleRuntimeRangeChange = (value) => {
-    handleFilterChange({ ...selectedFilter, runtimeRange: value });
-  };
-
-  const handleVoteAverageChange = (value) => {
-    handleFilterChange({ ...selectedFilter, voteAverageRange: value });
-  };
-
-  const resetFilters = () => {
-    handleFilterChange({
-      genres: [],
-      sort: "popularity.desc",
-      yearRange: [1900, new Date().getFullYear()],
-      language: "",
-      runtimeRange: [0, 300],
-      voteAverageRange: [0, 10],
-    });
-    navigate("/explore");
-  };
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleToggleLike = (movie) => (e) => {
-    e.stopPropagation();
-    message.success(movie.isLiked ? "Removed from likes" : "Liked movie", 2);
+  const handleToggleLike = (movie) => () => {
     setMovies((prev) =>
       prev.map((m) => (m.id === movie.id ? { ...m, isLiked: !m.isLiked } : m))
     );
   };
 
-  const handleReviewClick = (movie) => (e) => {
-    e.stopPropagation();
+  const handleReviewClick = (movie) => () => {
     if (!profile) {
-      message.error("Please log in to add a review", 2);
+      message.warning("Please log in to review");
       return;
     }
     setMovies((prev) =>
@@ -247,116 +182,127 @@ const FilmWrapper = () => {
     );
   };
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
+  const resetAllFilters = () => {
+    setSelectedCategory("");
+    setSearchQuery("");
+    setFilters({
+      genres: [],
+      sort: "popularity.desc",
+      yearRange: [1900, new Date().getFullYear()],
+      language: "",
+      runtimeRange: [0, 300],
+      voteAverageRange: [0, 10],
+      category: "",
+    });
+    navigate("/explore");
+    setPage(1);
   };
 
   const pageSize = 20;
+  const currentYear = new Date().getFullYear();
 
   return (
-    <section className="mn-shop">
-      <div className="row">
-        {/* Sidebar */}
-        <div
-          className={`filter-sidebar-overlay ${isSidebarOpen ? "active" : ""}`}
-          onClick={toggleSidebar}
-        ></div>
-        <div
-          className={`mn-shop-sidebar mn-filter-sidebar col-lg-3 col-md-12 ${
-            isSidebarOpen ? "active" : ""
-          }`}
-        >
-          <div id="shop_sidebar">
-            <div className="mn-sidebar-wrap">
-              <div className="mn-sidebar-block">
-                <div className="mn-sb-title">
-                  <h3 className="mn-sidebar-title">Filters</h3>
-                  <div className="d-flex gap-2">
-                    <button
-                      className="btn btn-sm btn-secondary"
-                      onClick={resetFilters}
+    <section className="mn-explore py-4">
+      <div className="container">
+        <div className="row">
+          {/* Mobile Filter Toggle */}
+          <div className="col-12 mb-4 d-lg-none">
+            <Button
+              block
+              size="large"
+              onClick={() => setIsSidebarOpen(true)}
+              icon={<i className="ri-filter-3-line me-2" />}
+            >
+              Filters{" "}
+              {filters.genres.length > 0 && `(${filters.genres.length})`}
+            </Button>
+          </div>
+
+          {/* Sidebar */}
+          <div className={`col-lg-3 ${isSidebarOpen ? "sidebar-open" : ""}`}>
+            <div
+              className="explore-sidebar bg-dark rounded-3 p-4 h-100 position-sticky top-0"
+              style={{ maxHeight: "95vh", overflowY: "auto" }}
+            >
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0 text-white">Discover Filters</h4>
+                <Button
+                  type="text"
+                  icon={<i className="ri-close-line" />}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className="d-lg-none text-white"
+                />
+              </div>
+
+              {/* Vibe Check */}
+              <div className="mb-4">
+                <h6 className="text-white mb-3">Vibe Check</h6>
+                <Select
+                  className="w-100"
+                  placeholder="Choose a mood..."
+                  value={selectedCategory}
+                  onChange={handleCategoryChange}
+                  allowClear
+                  size="large"
+                >
+                  {customCategories.map((cat) => (
+                    <Select.Option key={cat.key} value={cat.key}>
+                      {cat.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Genres */}
+              <div className="mb-4">
+                <h6 className="text-white mb-3">Genres</h6>
+                <Space direction="vertical" className="w-100">
+                  {genres.slice(0, 10).map((genre) => (
+                    <Tag.CheckableTag
+                      key={genre.id}
+                      checked={filters.genres.includes(genre.id.toString())}
+                      onChange={() => handleGenreToggle(genre.id)}
+                      className="py-2 px-3"
                     >
-                      Reset Filters
-                    </button>
-                    <a
-                      href="javascript:void(0)"
-                      className="filter-close"
-                      onClick={toggleSidebar}
-                    >
-                      <i className="ri-close-large-line"></i>
-                    </a>
-                  </div>
-                </div>
-                <div className="mn-sb-block-content p-t-15">
-                  <h5 className="section-title style-1 mb-30">Genres</h5>
-                  <ul>
-                    {genres.map((genre) => (
-                      <li key={genre.id}>
-                        <div className="mn-sidebar-block-item">
-                          <input
-                            type="checkbox"
-                            value={genre.id}
-                            checked={selectedFilter.genres.includes(
-                              genre.id.toString()
-                            )}
-                            onChange={() => handleGenreChange(genre.id)}
-                            id={`genre-${genre.id}`}
-                          />
-                          <label htmlFor={`genre-${genre.id}`}>
-                            <span>{genre.name}</span>
-                          </label>
-                          <span className="checked"></span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                // Add to sidebar (before Genres section)
-                <div className="mn-sb-block-content p-t-15">
-                  <h5 className="section-title style-1 mb-30">Vibe Check</h5>
-                  <Select
-                    style={{ width: "100%" }}
-                    value={selectedCategory}
-                    onChange={(value) => {
-                      setSelectedCategory(value);
-                      handleFilterChange({
-                        ...selectedFilter,
-                        category: value,
-                      });
-                    }}
-                    placeholder="Pick a vibe"
-                    allowClear
-                  >
-                    {getCustomCategories().map((cat) => (
-                      <Select.Option key={cat.key} value={cat.key}>
-                        {cat.label}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </div>
-                <div className="mn-sb-block-content">
-                  <h5 className="section-title style-1 mb-30">Year Range</h5>
-                  <Slider
-                    range
-                    min={1900}
-                    max={new Date().getFullYear()}
-                    value={selectedFilter.yearRange}
-                    onChange={handleYearRangeChange}
-                    tooltip={{ formatter: (value) => value }}
-                  />
-                </div>
-                <div className="mn-sb-block-content">
-                  <h5 className="section-title style-1 mb-30">Language</h5>
-                  <Select
-                    style={{ width: "100%" }}
-                    value={selectedFilter.language}
-                    onChange={handleLanguageChange}
-                    placeholder="Select language"
-                    allowClear
-                  >
-                    {languages.map((lang) => (
+                      {genre.name}
+                    </Tag.CheckableTag>
+                  ))}
+                  {genres.length > 10 && (
+                    <Tag className="text-muted">+{genres.length - 10} more</Tag>
+                  )}
+                </Space>
+              </div>
+
+              {/* Other Filters */}
+              <div className="mb-4">
+                <h6 className="text-white mb-3">Year Range</h6>
+                <Slider
+                  range
+                  min={1900}
+                  max={currentYear}
+                  value={filters.yearRange}
+                  onChange={(v) => updateFilters({ ...filters, yearRange: v })}
+                />
+              </div>
+
+              <div className="mb-4">
+                <h6 className="text-white mb-3">Language</h6>
+                <Select
+                  className="w-100"
+                  placeholder="Any language"
+                  value={filters.language || undefined}
+                  onChange={(v) =>
+                    updateFilters({ ...filters, language: v || "" })
+                  }
+                  allowClear
+                >
+                  {languages
+                    .filter((l) =>
+                      ["en", "hi", "es", "fr", "zh", "ta", "te"].includes(
+                        l.iso_639_1
+                      )
+                    )
+                    .map((lang) => (
                       <Select.Option
                         key={lang.iso_639_1}
                         value={lang.iso_639_1}
@@ -364,254 +310,195 @@ const FilmWrapper = () => {
                         {lang.english_name}
                       </Select.Option>
                     ))}
-                  </Select>
-                </div>
-                <div className="mn-sb-block-content">
-                  <h5 className="section-title style-1 mb-30">
-                    Runtime (minutes)
-                  </h5>
-                  <Slider
-                    range
-                    min={0}
-                    max={300}
-                    value={selectedFilter.runtimeRange}
-                    onChange={handleRuntimeRangeChange}
-                    tooltip={{ formatter: (value) => `${value} min` }}
+                </Select>
+              </div>
+
+              <Button block danger onClick={resetAllFilters} className="mt-4">
+                Reset All Filters
+              </Button>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="col-lg-9">
+            {/* Search & Sort Bar */}
+            <div className="mb-4">
+              <div className="row g-3 align-items-center">
+                <div className="col-md-8">
+                  <Search
+                    placeholder="Search for movies..."
+                    allowClear
+                    enterButton="Search"
+                    size="large"
+                    onSearch={(value) => {
+                      setSearchQuery(value);
+                      setPage(1);
+                    }}
+                    onChange={(e) => debouncedFetch(e.target.value)}
                   />
                 </div>
-                <div className="mn-sb-block-content">
-                  <h5 className="section-title style-1 mb-30">Vote Average</h5>
-                  <Slider
-                    range
-                    min={0}
-                    max={10}
-                    step={0.1}
-                    value={selectedFilter.voteAverageRange}
-                    onChange={handleVoteAverageChange}
-                    tooltip={{ formatter: (value) => value.toFixed(1) }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="mn-shop-rightside col-md-12 m-t-991">
-          {/* Shop Top */}
-          <div className="mn-pro-list-top d-flex">
-            <div className="col-md-6 mn-grid-list">
-              <div className="mn-gl-btn">
-                <button
-                  className="grid-btn filter-toggle-icon"
-                  onClick={toggleSidebar}
-                >
-                  <i className="ri-filter-2-line"></i>
-                </button>
-                <button
-                  className={`grid-btn btn-grid-50 ${
-                    isGridView ? "active" : ""
-                  }`}
-                  onClick={() => setIsGridView(true)}
-                  aria-label="Grid view"
-                >
-                  <i className="ri-gallery-view-2"></i>
-                </button>
-                <button
-                  className={`grid-btn btn-list-50 ${
-                    !isGridView ? "active" : ""
-                  }`}
-                  onClick={() => setIsGridView(false)}
-                  aria-label="List view"
-                >
-                  <i className="ri-list-check-2"></i>
-                </button>
-              </div>
-            </div>
-            <div className="col-md-6 mn-sort-select">
-              <div className="mn-select-inner">
-                <select
-                  name="mn-select"
-                  id="mn-select"
-                  value={selectedFilter.sort}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                >
-                  <option value="popularity.desc">
-                    Popularity (High to Low)
-                  </option>
-                  <option value="popularity.asc">
-                    Popularity (Low to High)
-                  </option>
-                  <option value="release_date.desc">Newest First</option>
-                  <option value="release_date.asc">Oldest First</option>
-                  <option value="vote_average.desc">
-                    Rating (High to Low)
-                  </option>
-                  <option value="vote_average.asc">Rating (Low to High)</option>
-                  <option value="revenue.desc">Revenue (High to Low)</option>
-                  <option value="revenue.asc">Revenue (Low to High)</option>
-                  <option value="vote_count.desc">Most Voted</option>
-                  <option value="original_title.asc">Title (A-Z)</option>
-                  <option value="original_title.desc">Title (Z-A)</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Select Bar */}
-          <div className="mn-select-bar d-flex flex-wrap">
-            {selectedFilter.genres.map((genreId) => {
-              const genre = genres.find((g) => g.id.toString() === genreId);
-              return genre ? (
-                <span key={genre.id} className="mn-select-btn">
-                  {genre.name}
-                  <a
-                    className="mn-select-cancel"
-                    href="javascript:void(0)"
-                    onClick={() => handleGenreChange(genre.id)}
-                  >
-                    ×
-                  </a>
-                </span>
-              ) : null;
-            })}
-            {selectedFilter.language && (
-              <span className="mn-select-btn">
-                Language:{" "}
-                {
-                  languages.find((l) => l.iso_639_1 === selectedFilter.language)
-                    ?.english_name
-                }
-                <a
-                  className="mn-select-cancel"
-                  href="javascript:void(0)"
-                  onClick={() => handleLanguageChange("")}
-                >
-                  ×
-                </a>
-              </span>
-            )}
-            {(selectedFilter.yearRange[0] !== 1900 ||
-              selectedFilter.yearRange[1] !== new Date().getFullYear()) && (
-              <span className="mn-select-btn">
-                Year: {selectedFilter.yearRange[0]} -{" "}
-                {selectedFilter.yearRange[1]}
-                <a
-                  className="mn-select-cancel"
-                  href="javascript:void(0)"
-                  onClick={() =>
-                    handleYearRangeChange([1900, new Date().getFullYear()])
-                  }
-                >
-                  ×
-                </a>
-              </span>
-            )}
-            {(selectedFilter.runtimeRange[0] !== 0 ||
-              selectedFilter.runtimeRange[1] !== 300) && (
-              <span className="mn-select-btn">
-                Runtime: {selectedFilter.runtimeRange[0]} -{" "}
-                {selectedFilter.runtimeRange[1]} min
-                <a
-                  className="mn-select-cancel"
-                  href="javascript:void(0)"
-                  onClick={() => handleRuntimeRangeChange([0, 300])}
-                >
-                  ×
-                </a>
-              </span>
-            )}
-            {(selectedFilter.voteAverageRange[0] !== 0 ||
-              selectedFilter.voteAverageRange[1] !== 10) && (
-              <span className="mn-select-btn">
-                Rating: {selectedFilter.voteAverageRange[0].toFixed(1)} -{" "}
-                {selectedFilter.voteAverageRange[1].toFixed(1)}
-                <a
-                  className="mn-select-cancel"
-                  href="javascript:void(0)"
-                  onClick={() => handleVoteAverageChange([0, 10])}
-                >
-                  ×
-                </a>
-              </span>
-            )}
-            {(selectedFilter.genres.length > 0 ||
-              selectedFilter.language ||
-              selectedFilter.yearRange[0] !== 1900 ||
-              selectedFilter.yearRange[1] !== new Date().getFullYear() ||
-              selectedFilter.runtimeRange[0] !== 0 ||
-              selectedFilter.runtimeRange[1] !== 300 ||
-              selectedFilter.voteAverageRange[0] !== 0 ||
-              selectedFilter.voteAverageRange[1] !== 10) && (
-              <span className="mn-select-btn mn-select-btn-clear">
-                <a
-                  className="mn-select-clear"
-                  href="javascript:void(0)"
-                  onClick={resetFilters}
-                >
-                  Clear All
-                </a>
-              </span>
-            )}
-          </div>
-
-          {/* Shop Content */}
-          <div className="shop-pro-content">
-            <div className="row">
-              <div className="col-12 mb-3">
-                <form onSubmit={handleSearch}>
-                  <div className="input-group">
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Search movies..."
-                      value={searchQuery}
-                      onChange={(e) => debouncedSearch(e.target.value)}
-                      aria-label="Search movies"
+                <div className="col-md-4 text-md-end">
+                  <Space>
+                    <Button
+                      icon={<i className="ri-apps-2-line" />}
+                      type={isGridView ? "primary" : "default"}
+                      onClick={() => setIsGridView(true)}
                     />
-                    <button type="submit" className="btn btn-primary">
-                      <i className="ri-search-line"></i>
-                    </button>
-                  </div>
-                </form>
+                    <Button
+                      icon={<i className="ri-list-check-2" />}
+                      type={!isGridView ? "primary" : "default"}
+                      onClick={() => setIsGridView(false)}
+                    />
+                    <Select
+                      value={filters.sort}
+                      onChange={(v) => updateFilters({ ...filters, sort: v })}
+                      style={{ width: 200 }}
+                    >
+                      <Select.Option value="popularity.desc">
+                        Most Popular
+                      </Select.Option>
+                      <Select.Option value="vote_average.desc">
+                        Highest Rated
+                      </Select.Option>
+                      <Select.Option value="release_date.desc">
+                        Newest
+                      </Select.Option>
+                      <Select.Option value="revenue.desc">
+                        Box Office
+                      </Select.Option>
+                    </Select>
+                  </Space>
+                </div>
               </div>
             </div>
-          </div>
-          <div className={`shop-pro-inner ${isGridView ? "" : "list-view-50"}`}>
-            <div className="row">
-              {loading && page === 1 ? (
-                <div className="col-12 text-center">
-                  <p>Loading movies...</p>
+
+            {/* Active Filters Chips */}
+            {(selectedCategory ||
+              filters.genres.length > 0 ||
+              filters.language ||
+              filters.yearRange[0] > 1900) && (
+              <div className="mb-4">
+                <Space size={[8, 8]} wrap>
+                  {selectedCategory && (
+                    <Tag
+                      color="volcano"
+                      closable
+                      onClose={() => handleCategoryChange("")}
+                    >
+                      {
+                        customCategories.find((c) => c.key === selectedCategory)
+                          ?.label
+                      }
+                    </Tag>
+                  )}
+                  {filters.genres.map((id) => {
+                    const g = genres.find((gg) => gg.id.toString() === id);
+                    return g ? (
+                      <Tag
+                        key={id}
+                        color="blue"
+                        closable
+                        onClose={() => handleGenreToggle(id)}
+                      >
+                        {g.name}
+                      </Tag>
+                    ) : null;
+                  })}
+                  {filters.language && (
+                    <Tag
+                      color="green"
+                      closable
+                      onClose={() =>
+                        updateFilters({ ...filters, language: "" })
+                      }
+                    >
+                      {
+                        languages.find((l) => l.iso_639_1 === filters.language)
+                          ?.english_name
+                      }
+                    </Tag>
+                  )}
+                  {filters.yearRange[0] > 1900 && (
+                    <Tag
+                      color="purple"
+                      closable
+                      onClose={() =>
+                        updateFilters({
+                          ...filters,
+                          yearRange: [1900, currentYear],
+                        })
+                      }
+                    >
+                      {filters.yearRange[0]} - {filters.yearRange[1]}
+                    </Tag>
+                  )}
+                </Space>
+              </div>
+            )}
+
+            {/* Movies Grid/List */}
+            {loading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
                 </div>
-              ) : movies.length === 0 ? (
-                <div className="col-12 text-center">
-                  <p>No movies found.</p>
-                </div>
-              ) : (
-                movies.map((movie) => (
-                  <MovieCard
+              </div>
+            ) : movies.length === 0 ? (
+              <div className="text-center py-5 text-muted">
+                <h5>No movies found</h5>
+                <p>Try adjusting your filters or search term.</p>
+              </div>
+            ) : (
+              <div className="row g-4">
+                {movies.map((movie) => (
+                  <div
                     key={movie.id}
-                    movie={movie}
-                    lists={lists}
-                    profile={profile}
-                    isGridView={isGridView}
-                    handleToggleLike={handleToggleLike}
-                    handleAddToList={handleAddToList}
-                    handleReviewClick={handleReviewClick}
-                    handleModalClose={handleModalClose}
-                  />
-                ))
-              )}
-            </div>
+                    className={`${
+                      isGridView
+                        ? "col-xl-3 col-lg-4 col-md-4 col-sm-6"
+                        : "col-12"
+                    }`}
+                  >
+                    <MovieCard
+                      movie={movie}
+                      lists={lists}
+                      profile={profile}
+                      isGridView={isGridView}
+                      handleToggleLike={handleToggleLike}
+                      handleAddToList={handleAddToList}
+                      handleReviewClick={handleReviewClick}
+                      handleModalClose={handleModalClose}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {total > pageSize && (
+              <div className="mt-5 text-center">
+                <Pagination
+                  page={page}
+                  total={total}
+                  pageSize={pageSize}
+                  handlePageChange={(p) => {
+                    setPage(p);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
+              </div>
+            )}
           </div>
-          <Pagination
-            page={page}
-            total={total}
-            pageSize={pageSize}
-            handlePageChange={handlePageChange}
-          />
         </div>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50 z-1030 d-lg-none"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
     </section>
   );
 };

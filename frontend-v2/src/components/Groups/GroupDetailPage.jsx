@@ -1,362 +1,287 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Button,
-  Form,
-  Input,
-  Modal,
-  Typography,
   Card,
   Tabs,
-  Select,
+  Typography,
+  Space,
+  Tag,
+  Avatar,
+  List,
+  Empty,
+  Skeleton,
+  message,
+  Modal,
+  Form,
+  Input,
+  Tooltip,
   Row,
   Col,
-  Space,
-  message,
-  Skeleton,
-  List,
-  Avatar,
 } from "antd";
 import {
+  PlusOutlined,
   UserAddOutlined,
   UserDeleteOutlined,
-  PlusOutlined,
+  PushpinOutlined,
+  LockOutlined,
+  GlobalOutlined,
+  TeamOutlined,
+  CalendarOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
+
 import PostCard from "../PostCard";
-import BoxOfficeWidget from "../BoxOfficeWdget"; // Fixed typo in import
+import BoxOfficeWidget from "../BoxOfficeWdget";
+
 import {
   useGetGroupByIdQuery,
   useGetGroupPostsQuery,
   usePostToGroupMutation,
-  useCommentOnGroupPostMutation,
-  usePromoteToModeratorMutation,
-  useBanUserFromGroupMutation,
   useJoinGroupMutation,
   useLeaveGroupMutation,
 } from "../../actions/groupApi";
-import "./groups.css";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
-const { Option } = Select;
 const { TextArea } = Input;
 
 const GroupDetailPage = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
+
   const {
     data: group,
     isLoading: groupLoading,
     isError: groupError,
-    error: groupErrorDetails,
   } = useGetGroupByIdQuery(groupId);
+
   const {
     data: posts = [],
     isLoading: postsLoading,
     refetch: refetchPosts,
   } = useGetGroupPostsQuery(groupId);
+
   const [postToGroup] = usePostToGroupMutation();
-  const [commentOnGroupPost] = useCommentOnGroupPostMutation();
-  const [promoteToModerator] = usePromoteToModeratorMutation();
-  const [banUserFromGroup] = useBanUserFromGroupMutation();
   const [joinGroup] = useJoinGroupMutation();
   const [leaveGroup] = useLeaveGroupMutation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [form] = Form.useForm();
-  const [sortBy, setSortBy] = useState("new");
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const loaderRef = useRef(null);
 
-  // Infinite scroll observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !postsLoading && hasMore) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      { threshold: 0.5, rootMargin: "100px" }
-    );
-    if (loaderRef.current) observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [postsLoading, hasMore]);
+  const isMember = group?.userRole && group.userRole !== "none";
+  const isAdmin =
+    group?.userRole === "creator" || group?.userRole === "moderator";
 
-  // Log for debugging
-  useEffect(() => {
-    if (groupError) {
-      console.error("Group Error:", groupErrorDetails);
-    }
-    console.log("Group Data:", group);
-  }, [group, groupError, groupErrorDetails]);
-
-  const handlePost = async (values) => {
-    try {
-      await postToGroup({ groupId, postData: values }).unwrap();
-      setIsModalOpen(false);
-      form.resetFields();
-      refetchPosts();
-      message.success("Post created!");
-    } catch (error) {
-      message.error("Failed to create post.");
-    }
-  };
-
-  const handleComment = async (postId, comment) => {
-    try {
-      await commentOnGroupPost({ postId, commentData: { comment } }).unwrap();
-      refetchPosts();
-      message.success("Comment added!");
-    } catch (error) {
-      message.error("Failed to comment.");
-    }
-  };
-
-  const handleModerate = async (userId, action) => {
-    try {
-      if (action === "promote") {
-        await promoteToModerator({ groupId, userId }).unwrap();
-        message.success("User promoted to moderator!");
-      } else if (action === "ban") {
-        await banUserFromGroup({ groupId, userId }).unwrap();
-        message.success("User banned from group!");
-      }
-    } catch (error) {
-      message.error(`Failed to ${action} user.`);
-    }
-  };
-
-  const handleJoinGroup = async () => {
+  const handleJoin = async () => {
     try {
       await joinGroup(groupId).unwrap();
       message.success("Joined community!");
-    } catch (error) {
-      message.error("Failed to join community.");
+    } catch {
+      message.error("Failed to join");
     }
   };
 
-  const handleLeaveGroup = async () => {
+  const handleLeave = async () => {
     try {
       await leaveGroup(groupId).unwrap();
-      message.success("Left community!");
-    } catch (error) {
-      message.error("Failed to leave community.");
+      message.success("Left community");
+      navigate("/groups");
+    } catch {
+      message.error("Failed to leave");
     }
   };
 
-  const sortedPosts = [...posts].sort((a, b) => {
-    if (sortBy === "new") return new Date(b.createdAt) - new Date(a.createdAt);
-    if (sortBy === "hot")
-      return (b.comments?.length || 0) - (a.comments?.length || 0);
-    if (sortBy === "top") return (b.upvotes || 0) - (a.upvotes || 0);
-    return 0;
-  });
+  const handleCreatePost = async (values) => {
+    try {
+      await postToGroup({ groupId, postData: values }).unwrap();
+      message.success("Post created!");
+      form.resetFields();
+      setCreateModalOpen(false);
+      refetchPosts();
+    } catch {
+      message.error("Failed to create post");
+    }
+  };
 
-  const pinnedPosts = sortedPosts.filter((post) => post.isPinned);
-  const regularPosts = sortedPosts.filter((post) => !post.isPinned);
+  const pinnedPosts = posts.filter((p) => p.isPinned);
+  const regularPosts = posts.filter((p) => !p.isPinned);
 
   if (groupLoading) {
     return (
-      <div className="group-detail-page">
-        <Skeleton active avatar paragraph={{ rows: 4 }} />
+      <div className="container py-5">
+        <Skeleton active avatar paragraph={{ rows: 6 }} />
       </div>
     );
   }
 
   if (groupError || !group) {
-    message.error(
-      groupErrorDetails?.data?.message || "Failed to load community details."
-    );
     return (
-      <div className="group-detail-page">
-        <Text type="danger">Community not found.</Text>
+      <div className="container py-5 text-center">
+        <Empty description="Community not found or doesn't exist" />
       </div>
     );
   }
 
-  // Define membership status after group is confirmed
-  const isMember = group.userRole && group.userRole !== "none";
-  const isAdmin =
-    group.userRole === "creator" || group.userRole === "moderator";
-
   return (
-    <section className="group-detail-page" aria-label={`r/${group.name}`}>
-      <div className="group-detail-container">
-        {/* Banner */}
-        <div className="group-detail-banner">
-          <img
-            alt={`${group.name} banner`}
-            src={group.coverImage || "https://placehold.co/1200x200"}
-            className="group-detail-cover-image"
-          />
-        </div>
-
-        <Row gutter={[16, 16]}>
-          <Col xs={24} md={18}>
-            {/* Header */}
-            <div className="group-detail-header">
-              <Space align="center" className="group-detail-title-space">
-                <Avatar
-                  src={group.avatar}
-                  size={48}
-                  className="group-detail-avatar"
-                  alt={`${group.name} avatar`}
-                />
-                <Title level={3} className="group-detail-title">
-                  gr/{group.name}
-                </Title>
-                <Text type="secondary">
-                  {group.isPrivate ? "Private" : "Public"}
+    <div className="group-detail-page">
+      {/* Banner */}
+      <div
+        className="group-banner position-relative text-white"
+        style={{
+          height: "320px",
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url(${
+            group.coverImage || "https://placehold.co/1600x400"
+          })`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="container h-100 d-flex align-items-end pb-5">
+          <div>
+            <Title level={1} style={{ color: "#fff", margin: 0 }}>
+              gr/{group.name}
+            </Title>
+            <Space size="middle" className="mt-3">
+              {group.isPrivate ? (
+                <Tag icon={<LockOutlined />} color="red">
+                  Private
+                </Tag>
+              ) : (
+                <Tag icon={<GlobalOutlined />} color="green">
+                  Public
+                </Tag>
+              )}
+              <Space>
+                <TeamOutlined />
+                <Text strong style={{ color: "#fff" }}>
+                  {group.members?.length || 0} members
                 </Text>
               </Space>
-              <Space className="group-detail-actions">
+              <Space>
+                <CalendarOutlined />
+                <Text style={{ color: "#fff" }}>
+                  Created {new Date(group.createdAt).toLocaleDateString()}
+                </Text>
+              </Space>
+            </Space>
+          </div>
+        </div>
+      </div>
+
+      <div className="container py-5">
+        <Row gutter={[32, 32]}>
+          {/* Main Content */}
+          <Col xs={24} lg={18}>
+            {/* Header Actions */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <Paragraph
+                className="mb-0 text-muted"
+                style={{ maxWidth: "70%" }}
+              >
+                {group.description || "No description yet."}
+              </Paragraph>
+
+              <Space>
                 {isMember ? (
-                  <Button
-                    size="small"
-                    onClick={handleLeaveGroup}
-                    icon={<UserDeleteOutlined />}
-                    aria-label="Leave community"
-                  >
-                    Leave
+                  <Button danger onClick={handleLeave}>
+                    Leave Community
                   </Button>
                 ) : (
                   <Button
                     type="primary"
-                    size="small"
-                    onClick={handleJoinGroup}
                     icon={<UserAddOutlined />}
-                    aria-label="Join community"
+                    onClick={handleJoin}
                   >
-                    Join
+                    Join Community
                   </Button>
                 )}
-                {isAdmin && (
+                {isMember && (
                   <Button
-                    size="small"
-                    onClick={() => navigate(`/groups/${groupId}/invite`)}
-                    aria-label="Invite members"
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setCreateModalOpen(true)}
                   >
-                    Invite
+                    Create Post
                   </Button>
                 )}
               </Space>
             </div>
 
             {/* Tabs */}
-            <Tabs
-              defaultActiveKey="posts"
-              className="group-detail-tabs"
-              tabBarExtraContent={
-                <Space>
-                  <Select
-                    value={sortBy}
-                    onChange={setSortBy}
-                    size="small"
-                    aria-label="Sort posts"
-                    style={{ width: 100 }}
-                  >
-                    <Option value="new">New</Option>
-                    <Option value="hot">Hot</Option>
-                    <Option value="top">Top</Option>
-                  </Select>
-                  {isMember && (
-                    <Button
-                      type="primary"
-                      size="small"
-                      icon={<PlusOutlined />}
-                      onClick={() => setIsModalOpen(true)}
-                      aria-label="Create post"
-                    >
-                      Post
-                    </Button>
-                  )}
-                </Space>
-              }
-            >
+            <Tabs defaultActiveKey="posts" size="large">
               <TabPane tab="Posts" key="posts">
+                {/* Pinned Posts */}
+                {pinnedPosts.length > 0 && (
+                  <Card
+                    title={
+                      <Space>
+                        <PushpinOutlined />
+                        <Text strong>Pinned Posts</Text>
+                      </Space>
+                    }
+                    className="mb-4"
+                    style={{ borderRadius: 16 }}
+                  >
+                    {pinnedPosts.map((post) => (
+                      <PostCard key={post._id} post={post} groupId={groupId} />
+                    ))}
+                  </Card>
+                )}
+
+                {/* Regular Posts */}
                 {postsLoading && posts.length === 0 ? (
-                  <Skeleton active paragraph={{ rows: 3 }} />
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                ) : regularPosts.length === 0 ? (
+                  <Empty
+                    description={
+                      isMember
+                        ? "No posts yet. Be the first to share something!"
+                        : "Join the community to see posts"
+                    }
+                  />
                 ) : (
-                  <>
-                    {pinnedPosts.length > 0 && (
-                      <div className="group-detail-pinned">
-                        <Text strong>Pinned by Moderators</Text>
-                        {pinnedPosts.map((post) => (
-                          <PostCard
-                            key={post._id}
-                            post={{ ...post, isPinned: true }}
-                            onComment={handleComment}
-                            className="group-detail-post-card"
-                          />
-                        ))}
-                      </div>
-                    )}
-                    {regularPosts.length > 0 ? (
-                      regularPosts.map((post) => (
-                        <PostCard
-                          key={post._id}
-                          post={post}
-                          onComment={handleComment}
-                          className="group-detail-post-card"
-                        />
-                      ))
-                    ) : (
-                      <Text className="group-detail-empty-text">
-                        No posts yet. Be the first to share!
-                      </Text>
-                    )}
-                    <div ref={loaderRef} className="group-detail-loader" />
-                  </>
+                  <Space
+                    direction="vertical"
+                    size="large"
+                    style={{ width: "100%" }}
+                  >
+                    {regularPosts.map((post) => (
+                      <PostCard key={post._id} post={post} groupId={groupId} />
+                    ))}
+                  </Space>
                 )}
               </TabPane>
-              <TabPane tab="Members" key="members">
+
+              <TabPane
+                tab={`Members (${group.members?.length || 0})`}
+                key="members"
+              >
                 <List
+                  grid={{ gutter: 16, xs: 2, sm: 3, md: 4 }}
                   dataSource={group.members || []}
                   renderItem={(member) => (
-                    <List.Item
-                      className="group-detail-member-item"
-                      actions={
-                        isAdmin && member.role !== "creator"
-                          ? [
-                              <Button
-                                key="promote"
-                                type="text"
-                                size="small"
-                                onClick={() =>
-                                  handleModerate(member._id, "promote")
-                                }
-                                aria-label={`Promote ${member.name}`}
-                              >
-                                Promote
-                              </Button>,
-                              <Button
-                                key="ban"
-                                type="text"
-                                size="small"
-                                danger
-                                onClick={() =>
-                                  handleModerate(member._id, "ban")
-                                }
-                                aria-label={`Ban ${member.name}`}
-                              >
-                                Ban
-                              </Button>,
-                            ]
-                          : []
-                      }
-                    >
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar
-                            src={member.avatar}
-                            alt={`${member.name} avatar`}
-                          />
-                        }
-                        title={<Text>{member.name}</Text>}
-                        description={
-                          <Text type="secondary">{member.role}</Text>
-                        }
-                      />
+                    <List.Item>
+                      <Card
+                        hoverable
+                        style={{ textAlign: "center", borderRadius: 12 }}
+                        onClick={() => navigate(`/u/${member._id}`)}
+                      >
+                        <Avatar
+                          src={member.avatar}
+                          size={64}
+                          className="mb-3"
+                        />
+                        <Text strong className="d-block">
+                          {member.username}
+                        </Text>
+                        {member.role && member.role !== "member" && (
+                          <Tag color="gold" className="mt-2">
+                            {member.role}
+                          </Tag>
+                        )}
+                      </Card>
                     </List.Item>
                   )}
                 />
@@ -365,83 +290,111 @@ const GroupDetailPage = () => {
           </Col>
 
           {/* Sidebar */}
-          <Col xs={24} md={6}>
-            <div className="group-detail-sidebar">
-              <Card className="group-detail-sidebar-card">
-                <Title level={5}>About r/{group.name}</Title>
-                <Paragraph
-                  ellipsis={{ rows: 3 }}
-                  className="group-detail-about-description"
-                >
-                  {group.description || "No description available"}
-                </Paragraph>
-                <Space direction="vertical" size={4}>
-                  <Text>
-                    <strong>Members:</strong> {group.members?.length || 0}
-                  </Text>
-                  <Text>
-                    <strong>Created:</strong>{" "}
-                    {new Date(group.createdAt).toLocaleDateString()}
-                  </Text>
-                  <Text>
-                    <strong>Privacy:</strong>{" "}
-                    {group.isPrivate ? "Private" : "Public"}
-                  </Text>
+          <Col xs={24} lg={6}>
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              {/* Group Info */}
+              <Card title="About Community" style={{ borderRadius: 16 }}>
+                <Space direction="vertical" size="middle">
+                  <div>
+                    <Text strong>Members</Text>
+                    <Text type="secondary" className="d-block">
+                      {group.members?.length || 0}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text strong>Created</Text>
+                    <Text type="secondary" className="d-block">
+                      {new Date(group.createdAt).toLocaleDateString()}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text strong>Category</Text>
+                    <Tag color="blue" className="d-block mt-1">
+                      {group.category || "General"}
+                    </Tag>
+                  </div>
                 </Space>
               </Card>
+
+              {/* Rules */}
               {group.rules?.length > 0 && (
-                <Card className="group-detail-sidebar-card">
-                  <Title level={5}>Rules</Title>
+                <Card title="Community Rules" style={{ borderRadius: 16 }}>
                   <List
                     dataSource={group.rules}
-                    renderItem={(rule, index) => (
-                      <List.Item className="group-detail-rule-item">
+                    renderItem={(rule, i) => (
+                      <List.Item>
                         <Text>
-                          {index + 1}. {rule}
+                          <strong>{i + 1}.</strong> {rule}
                         </Text>
                       </List.Item>
                     )}
                   />
                 </Card>
               )}
-              <BoxOfficeWidget className="group-detail-sidebar-widget" />
-            </div>
+
+              {/* Box Office */}
+              <BoxOfficeWidget />
+            </Space>
           </Col>
         </Row>
-
-        {/* Post Creation Modal */}
-        <Modal
-          title="Submit a Post"
-          open={isModalOpen}
-          onCancel={() => {
-            setIsModalOpen(false);
-            form.resetFields();
-          }}
-          onOk={() => form.submit()}
-          okText="Submit"
-          cancelText="Cancel"
-          className="group-detail-post-modal"
-          aria-label="Create post modal"
-        >
-          <Form form={form} onFinish={handlePost} layout="vertical">
-            <Form.Item
-              name="title"
-              label="Title"
-              rules={[{ required: true, message: "Please enter a title" }]}
-            >
-              <Input placeholder="Post title" />
-            </Form.Item>
-            <Form.Item
-              name="content"
-              label="Content"
-              rules={[{ required: true, message: "Please enter content" }]}
-            >
-              <TextArea placeholder="What's on your mind?" rows={4} />
-            </Form.Item>
-          </Form>
-        </Modal>
       </div>
-    </section>
+
+      {/* Floating Action Button (Mobile) */}
+      {isMember && (
+        <Button
+          type="primary"
+          shape="circle"
+          icon={<PlusOutlined />}
+          size="large"
+          className="position-fixed"
+          style={{
+            bottom: 24,
+            right: 24,
+            zIndex: 1000,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+          }}
+          onClick={() => setCreateModalOpen(true)}
+        />
+      )}
+
+      {/* Create Post Modal */}
+      <Modal
+        title={<Title level={4}>Create a Post in gr/{group.name}</Title>}
+        open={createModalOpen}
+        onCancel={() => {
+          setCreateModalOpen(false);
+          form.resetFields();
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form form={form} onFinish={handleCreatePost} layout="vertical">
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{ required: true, message: "Title is required" }]}
+          >
+            <Input placeholder="What's this post about?" size="large" />
+          </Form.Item>
+
+          <Form.Item
+            name="content"
+            label="Content"
+            rules={[{ required: true, message: "Content is required" }]}
+          >
+            <TextArea
+              rows={5}
+              placeholder="Share your thoughts..."
+              size="large"
+            />
+          </Form.Item>
+
+          <Button type="primary" size="large" block htmlType="submit">
+            Submit Post
+          </Button>
+        </Form>
+      </Modal>
+    </div>
   );
 };
 

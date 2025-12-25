@@ -1,9 +1,3 @@
-@import url("./assets/css/style.css");
-@import url("assets/css/vendor/animate.min.css");
-@import url("assets/css/vendor/owl.carousel.min.css");
-@import url("assets/css/vendor/slick.min.css");
-@import url("assets/css/vendor/swiper-bundle.min.css");
-@import url("assets/css/vendor/nouislider.css");
 
     .page-not-found {
         display: flex;
@@ -55,4 +49,229 @@
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 8px;
+}
+.movie-card {
+  background: #141414;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.movie-card--carousel {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.movie-card__poster {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+}
+
+.movie-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.movie-card:hover .movie-card__image {
+  transform: scale(1.08);
+}
+
+.movie-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.movie-card__badge--new {
+  background: #e50914;
+  color: white;
+}
+
+.movie-card__badge--category {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  top: 8px;
+  right: 8px;
+  left: auto;
+}
+
+.movie-card__rating {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+.movie-card__actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.movie-card:hover .movie-card__actions {
+  opacity: 1;
+}
+
+.movie-card__action-btn {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #000;
+  transition: all 0.2s;
+}
+
+.movie-card__action-btn:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.movie-card__action-btn.active {
+  background: #e50914;
+  color: white;
+}
+
+.movie-card__content {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: #fff;
+}
+
+.movie-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.movie-card__title a:hover {
+  color: #e50914;
+}
+
+.movie-card__meta {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.movie-card__year {
+  cursor: pointer;
+  color: #e50914;
+  font-weight: 500;
+}
+
+.movie-card__year:hover {
+  text-decoration: underline;
+}
+
+.movie-card__genres {
+  margin-bottom: 8px;
+}
+
+.movie-card__genre-tag {
+  font-size: 13px;
+  color: #00b020;
+  cursor: pointer;
+}
+
+.movie-card__genre-tag:hover {
+  text-decoration: underline;
+}
+
+.movie-card__genre-more {
+  font-size: 13px;
+  color: #666;
+}
+
+.movie-card__overview {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.4;
+  margin: 0;
+  flex-grow: 1;
+}
+.explore-sidebar {
+  transition: transform 0.3s ease;
+  z-index: 1040;
+}
+
+@media (max-width: 991px) {
+  .sidebar-open .explore-sidebar {
+    transform: translateX(0) !important;
+  }
+
+  .explore-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+  }
+}
+.members-page .ant-card {
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.members-page .ant-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+}
+
+.member-card {
+  cursor: pointer;
+}
+
+.member-avatar {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.members-page .ant-list-item {
+  padding: 12px 0 !important;
+}
+
+.members-page .ant-list-item-meta-title {
+  margin-bottom: 4px !important;
 }

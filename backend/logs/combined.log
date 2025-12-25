@@ -82,3 +82,4 @@
 {"details":null,"level":"warn","message":"Error response: Server error during login","status":500,"timestamp":"2025-08-20T14:25:57.185Z"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-08-21T09:39:50.074Z","userId":"68131e1207af9fb1b048a138"}
 {"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-08-24T05:22:42.337Z","userId":"68131e1207af9fb1b048a138"}
+{"email":"ishmartshanker@gmail.com","level":"info","message":"User logged in successfully","timestamp":"2025-09-26T11:26:38.332Z","userId":"68131e1207af9fb1b048a138"}

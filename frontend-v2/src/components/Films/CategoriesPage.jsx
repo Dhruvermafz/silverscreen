@@ -1,217 +1,162 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Row, Col, Card, Skeleton, Breadcrumb, Button } from "antd";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { Card, Row, Col, Skeleton, Typography, Space, Tag } from "antd";
+import { motion } from "framer-motion"; // Optional: for subtle animations
 import {
   getCustomCategories,
   getMoviesFromAPI,
 } from "../../actions/getMoviesFromAPI";
 
+const { Title, Text } = Typography;
+
 const CategoriesPage = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch categories and their movie counts
-  const fetchCategoriesData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
     try {
-      const customCategories = getCustomCategories();
+      const customCats = getCustomCategories();
 
-      const categoriesWithData = await Promise.all(
-        customCategories.map(async (category) => {
-          const { movies, totalResults } = await getMoviesFromAPI("", {
-            category: category.key,
-          });
-          const representativeMovie = movies[0] || {};
-          return {
-            ...category,
-            movieCount: totalResults,
-            posterUrl:
-              representativeMovie.posterUrl || "/assets/imgs/placeholder.png",
-          };
+      const enrichedCategories = await Promise.all(
+        customCats.map(async (cat) => {
+          try {
+            const { movies, totalResults } = await getMoviesFromAPI(
+              "",
+              {
+                category: cat.key,
+              },
+              1
+            );
+
+            const heroMovie = movies[0] || {};
+            return {
+              ...cat,
+              movieCount: totalResults || 0,
+              backdrop: heroMovie.backdrop_path
+                ? `https://image.tmdb.org/t/p/original${heroMovie.backdrop_path}`
+                : heroMovie.poster_path
+                ? `https://image.tmdb.org/t/p/original${heroMovie.poster_path}`
+                : "/assets/imgs/placeholder-backdrop.jpg",
+              poster: heroMovie.poster_path
+                ? `https://image.tmdb.org/t/p/w500${heroMovie.poster_path}`
+                : "/assets/imgs/placeholder.png",
+            };
+          } catch (err) {
+            return {
+              ...cat,
+              movieCount: 0,
+              backdrop: "/assets/imgs/placeholder-backdrop.jpg",
+              poster: "/assets/imgs/placeholder.png",
+            };
+          }
         })
       );
-      setCategories(categoriesWithData);
+
+      setCategories(enrichedCategories);
     } catch (error) {
-      console.error("Error fetching categories data:", error);
-      toast.error("Failed to load categories", {
-        position: "top-right",
-        autoClose: 2000,
-      });
+      console.error("Failed to load categories:", error);
       setCategories([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchCategoriesData();
-  }, [fetchCategoriesData]);
+    fetchCategories();
+  }, [fetchCategories]);
 
-  // Handle category click to navigate to movie list
-  const handleCategoryClick = (categoryKey) => {
-    navigate(`/movies?category=${categoryKey}`);
+  const handleCategoryClick = (key) => {
+    navigate(`/explore?category=${key}`);
   };
 
   return (
-    <div className="mn-main-content">
-      {/* Breadcrumb */}
-      <div className="mn-breadcrumb m-b-30">
-        <div className="row">
-          <div className="col-12">
-            <div className="row gi_breadcrumb_inner">
-              <div className="col-md-6 col-sm-12">
-                <h2 className="mn-breadcrumb-title">Movie Categories</h2>
-              </div>
-              <div className="col-md-6 col-sm-12">
-                <Breadcrumb>
-                  <Breadcrumb.Item>
-                    <a href="/">Home</a>
-                  </Breadcrumb.Item>
-                  <Breadcrumb.Item>Movie Categories</Breadcrumb.Item>
-                </Breadcrumb>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="categories-page container py-5">
+      {/* Hero Header */}
+      <div className="text-center mb-5">
+        <Title level={1} className="mb-3">
+          Browse by <span style={{ color: "#e50914" }}>Vibe</span>
+        </Title>
+        <Text type="secondary" style={{ fontSize: "1.2rem" }}>
+          Discover curated collections of movies tailored to your mood
+        </Text>
       </div>
 
-      <div className="row">
-        <div className="col-xxl-12">
-          <section className="mn-shop">
-            <div className="row">
-              {/* Sidebar (Optional: Can include genre filters) */}
-              <div className="mn-shop-sidebar mn-filter-sidebar col-lg-3 col-md-12">
-                <div id="shop_sidebar">
-                  <div className="mn-sidebar-wrap">
-                    <div className="mn-sidebar-block">
-                      <div className="mn-sb-title">
-                        <h3 className="mn-sidebar-title">Filters</h3>
-                        <a href="javascript:void(0)" className="filter-close">
-                          <i className="ri-close-large-line"></i>
-                        </a>
+      {/* Categories Grid */}
+      <Row gutter={[24, 32]}>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={i}>
+                <Skeleton.Node active style={{ width: "100%", height: 320 }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: 320,
+                      background: "#f0f0f0",
+                    }}
+                  />
+                </Skeleton.Node>
+                <Skeleton paragraph={{ rows: 2 }} className="mt-3" active />
+              </Col>
+            ))
+          : categories.map((category) => (
+              <Col xs={24} sm={12} lg={8} xl={6} key={category.key}>
+                <motion.div
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{ height: "100%" }}
+                >
+                  <Card
+                    hoverable
+                    cover={
+                      <div
+                        className="category-card-cover"
+                        style={{
+                          height: 320,
+                          backgroundImage: `linear-gradient(to bottom, rgba(20,20,20,0.3) 0%, rgba(20,20,20,0.8) 100%), url(${category.backdrop})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          display: "flex",
+                          alignItems: "flex-end",
+                          padding: "20px",
+                          borderRadius: "12px 12px 0 0",
+                        }}
+                      >
+                        <div>
+                          <Title level={3} style={{ color: "#fff", margin: 0 }}>
+                            {category.label}
+                          </Title>
+                          <Space size="small" className="mt-2">
+                            <Tag color="red" style={{ border: "none" }}>
+                              {category.movieCount}+ Movies
+                            </Tag>
+                          </Space>
+                        </div>
                       </div>
-                      <div className="mn-sb-block-content p-t-15">
-                        <p>Genre filters can be added here (optional).</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                    }
+                    bodyStyle={{ padding: "16px", textAlign: "center" }}
+                    style={{
+                      height: "100%",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                    }}
+                    onClick={() => handleCategoryClick(category.key)}
+                  >
+                    <Text type="secondary">
+                      Handpicked collection • Click to explore
+                    </Text>
+                  </Card>
+                </motion.div>
+              </Col>
+            ))}
+      </Row>
 
-              {/* Main Content */}
-              <div className="mn-shop-rightside col-md-12 m-t-991">
-                {/* Shop Top */}
-                <div className="mn-pro-list-top d-flex">
-                  <div className="col-md-6 mn-grid-list">
-                    <div className="mn-gl-btn">
-                      <Button className="grid-btn filter-toggle-icon">
-                        <i className="ri-filter-2-line"></i>
-                      </Button>
-                      <Button className="grid-btn btn-grid-50 active">
-                        <i className="ri-gallery-view-2"></i>
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="col-md-6 mn-sort-select">
-                    <div className="mn-select-inner">
-                      <select name="mn-select" id="mn-select">
-                        <option selected disabled>
-                          Sort by
-                        </option>
-                        <option value="name-asc">Name, A to Z</option>
-                        <option value="name-desc">Name, Z to A</option>
-                        <option value="count-desc">
-                          Movie Count, High to Low
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Category Cards */}
-                <div className="shop-pro-content">
-                  <div className="shop-pro-inner">
-                    <Row gutter={[24, 24]}>
-                      {isLoading ? (
-                        Array.from({ length: 6 }).map((_, index) => (
-                          <Col
-                            key={index}
-                            xs={12}
-                            sm={6}
-                            md={4}
-                            lg={3}
-                            className="m-b-24 mn-product-box pro-gl-content"
-                          >
-                            <Skeleton active avatar paragraph={{ rows: 2 }} />
-                          </Col>
-                        ))
-                      ) : categories.length > 0 ? (
-                        categories.map((category) => (
-                          <Col
-                            key={category.key}
-                            xs={12}
-                            sm={6}
-                            md={4}
-                            lg={3}
-                            className="m-b-24 mn-product-box pro-gl-content"
-                          >
-                            <Card
-                              className="mn-product-card"
-                              hoverable
-                              cover={
-                                <div className="mn-product-img">
-                                  <div className="mn-img">
-                                    <a
-                                      href="javascript:void(0)"
-                                      className="image"
-                                      onClick={() =>
-                                        handleCategoryClick(category.key)
-                                      }
-                                    >
-                                      <img
-                                        className="main-img"
-                                        src={category.posterUrl}
-                                        alt={category.label}
-                                      />
-                                    </a>
-                                  </div>
-                                </div>
-                              }
-                            >
-                              <div className="mn-product-detail">
-                                <h5>
-                                  <a
-                                    href="javascript:void(0)"
-                                    onClick={() =>
-                                      handleCategoryClick(category.key)
-                                    }
-                                  >
-                                    {category.label}
-                                  </a>
-                                </h5>
-                                <p className="mn-info">
-                                  {category.movieCount} movies
-                                </p>
-                              </div>
-                            </Card>
-                          </Col>
-                        ))
-                      ) : (
-                        <Col span={24}>
-                          <p>No categories available.</p>
-                        </Col>
-                      )}
-                    </Row>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+      {categories.length === 0 && !loading && (
+        <div className="text-center py-5">
+          <Text type="secondary">No categories available at the moment.</Text>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,143 +1,278 @@
+// src/routes/Router.jsx (or wherever your routes file is)
+
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+
 import {
   useGetProfileQuery,
   useCompleteOnboardingMutation,
 } from "../actions/userApi";
+import { setOnboardingComplete } from "../actions/slices/authSlices";
+
+// Components
+import HomeWrapper from "../components/Home/HomeWrapper";
 import Login from "../components/Auth/Login";
 import Signup from "../components/Auth/Signup";
-import ListWrapper from "../components/Lists/ListWrapper";
 import Contact from "../components/Common/Contact";
 import ProfileWrapper from "../components/Profile/ProfileWrapper";
-import OnboardingFlow from "../components/Onboarding/OnboardingFlow";
 import FilmWrapper from "../components/Films/FilmWrapper";
-import { setOnboardingComplete } from "../actions/slices/authSlices";
-import HomeWrapper from "../components/Home/HomeWrapper";
-import { Routes, Route } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import ListWrapper from "../components/Lists/ListWrapper";
 import Terms from "../components/Common/Terms";
-import Error404 from "../components/Common/Error404";
 import PrivacyPolicy from "../components/Common/PrivacyPolicy";
-import MembersWrapper from "../components/Members/MembersWrapper";
-import GroupsPage from "../components/Groups/GroupsPage";
-import BoxOfficeWrapper from "../components/BoxOffice/BoxOfficeWrapper";
-import MoviePage from "../components/Movie/MoviePage";
-import GenrePage from "../components/Films/GenreWrapper";
-import GroupDetailPage from "../components/Groups/GroupDetailPage";
-import SearchPage from "../components/Search/SearchWrapper";
 import About from "../components/Common/About";
 import Faqs from "../components/Common/Faqs";
+import Error404 from "../components/Common/Error404";
+import MembersWrapper from "../components/Members/MembersWrapper";
+import GroupsPage from "../components/Groups/GroupsPage";
+import GroupDetailPage from "../components/Groups/GroupDetailPage";
+import MoviePage from "../components/Movie/MoviePage";
+import CategoriesPage from "../components/Films/CategoriesPage";
+import SearchPage from "../components/Search/SearchWrapper";
 import ActorProfile from "../components/Movie/ActorProfile";
 import DirectorProfile from "../components/Movie/DirectorProfile";
-import CategoriesPage from "../components/Films/CategoriesPage";
+import GenrePage from "../components/Films/GenreWrapper";
+import OnboardingFlow from "../components/Onboarding/OnboardingFlow";
+
 import PrivateRoute from "./PrivateRoute";
 
-const RouteWithHelmet = ({ element, name }) => {
-  return (
+// Reusable Page Wrapper with Title (React 19 Native)
+const Page = ({ title, children, requireAuth = false }) => {
+  const fullTitle = title ? `${title} - DimeCine` : "DimeCine";
+
+  const content = (
     <>
-      {name && (
-        <Helmet>
-          <title>{`CM Trading Co - ${name}`}</title>
-        </Helmet>
-      )}
-      {element}
+      <title>{fullTitle}</title>
+      <meta
+        name="description"
+        content="DimeCine — Discover, discuss, and share your passion for cinema with a vibrant community of movie lovers."
+      />
+      {children}
     </>
   );
-};
-const renderRoutes = (routes) => {
-  return routes.flatMap(
-    ({ path, name, element, requiredPermission, submenu }) => {
-      const mainRoute =
-        path && element ? (
-          <Route
-            key={path}
-            path={path}
-            element={
-              requiredPermission ? (
-                <PrivateRoute requiredPermission={requiredPermission}>
-                  <RouteWithHelmet element={element} name={name} />
-                </PrivateRoute>
-              ) : (
-                <RouteWithHelmet element={element} name={name} />
-              )
-            }
-          />
-        ) : null;
 
-      const subRoutes = submenu ? renderRoutes(submenu) : [];
-
-      return mainRoute ? [mainRoute, ...subRoutes] : subRoutes;
-    }
-  );
+  return requireAuth ? <PrivateRoute>{content}</PrivateRoute> : content;
 };
+
 const Router = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { userId, isAuthenticated, role, cameFromSignup } = useSelector(
-    (state) => state.auth
-  );
-  const { data: profile, isLoading: profileLoading } = useGetProfileQuery(
-    userId,
-    {
-      skip: !userId || !isAuthenticated,
-    }
-  );
+  const { userId, isAuthenticated } = useSelector((state) => state.auth);
+
+  const { data: profile } = useGetProfileQuery(userId, {
+    skip: !userId || !isAuthenticated,
+  });
+
   const [completeOnboarding] = useCompleteOnboardingMutation();
+
+  const handleOnboardingComplete = async () => {
+    try {
+      await completeOnboarding({
+        userId,
+        preferences: profile?.preferences || {},
+        role: profile?.role || "viewer",
+      }).unwrap();
+
+      dispatch(setOnboardingComplete());
+      localStorage.removeItem("cameFromSignup");
+      navigate("/");
+    } catch (error) {
+      console.error("Failed to complete onboarding:", error);
+    }
+  };
 
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<HomeWrapper />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/box-office" element={<BoxOfficeWrapper />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-and-conditions" element={<Terms />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/categories" element={<CategoriesPage />} />
-      {/* Protected Routes */}
-      <Route path="/explore" element={<FilmWrapper />} />
-      <Route path="/movies/:id" element={<MoviePage />} />
-      <Route path="/lists" element={<ListWrapper />} />
-      <Route path="/groups" element={<GroupsPage />} />
-      <Route path="/group/:groupId" element={<GroupDetailPage />} />
-      <Route path="/u/:id" element={<ProfileWrapper />} />
-      <Route path="/members" element={<MembersWrapper />} />
-      {/* Onboarding Route */}
       <Route
-        path="/onboarding"
+        path="/"
         element={
-          <OnboardingFlow
-            userId={userId}
-            onComplete={() => {
-              completeOnboarding({
-                userId,
-                preferences: profile?.preferences || {},
-                role: profile?.role || "viewer",
-              })
-                .unwrap()
-                .then(() => {
-                  dispatch(setOnboardingComplete());
-                  localStorage.removeItem("cameFromSignup");
-                  navigate("/");
-                })
-                .catch((error) => {
-                  console.error("Failed to complete onboarding:", error);
-                });
-            }}
-          />
+          <Page title="Home">
+            <HomeWrapper />
+          </Page>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <Page title="Login">
+            <Login />
+          </Page>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <Page title="Sign Up">
+            <Signup />
+          </Page>
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <Page title="Contact Us">
+            <Contact />
+          </Page>
+        }
+      />
+      <Route
+        path="/privacy-policy"
+        element={
+          <Page title="Privacy Policy">
+            <PrivacyPolicy />
+          </Page>
+        }
+      />
+      <Route
+        path="/terms-and-conditions"
+        element={
+          <Page title="Terms & Conditions">
+            <Terms />
+          </Page>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <Page title="About">
+            <About />
+          </Page>
+        }
+      />
+      <Route
+        path="/faqs"
+        element={
+          <Page title="FAQs">
+            <Faqs />
+          </Page>
+        }
+      />
+      <Route
+        path="/categories"
+        element={
+          <Page title="Browse by Vibe">
+            <CategoriesPage />
+          </Page>
+        }
+      />
+      <Route
+        path="/search"
+        element={
+          <Page title="Search">
+            <SearchPage />
+          </Page>
         }
       />
 
-      <Route path="/actor/:id" element={<ActorProfile />} />
-      <Route path="/director/:id" element={<DirectorProfile />} />
-      <Route path="/genres" element={<GenrePage />} />
-      <Route path="/faqs" element={<Faqs />} />
-      {/* 404 Route */}
-      <Route path="*" element={<Error404 />} />
-      <Route path="/search" element={<SearchPage />} />
+      {/* Explore & Discovery (Public but enhanced when logged in) */}
+      <Route
+        path="/explore"
+        element={
+          <Page title="Explore Films">
+            <FilmWrapper />
+          </Page>
+        }
+      />
+      <Route
+        path="/movies/:id"
+        element={
+          <Page title="Movie">
+            <MoviePage />
+          </Page>
+        }
+      />
+      <Route
+        path="/actor/:id"
+        element={
+          <Page title="Actor">
+            <ActorProfile />
+          </Page>
+        }
+      />
+      <Route
+        path="/director/:id"
+        element={
+          <Page title="Director">
+            <DirectorProfile />
+          </Page>
+        }
+      />
+      <Route
+        path="/genres"
+        element={
+          <Page title="Genres">
+            <GenrePage />
+          </Page>
+        }
+      />
+      <Route
+        path="/members"
+        element={
+          <Page title="Community Members">
+            <MembersWrapper />
+          </Page>
+        }
+      />
+      <Route
+        path="/groups"
+        element={
+          <Page title="Groups">
+            <GroupsPage />
+          </Page>
+        }
+      />
+      <Route
+        path="/group/:groupId"
+        element={
+          <Page title="Group">
+            <GroupDetailPage />
+          </Page>
+        }
+      />
+
+      {/* Authenticated Routes */}
+      <Route
+        path="/lists"
+        element={
+          <Page title="My Lists" requireAuth>
+            <ListWrapper />
+          </Page>
+        }
+      />
+      <Route
+        path="/u/:id"
+        element={
+          <Page title="Profile">
+            <ProfileWrapper />
+          </Page>
+        }
+      />
+
+      {/* Onboarding Flow */}
+      <Route
+        path="/onboarding"
+        element={
+          <Page title="Welcome to DimeCine">
+            <OnboardingFlow
+              userId={userId}
+              onComplete={handleOnboardingComplete}
+            />
+          </Page>
+        }
+      />
+
+      {/* Catch-all 404 */}
+      <Route
+        path="*"
+        element={
+          <Page title="Page Not Found">
+            <Error404 />
+          </Page>
+        }
+      />
     </Routes>
   );
 };

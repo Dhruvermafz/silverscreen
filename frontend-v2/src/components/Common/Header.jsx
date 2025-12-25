@@ -2,457 +2,484 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   message,
-  Dropdown,
-  Menu,
-  Button,
-  Drawer,
   Input,
+  Drawer,
   List,
+  Avatar,
+  Button,
+  Space,
+  Dropdown,
+  Badge,
   Spin,
+  Card,
+  Tag,
 } from "antd";
-import Avatar from "react-avatar"; // Import react-avatar
-import { useLogoutMutation } from "../../actions/authApi";
-import { useGetProfileQuery } from "../../actions/userApi";
 import {
-  getMoviesFromAPI,
-  getGenresFromAPI,
-} from "../../actions/getMoviesFromAPI";
-import logo from "../../assets/img/logo/logo.png";
-import {
+  SearchOutlined,
+  MenuOutlined,
+  CloseOutlined,
+  SunOutlined,
+  MoonOutlined,
   UserOutlined,
-  SettingOutlined,
-  LogoutOutlined,
   LoginOutlined,
   UserAddOutlined,
-  CloseOutlined,
+  SettingOutlined,
+  LogoutOutlined,
+  HeartOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { FaFilm } from "react-icons/fa";
 
+import { useLogoutMutation } from "../../actions/authApi";
+import { useGetProfileQuery } from "../../actions/userApi";
+import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
+
+import logoLight from "../../assets/img/logo/logo.png";
+import logoDark from "../../assets/img/logo/logo_dark.png";
+
+const { Search } = Input;
+
 const Header = () => {
-  const { data: user, isLoading, isError, error } = useGetProfileQuery();
-  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
-  const [mobileMenuVisible, setMobileMenuVisible] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
-  const [searchValue, setSearchValue] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [recentSearches, setRecentSearches] = useState(
-    JSON.parse(localStorage.getItem("recentSearches")) || []
-  );
-  const [genres, setGenres] = useState([]);
-  const [isSearchDrawerOpen, setIsSearchDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = useRef(null);
 
-  // Fetch genres for Categories dropdown
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const fetchedGenres = await getGenresFromAPI();
-        setGenres(fetchedGenres.slice(0, 6) || []);
-      } catch (error) {
-        console.error("Error fetching genres:", error);
-        message.error("Failed to load genres", 2);
-      }
-    };
-    fetchGenres();
-  }, []);
+  const { data: user, isLoading: loadingUser } = useGetProfileQuery();
+  const [logout, { isLoading: loggingOut }] = useLogoutMutation();
 
-  // Handle profile fetch errors
-  useEffect(() => {
-    if (isError) {
-      message.error(
-        error?.data?.error || "Failed to fetch profile. Please log in again.",
-        3
-      );
-    }
-  }, [isError, error]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchDrawerOpen, setSearchDrawerOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [recentSearches, setRecentSearches] = useState(
+    JSON.parse(localStorage.getItem("recentSearches") || "[]")
+  );
 
-  // Handle theme toggle
+  const [isDarkMode, setIsDarkMode] = useState(
+    localStorage.getItem("theme") === "dark"
+  );
+
+  // Theme sync
   useEffect(() => {
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     document.documentElement.setAttribute(
       "data-theme",
       isDarkMode ? "dark" : "light"
     );
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
-  // Fetch search results
+  // Live search with debounce
   useEffect(() => {
-    const fetchSearchResults = async () => {
+    const timer = setTimeout(async () => {
       if (searchValue.trim()) {
         try {
-          const response = await getMoviesFromAPI(searchValue, {}, 1);
-          setSearchResults(response.movies.slice(0, 3) || []);
-        } catch (error) {
-          console.error("Error fetching search results:", error);
-          message.error("Failed to fetch search results", 2);
+          const res = await getMoviesFromAPI(searchValue, {}, 1);
+          setSearchResults(res.movies?.slice(0, 6) || []);
+        } catch {
+          setSearchResults([]);
         }
       } else {
         setSearchResults([]);
       }
-    };
-    fetchSearchResults();
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [searchValue]);
 
-  // Save recent searches to localStorage
-  useEffect(() => {
-    localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
-  }, [recentSearches]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      setRecentSearches((prev) => {
-        const updated = [
-          searchValue,
-          ...prev.filter((s) => s !== searchValue),
-        ].slice(0, 4);
-        return updated;
-      });
-      navigate(`/search?q=${encodeURIComponent(searchValue)}`);
-      message.success(`Searching for "${searchValue}"`, 2);
-      setSearchValue("");
-      setIsSearchDrawerOpen(false);
-      setMobileMenuVisible(false);
-    } else {
-      message.warning("Please enter a search term.", 2);
-    }
+  const addRecentSearch = (term) => {
+    const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(
+      0,
+      8
+    );
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
   };
 
-  const handleRemoveRecentSearch = (term) => {
-    setRecentSearches((prev) => prev.filter((s) => s !== term));
+  const removeRecentSearch = (term) => {
+    const updated = recentSearches.filter((s) => s !== term);
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
+  };
+
+  const handleSearch = (value) => {
+    const term = value.trim();
+    if (!term) return;
+    addRecentSearch(term);
+    navigate(`/explore?q=${encodeURIComponent(term)}`);
+    setSearchValue("");
+    setSearchDrawerOpen(false);
   };
 
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      localStorage.removeItem("token");
-      message.success("Logged out successfully!", 2);
+      message.success("Logged out successfully");
       navigate("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      message.error(
-        err?.data?.message || "Logout failed. Please try again.",
-        3
-      );
+    } catch {
+      message.error("Logout failed");
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-    message.info(`Switched to ${isDarkMode ? "Light" : "Dark"} mode`, 1);
-  };
+  const displayName = user?.username || user?.email?.split("@")[0] || "User";
 
-  const toggleMobileMenu = () => {
-    setMobileMenuVisible((prev) => !prev);
-  };
-
-  const toggleSearchDrawer = () => {
-    setIsSearchDrawerOpen((prev) => !prev);
-    if (!isSearchDrawerOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    }
-  };
-
-  const displayName = user?.username?.includes("@")
-    ? user?.email?.split("@")[0] || user?._id || "User"
-    : user?.username || "User";
-
-  // User Dropdown Menu
+  // User Menu
   const userMenu = (
-    <Menu>
-      <Menu.Item key="profile">
-        <Link to={`/u/${user?._id || "unknown"}`}>
-          <UserOutlined style={{ marginRight: 8 }} />
-          Profile
-        </Link>
-      </Menu.Item>
-      {user?.isFilmmaker && (
-        <Menu.Item key="portfolio">
-          <Link to="/portfolio">
-            <FaFilm style={{ marginRight: 8 }} />
-            Portfolio
-          </Link>
-        </Menu.Item>
-      )}
-      <Menu.Item key="settings">
-        <Link to="/settings">
-          <SettingOutlined style={{ marginRight: 8 }} />
+    <div
+      className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+      style={{ minWidth: 220 }}
+    >
+      <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <Avatar size={56} src={user?.avatar} name={displayName} />
+        <div>
+          <div className="fw-bold">{displayName}</div>
+          <small className="text-muted">{user?.email}</small>
+        </div>
+      </div>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        <Button
+          block
+          type="text"
+          icon={<UserOutlined />}
+          onClick={() => navigate(`/u/${user?._id}`)}
+        >
+          My Profile
+        </Button>
+        {user?.isFilmmaker && (
+          <Button
+            block
+            type="text"
+            icon={<FaFilm />}
+            onClick={() => navigate("/portfolio")}
+          >
+            My Portfolio
+          </Button>
+        )}
+        <Button
+          block
+          type="text"
+          icon={<HeartOutlined />}
+          onClick={() => navigate("/lists")}
+        >
+          My Lists
+        </Button>
+        <Button
+          block
+          type="text"
+          icon={<TeamOutlined />}
+          onClick={() => navigate("/groups")}
+        >
+          My Communities
+        </Button>
+        <Button
+          block
+          type="text"
+          icon={<SettingOutlined />}
+          onClick={() => navigate("/settings")}
+        >
           Settings
-        </Link>
-      </Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout} disabled={isLoading}>
-        <LogoutOutlined style={{ marginRight: 8 }} />
-        {isLoggingOut ? "Logging out..." : "Logout"}
-      </Menu.Item>
-    </Menu>
+        </Button>
+        <Button
+          block
+          danger
+          type="text"
+          icon={<LogoutOutlined />}
+          onClick={handleLogout}
+          loading={loggingOut}
+        >
+          Logout
+        </Button>
+      </Space>
+    </div>
   );
 
-  // Guest Dropdown Menu
+  // Guest Menu
   const guestMenu = (
-    <Menu>
-      <Menu.Item key="login">
-        <Link to="/login">
-          <LoginOutlined style={{ marginRight: 8 }} />
-          Login
-        </Link>
-      </Menu.Item>
-      <Menu.Item key="register">
-        <Link to="/register">
-          <UserAddOutlined style={{ marginRight: 8 }} />
-          Register
-        </Link>
-      </Menu.Item>
-    </Menu>
-  );
-
-  // Categories Dropdown Menu
-  const categoriesMenu = (
-    <Menu>
-      {genres.map((genre) => (
-        <Menu.Item key={genre.id}>
-          <Link to={`/explore?genre=${encodeURIComponent(genre.name)}`}>
-            {genre.name}
-          </Link>
-        </Menu.Item>
-      ))}
-    </Menu>
+    <Space direction="vertical" className="p-4" style={{ minWidth: 180 }}>
+      <Button block icon={<LoginOutlined />} onClick={() => navigate("/login")}>
+        Login
+      </Button>
+      <Button
+        block
+        type="primary"
+        icon={<UserAddOutlined />}
+        onClick={() => navigate("/signup")}
+      >
+        Sign Up
+      </Button>
+    </Space>
   );
 
   return (
-    <header>
-      <div className="mn-header">
-        <div className="mn-header-items">
-          {/* Left Header */}
-          <div className="left-header">
-            <Link to="/" className="logo">
-              <img src={logo} alt="DimeCine logo" />
-            </Link>
-          </div>
+    <>
+      {/* Main Header */}
+      <header
+        className="bg-dark border-bottom border-secondary sticky-top"
+        style={{ zIndex: 1000 }}
+      >
+        <div className="container">
+          <div className="d-flex align-items-center justify-content-between py-3">
+            {/* Left: Logo + Mobile Menu */}
+            <div className="d-flex align-items-center gap-4">
+              <Button
+                type="text"
+                icon={<MenuOutlined style={{ fontSize: "1.4rem" }} />}
+                className="text-white d-lg-none"
+                onClick={() => setMobileMenuOpen(true)}
+              />
+              <Link to="/">
+                <img
+                  src={isDarkMode ? logoDark : logoLight}
+                  alt="DimeCine"
+                  height={40}
+                />
+              </Link>
+            </div>
 
-          {/* Center Search Input */}
-          <div className="center-header d-none d-lg-flex align-items-center">
-            <form onSubmit={handleSearch} style={{ width: "300px" }}>
-              <Input
-                placeholder="Search movies..."
+            {/* Center: Search Bar */}
+            <div className="flex-grow-1 mx-4">
+              <Search
+                placeholder="Search movies, actors, communities..."
+                allowClear
+                enterButton={<SearchOutlined />}
+                size="large"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={toggleSearchDrawer}
-                ref={searchInputRef}
+                onSearch={handleSearch}
+                className="w-100"
+                style={{ maxWidth: 600, margin: "0 auto", display: "block" }}
               />
-            </form>
-          </div>
-
-          {/* Right Header */}
-          <div className="right-header">
-            {/* Desktop Main Menu */}
-            <div
-              id="mn-main-menu-desk"
-              className="d-none d-lg-block sticky-nav"
-            >
-              <div className="nav-desk">
-                <div className="row">
-                  <div className="col-md-12 align-self-center">
-                    <div className="mn-main-menu">
-                      <ul
-                        style={{
-                          display: "flex",
-                          listStyle: "none",
-                          padding: 0,
-                        }}
-                      >
-                        <li className="non-drop">
-                          <Link to="/box-office">Box Office</Link>
-                        </li>
-                        <li className="non-drop">
-                          <Link to="/explore">Explore Films</Link>
-                        </li>
-                        <li className="non-drop">
-                          <Link to="/categories"> Categories</Link>
-                        </li>
-                        <li>
-                          {isLoading ? (
-                            <Spin size="small" />
-                          ) : user ? (
-                            <Dropdown overlay={userMenu} trigger={["click"]}>
-                              <a
-                                onClick={(e) => e.preventDefault()}
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Avatar
-                                  name={displayName}
-                                  src={user?.avatar}
-                                  size={32}
-                                  round
-                                  style={{ marginRight: 8 }}
-                                />
-                                <span className="d-none d-md-inline">
-                                  {displayName}
-                                </span>
-                              </a>
-                            </Dropdown>
-                          ) : (
-                            <Dropdown overlay={guestMenu} trigger={["click"]}>
-                              <a
-                                onClick={(e) => e.preventDefault()}
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <Avatar
-                                  name="Guest"
-                                  size={32}
-                                  round
-                                  color="#6c757d"
-                                  style={{ marginRight: 8 }}
-                                />
-                                <span className="d-none d-md-inline">
-                                  Sign In
-                                </span>
-                              </a>
-                            </Dropdown>
-                          )}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
+
+            {/* Right: Desktop Actions */}
+            <Space size="middle" className="d-none d-lg-flex">
+              <Link
+                to="/explore"
+                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+              >
+                Explore
+              </Link>
+              <Link
+                to="/categories"
+                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+              >
+                Categories
+              </Link>
+              <Link
+                to="/groups"
+                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+              >
+                Communities
+              </Link>
+
+              <Button
+                type="text"
+                icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="text-white"
+              />
+
+              {loadingUser ? (
+                <Spin />
+              ) : user ? (
+                <Dropdown
+                  overlay={userMenu}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <Badge dot={user?.notifications?.length > 0}>
+                    <Avatar
+                      src={user.avatar}
+                      name={displayName}
+                      size={40}
+                      style={{ cursor: "pointer", border: "2px solid #e50914" }}
+                    />
+                  </Badge>
+                </Dropdown>
+              ) : (
+                <Dropdown overlay={guestMenu} trigger={["click"]}>
+                  <Avatar
+                    icon={<UserOutlined />}
+                    size={40}
+                    style={{ background: "#6c757d", cursor: "pointer" }}
+                  />
+                </Dropdown>
+              )}
+            </Space>
+
+            {/* Mobile Search Icon */}
+            <Button
+              type="text"
+              icon={<SearchOutlined style={{ fontSize: "1.4rem" }} />}
+              className="text-white d-lg-none"
+              onClick={() => setSearchDrawerOpen(true)}
+            />
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Search Drawer */}
+      {/* Mobile Menu Drawer */}
       <Drawer
-        title={
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <span>Search</span>
+        placement="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        closeIcon={null}
+        width={280}
+        headerStyle={{ display: "none" }}
+      >
+        <div className="p-4">
+          <div className="d-flex justify-content-between align-items-center mb-5">
+            <h4 className="mb-0">Menu</h4>
             <Button
               type="text"
               icon={<CloseOutlined />}
-              onClick={toggleSearchDrawer}
+              onClick={() => setMobileMenuOpen(false)}
             />
           </div>
-        }
-        placement="right"
-        open={isSearchDrawerOpen}
-        onClose={toggleSearchDrawer}
-        width={350}
-        className="mn-side-search"
-      >
-        <div style={{ padding: "0 8px" }}>
-          {/* Search Input */}
-          <form onSubmit={handleSearch} style={{ marginBottom: 16 }}>
-            <Input
-              placeholder="Search movies..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              ref={searchInputRef}
-            />
-          </form>
 
-          {/* Search Results */}
-          {searchResults.length > 0 ? (
-            <List
-              itemLayout="horizontal"
-              dataSource={searchResults}
-              renderItem={(movie) => (
-                <List.Item
-                  actions={[
-                    <Button
-                      type="text"
-                      onClick={() => navigate(`/movies/${movie.id}`)}
-                    >
-                      View
-                    </Button>,
-                  ]}
+          {user ? (
+            <div className="mb-5 pb-4 border-bottom">
+              <Space align="center" size="middle" className="w-100">
+                <Avatar src={user.avatar} name={displayName} size={64} />
+                <div>
+                  <div className="fw-bold">{displayName}</div>
+                  <small className="text-muted">{user.email}</small>
+                </div>
+              </Space>
+            </div>
+          ) : null}
+
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+              Home
+            </Link>
+            <Link to="/explore" onClick={() => setMobileMenuOpen(false)}>
+              Explore Films
+            </Link>
+            <Link to="/categories" onClick={() => setMobileMenuOpen(false)}>
+              Categories
+            </Link>
+            <Link to="/groups" onClick={() => setMobileMenuOpen(false)}>
+              Communities
+            </Link>
+            <Link to="/members" onClick={() => setMobileMenuOpen(false)}>
+              Members
+            </Link>
+
+            <div className="border-top pt-4">
+              <Button block onClick={() => setIsDarkMode(!isDarkMode)}>
+                {isDarkMode ? <SunOutlined /> : <MoonOutlined />}{" "}
+                {isDarkMode ? "Light" : "Dark"} Mode
+              </Button>
+            </div>
+
+            {user ? (
+              <div className="border-top pt-4">
+                <Button
+                  block
+                  danger
+                  onClick={handleLogout}
+                  loading={loggingOut}
                 >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        shape="square"
-                        size={64}
-                        src={
-                          movie.poster_path || "/assets/imgs/placeholder.png"
-                        }
-                      />
-                    }
-                    title={
-                      <Link to={`/movies/${movie.id}`}>{movie.title}</Link>
-                    }
-                    description={
-                      <>
-                        <Link
-                          to={`/explore?genre=${encodeURIComponent(
-                            movie.genres?.[0]?.name || ""
-                          )}`}
-                        >
-                          {movie.genres?.[0]?.name || "N/A"}
-                        </Link>
-                        <div style={{ fontSize: 12, color: "#666" }}>
-                          {movie.release_date
-                            ? new Date(movie.release_date).getFullYear()
-                            : "N/A"}{" "}
-                          - {movie.vote_count || 0} votes
-                        </div>
-                      </>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          ) : (
-            <p style={{ color: "#888", textAlign: "center" }}>
-              No results found.
-            </p>
-          )}
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button
+                  block
+                  icon={<LoginOutlined />}
+                  onClick={() => navigate("/login")}
+                >
+                  Login
+                </Button>
+                <Button
+                  block
+                  type="primary"
+                  icon={<UserAddOutlined />}
+                  onClick={() => navigate("/signup")}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
+          </Space>
+        </div>
+      </Drawer>
 
-          {/* Recent Searches */}
-          {recentSearches.length > 0 && (
-            <div style={{ marginTop: 24 }}>
-              <h4>Recently Searched</h4>
+      {/* Search Drawer (Mobile) */}
+      <Drawer
+        title="Search"
+        placement="top"
+        height="90vh"
+        open={searchDrawerOpen}
+        onClose={() => setSearchDrawerOpen(false)}
+      >
+        <div className="container py-4">
+          <Search
+            placeholder="Search movies, people, communities..."
+            allowClear
+            enterButton="Search"
+            size="large"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onSearch={handleSearch}
+            autoFocus
+          />
+
+          {searchResults.length > 0 && (
+            <div className="mt-5">
+              <h5>Results</h5>
               <List
-                size="small"
-                dataSource={recentSearches}
-                renderItem={(term) => (
+                grid={{ gutter: 16, xs: 2, sm: 3, md: 4 }}
+                dataSource={searchResults}
+                renderItem={(movie) => (
                   <List.Item
-                    actions={[
-                      <Button
-                        type="text"
-                        danger
-                        onClick={() => handleRemoveRecentSearch(term)}
-                      >
-                        ×
-                      </Button>,
-                    ]}
+                    onClick={() => {
+                      handleSearch(movie.title);
+                      setSearchDrawerOpen(false);
+                    }}
+                    style={{ cursor: "pointer" }}
                   >
-                    <Link
-                      to={`/search?q=${encodeURIComponent(term)}`}
-                      onClick={() => setSearchValue(term)}
+                    <Card
+                      hoverable
+                      cover={
+                        <img
+                          alt={movie.title}
+                          src={
+                            movie.posterUrl || "/assets/imgs/placeholder.png"
+                          }
+                          style={{ height: 300, objectFit: "cover" }}
+                        />
+                      }
                     >
-                      {term}
-                    </Link>
+                      <Card.Meta title={movie.title} />
+                    </Card>
                   </List.Item>
                 )}
               />
             </div>
           )}
+
+          {recentSearches.length > 0 && searchValue === "" && (
+            <div className="mt-5">
+              <h5>Recent Searches</h5>
+              <Space wrap size={[8, 8]}>
+                {recentSearches.map((term) => (
+                  <Tag
+                    key={term}
+                    closable
+                    onClose={() => removeRecentSearch(term)}
+                    onClick={() => handleSearch(term)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {term}
+                  </Tag>
+                ))}
+              </Space>
+            </div>
+          )}
         </div>
       </Drawer>
-    </header>
+    </>
   );
 };
 

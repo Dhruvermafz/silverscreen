@@ -1,74 +1,144 @@
-/* src/components/MovieSlider.css */
-.movie-slider-background {
+.movie-slider-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: space-between;
   overflow: hidden;
-  z-index: 1; /* Behind the form */
+  pointer-events: none; /* Allows clicks through to form */
 }
 
-.movie-slider-left,
-.movie-slider-right {
+.movie-slider-column {
+  position: absolute;
+  top: 0;
   width: 50%;
   height: 100%;
-  overflow: hidden;
-  position: relative;
+  display: flex;
+}
+
+.left-column {
+  left: 0;
+  justify-content: flex-start;
+}
+
+.right-column {
+  right: 0;
+  justify-content: flex-end;
 }
 
 .movie-slider-track {
   display: flex;
   flex-direction: column;
-  animation-duration: 20s;
-  animation-iteration-count: infinite;
+  gap: 20px;
+  padding: 40px 0;
+  animation-duration: 60s;
   animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
-.movie-slider-left .movie-slider-track {
-  animation-name: slideDown;
+.scroll-down {
+  animation-name: scrollDown;
 }
 
-.movie-slider-right .movie-slider-track {
-  animation-name: slideUp;
+.scroll-up {
+  animation-name: scrollUp;
 }
 
-.movie-poster {
-  flex: 0 0 auto;
-  margin: 5px;
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
 }
 
-.movie-poster img {
-  width: 150px;
-  height: 225px;
+@keyframes scrollUp {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.movie-poster-item {
+  flex-shrink: 0;
+  width: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.4s ease;
+}
+
+.movie-poster-item:hover {
+  transform: scale(1.08);
+  z-index: 10;
+}
+
+.movie-poster-item img {
+  width: 100%;
+  height: auto;
+  display: block;
   object-fit: cover;
-  border-radius: 8px;
-  opacity: 0.7; /* Slightly dim posters for background effect */
 }
 
-@keyframes slideUp {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-50%);
-  }
+/* Dark overlay for better text contrast (use on parent container) */
+.movie-slider-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(20, 20, 20, 0.9) 0%,
+    rgba(20, 20, 20, 0.3) 50%,
+    rgba(20, 20, 20, 0.9) 100%
+  );
+  pointer-events: none;
 }
 
-@keyframes slideDown {
-  0% {
-    transform: translateY(-50%);
-  }
-  100% {
-    transform: translateY(0);
-  }
+/* Loading state */
+.movie-slider-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #333;
+  border-top: 4px solid #e50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Responsive adjustments */
-@media (max-width: 991px) {
-  .movie-slider-background {
-    display: none; /* Hide on smaller screens */
+@media (max-width: 992px) {
+  .movie-poster-item {
+    width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-slider-column {
+    width: 100%;
+  }
+  .right-column {
+    display: none; /* Only show one column on mobile */
+  }
+  .left-column {
+    justify-content: center;
   }
 }

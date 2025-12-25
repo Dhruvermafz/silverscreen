@@ -1,41 +1,30 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
-import { useNavigate, Link } from "react-router-dom";
-import Pagination from "../Common/Pagination";
-import { useGetProfileQuery } from "../../actions/userApi";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import MovieCard from "../Films/MovieCard";
 import {
   getGenresFromAPI,
   getMoviesFromAPI,
+  getCustomCategories,
 } from "../../actions/getMoviesFromAPI";
-import MovieCard from "../Films/MovieCard";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/navigation";
-import { Navigation, Autoplay } from "swiper/modules";
+import { useGetProfileQuery } from "../../actions/userApi";
+
 const HomeWrapper = () => {
   const [genres, setGenres] = useState([]);
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  const [moviesByGenre, setMoviesByGenre] = useState({});
-  const [totalItemsByGenre, setTotalItemsByGenre] = useState({});
   const [trendingMovies, setTrendingMovies] = useState([]);
-  const [newReleases, setNewReleases] = useState([]);
-  const [topRatedMovies, setTopRatedMovies] = useState([]);
-  const [loadingTrending, setLoadingTrending] = useState(false);
-  const [loadingNewReleases, setLoadingNewReleases] = useState(false);
-  const [loadingTopRated, setLoadingTopRated] = useState(false);
-  const [loadingMovies, setLoadingMovies] = useState({});
-  const [pageByGenre, setPageByGenre] = useState({});
-  const [currentPage, setCurrentPage] = useState({
-    trending: 1,
-    newReleases: 1,
-    topRated: 1,
-  });
+  const [customCategoryMovies, setCustomCategoryMovies] = useState({});
+  const [loadingTrending, setLoadingTrending] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState({});
   const [likedMovies, setLikedMovies] = useState(new Set());
   const [reviewModals, setReviewModals] = useState({});
   const [lists, setLists] = useState([]);
-  const pageSize = 8;
-  const navigate = useNavigate();
-  const { data: authUser, isLoading: profileLoading } = useGetProfileQuery();
+
+  const { data: authUser } = useGetProfileQuery();
+  const customCategories = getCustomCategories();
 
   // Fetch genres
   useEffect(() => {
@@ -45,164 +34,83 @@ const HomeWrapper = () => {
         setGenres(fetchedGenres || []);
       } catch (error) {
         console.error("Error fetching genres:", error);
-        message.error("Failed to load genres", 2);
+        message.error("Failed to load genres");
       }
     };
     fetchGenres();
   }, []);
 
-  // Fetch user lists
+  // Update lists from profile
   useEffect(() => {
     if (authUser?.lists) {
       setLists(authUser.lists || []);
     }
   }, [authUser]);
 
-  // Fetch trending movies
-  const fetchTrendingMovies = useCallback(async () => {
+  // Fetch Trending Movies (Hero Slider)
+  const fetchTrending = useCallback(async () => {
     setLoadingTrending(true);
     try {
-      const trendingData = await getMoviesFromAPI(
-        "",
-        { sort: "popularity.desc" },
-        currentPage.trending
-      );
-      setTrendingMovies(trendingData.movies || []);
+      const data = await getMoviesFromAPI("", { sort: "popularity.desc" }, 1);
+      setTrendingMovies(data.movies.slice(0, 10));
     } catch (error) {
-      console.error("Error fetching trending movies:", error);
-      message.error("Failed to load trending movies", 2);
+      message.error("Failed to load trending movies");
       setTrendingMovies([]);
     } finally {
       setLoadingTrending(false);
     }
-  }, [currentPage.trending]);
+  }, []);
 
   useEffect(() => {
-    fetchTrendingMovies();
-  }, [fetchTrendingMovies]);
+    fetchTrending();
+  }, [fetchTrending]);
 
-  // Fetch new releases
-  const fetchNewReleases = useCallback(async () => {
-    setLoadingNewReleases(true);
-    try {
-      const newReleaseData = await getMoviesFromAPI(
-        "",
-        { yearRange: [new Date().getFullYear() - 1, new Date().getFullYear()] },
-        currentPage.newReleases
-      );
-      setNewReleases(newReleaseData.movies || []);
-    } catch (error) {
-      console.error("Error fetching new releases:", error);
-      message.error("Failed to load new releases", 2);
-      setNewReleases([]);
-    } finally {
-      setLoadingNewReleases(false);
-    }
-  }, [currentPage.newReleases]);
-
+  // Fetch Custom Categories
   useEffect(() => {
-    fetchNewReleases();
-  }, [fetchNewReleases]);
-
-  // Fetch top-rated movies
-  const fetchTopRatedMovies = useCallback(async () => {
-    setLoadingTopRated(true);
-    try {
-      const topRatedData = await getMoviesFromAPI(
-        "",
-        { sort: "vote_average.desc", voteAverageRange: [7, 10] },
-        currentPage.topRated
-      );
-      setTopRatedMovies(topRatedData.movies || []);
-    } catch (error) {
-      console.error("Error fetching top-rated movies:", error);
-      message.error("Failed to load top-rated movies", 2);
-      setTopRatedMovies([]);
-    } finally {
-      setLoadingTopRated(false);
-    }
-  }, [currentPage.topRated]);
-
-  useEffect(() => {
-    fetchTopRatedMovies();
-  }, [fetchTopRatedMovies]);
-
-  // Fetch movies for selected genres
-  useEffect(() => {
-    const fetchMoviesForGenres = async () => {
-      const newMoviesData = {};
-      const newTotalItems = { ...totalItemsByGenre };
-      const newLoadingMovies = { ...loadingMovies };
+    const fetchAllCategories = async () => {
+      const newLoading = {};
+      const newMovies = {};
 
       await Promise.all(
-        selectedGenres.map(async (genreId) => {
-          newLoadingMovies[genreId] = true;
-          setLoadingMovies({ ...newLoadingMovies });
+        customCategories.map(async ({ key }) => {
+          newLoading[key] = true;
+          setLoadingCategories((prev) => ({ ...prev, [key]: true }));
 
           try {
-            const data = await getMoviesFromAPI(
-              "",
-              { genres: [genreId] },
-              pageByGenre[genreId] || 1
-            );
-            newMoviesData[genreId] = data.movies.slice(0, pageSize);
-            newTotalItems[genreId] = data.totalResults || 100;
+            const data = await getMoviesFromAPI("", { category: key }, 1);
+            newMovies[key] = data.movies.slice(0, 20); // Enough for carousel
           } catch (error) {
-            console.error(`Error fetching movies for genre ${genreId}:`, error);
-            message.error(`Failed to load movies for this genre`, 2);
-            newMoviesData[genreId] = [];
-            newTotalItems[genreId] = 0;
+            console.error(`Error loading ${key}:`, error);
+            newMovies[key] = [];
           } finally {
-            newLoadingMovies[genreId] = false;
-            setLoadingMovies({ ...newLoadingMovies });
+            newLoading[key] = false;
+            setLoadingCategories((prev) => ({ ...prev, [key]: false }));
           }
         })
       );
 
-      setMoviesByGenre(newMoviesData);
-      setTotalItemsByGenre(newTotalItems);
+      setCustomCategoryMovies(newMovies);
     };
 
-    if (selectedGenres.length > 0) {
-      fetchMoviesForGenres();
-    } else {
-      setMoviesByGenre({});
-      setTotalItemsByGenre({});
-    }
-  }, [selectedGenres, pageByGenre]);
-
-  const handleGenreChange = (value) => {
-    setSelectedGenres(value);
-    const newPages = { ...pageByGenre };
-    value.forEach((genreId) => {
-      if (!newPages[genreId]) {
-        newPages[genreId] = 1;
-      }
-    });
-    setPageByGenre(newPages);
-  };
-
-  const handleGenrePageChange = (genreId, page) => {
-    setPageByGenre((prev) => ({ ...prev, [genreId]: page }));
-  };
+    fetchAllCategories();
+  }, []);
 
   const handleToggleLike = (movie) => () => {
     setLikedMovies((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(movie.id)) {
         newSet.delete(movie.id);
-        message.info(`Removed ${movie.title} from favorites`, 2);
+        message.info(`Removed ${movie.title} from favorites`);
       } else {
         newSet.add(movie.id);
-        message.info(`Added ${movie.title} to favorites`, 2);
+        message.info(`Added ${movie.title} to favorites`);
       }
       return newSet;
     });
   };
 
   const handleAddToList = (movie, listId) => {
-    message.info(`Added ${movie.title} to list`, 2);
-    // Implement API call to add movie to list if needed
+    message.info(`Added ${movie.title} to your list`);
   };
 
   const handleReviewClick = (movie) => () => {
@@ -213,193 +121,156 @@ const HomeWrapper = () => {
     setReviewModals((prev) => ({ ...prev, [movie.id]: false }));
   };
 
-  const renderMovieCard = (movie, index) => {
-    if (!movie?.id || !movie?.title) return null;
+  const renderMovieCard = (movie) => {
+    if (!movie?.id) return null;
     return (
-      <MovieCard
-        key={movie.id}
-        movie={{
-          ...movie,
-          isNew: movie.release_date
-            ? new Date(movie.release_date).getFullYear() ===
-              new Date().getFullYear()
-            : false,
-          isLiked: likedMovies.has(movie.id),
-          showReviewModal: reviewModals[movie.id] || false,
-        }}
-        lists={lists}
-        profile={authUser}
-        isGridView={true}
-        handleToggleLike={handleToggleLike}
-        handleAddToList={handleAddToList}
-        handleReviewClick={handleReviewClick}
-        handleModalClose={handleModalClose}
-      />
+      <SwiperSlide key={movie.id}>
+        <MovieCard
+          movie={{
+            ...movie,
+            isLiked: likedMovies.has(movie.id),
+            showReviewModal: reviewModals[movie.id] || false,
+          }}
+          lists={lists}
+          profile={authUser}
+          isGridView={false}
+          handleToggleLike={handleToggleLike}
+          handleAddToList={handleAddToList}
+          handleReviewClick={handleReviewClick}
+          handleModalClose={handleModalClose}
+        />
+      </SwiperSlide>
+    );
+  };
+
+  const renderSection = (key, label) => {
+    const movies = customCategoryMovies[key] || [];
+    const loading = loadingCategories[key];
+
+    return (
+      <section className="mn-section p-tb-30" key={key}>
+        <div className="mn-title mb-4">
+          <h2>
+            {label} <span></span>
+          </h2>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : movies.length === 0 ? (
+          <p className="text-center text-muted py-5">
+            No movies found in this category.
+          </p>
+        ) : (
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            navigation
+            autoplay={{ delay: 5000, disableOnInteraction: false }}
+            loop={movies.length > 4}
+            slidesPerView={2}
+            spaceBetween={20}
+            breakpoints={{
+              576: { slidesPerView: 3 },
+              768: { slidesPerView: 4 },
+              992: { slidesPerView: 5 },
+              1200: { slidesPerView: 6 },
+            }}
+          >
+            {movies.map(renderMovieCard)}
+          </Swiper>
+        )}
+      </section>
     );
   };
 
   return (
-    <div className="row">
-      <div className="col-xxl-12">
-        {/* Hero Section */}
-        <section className="mn-hero m-b-15">
-          {loadingTrending ? (
-            <div className="text-center">
-              <div className="spinner-border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : !Array.isArray(trendingMovies) || trendingMovies.length === 0 ? (
-            <p className="text-center text-muted">
-              No trending movies available.
-            </p>
-          ) : (
-            <Swiper
-              modules={[Navigation, Autoplay]}
-              navigation
-              autoplay={{ delay: 3000 }}
-              loop
-            >
-              {trendingMovies.slice(0, 5).map((movie) =>
-                movie?.id && movie?.title && movie?.posterUrl ? (
-                  <SwiperSlide key={movie.id}>
-                    <div
-                      className="mn-hero-slide"
-                      style={{
-                        backgroundImage: `url(${
-                          movie.backdrop_path
-                            ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
-                            : movie.posterUrl
-                        })`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        minHeight: "300px",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <div className="mn-hero-detail">
-                        <p className="label">
-                          <span>{movie.rating.toFixed(1)} / 10</span>
-                        </p>
-                        <h1>{movie.title}</h1>
-                        <p>
-                          {movie.overview?.slice(0, 100) ||
-                            "No description available"}
-                          ...
-                        </p>
-                        <Link to={`/movies/${movie.id}`} className="mn-btn-2">
-                          <span>Watch Now</span>
-                        </Link>
-                      </div>
+    <div className="home-page">
+      {/* Hero Slider */}
+      <section className="mn-hero mb-5 position-relative">
+        {loadingTrending ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-light" role="status" />
+          </div>
+        ) : trendingMovies.length === 0 ? (
+          <div className="text-center py-5 text-white">
+            <h3>No trending movies available</h3>
+          </div>
+        ) : (
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            navigation
+            autoplay={{ delay: 4000 }}
+            loop
+            className="hero-swiper"
+          >
+            {trendingMovies.slice(0, 6).map((movie) => (
+              <SwiperSlide key={movie.id}>
+                <div
+                  className="hero-slide"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url(${
+                      movie.backdrop_path
+                        ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+                        : movie.posterUrl
+                    })`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    minHeight: "70vh",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <div className="container">
+                    <div className="hero-content text-white">
+                      <p className="badge bg-warning text-dark mb-2">
+                        ★ {movie.rating?.toFixed(1)} / 10
+                      </p>
+                      <h1 className="display-4 fw-bold mb-3">{movie.title}</h1>
+                      <p className="lead mb-4" style={{ maxWidth: "600px" }}>
+                        {movie.overview || "No overview available."}
+                      </p>
+                      <Link
+                        to={`/movies/${movie.id}`}
+                        className="btn btn-danger btn-lg"
+                      >
+                        Watch Now
+                      </Link>
                     </div>
-                  </SwiperSlide>
-                ) : null
-              )}
-            </Swiper>
-          )}
-          <Pagination
-            totalItems={trendingMovies.length}
-            itemsPerPage={pageSize}
-            onPageChange={(page) =>
-              setCurrentPage({ ...currentPage, trending: page })
-            }
-            currentPage={currentPage.trending}
-          />
-        </section>
-
-        {/* New Releases */}
-        <section className="mn-new-product p-tb-15">
-          <div className="mn-title">
-            <h2>
-              New <span>Releases</span>
-            </h2>
-          </div>
-          {loadingNewReleases ? (
-            <div className="text-center">
-              <div className="spinner-border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : !Array.isArray(newReleases) || newReleases.length === 0 ? (
-            <p className="text-center text-muted">No new releases available.</p>
-          ) : (
-            <div className="row">{newReleases.map(renderMovieCard)}</div>
-          )}
-          <Pagination
-            totalItems={newReleases.length}
-            itemsPerPage={pageSize}
-            onPageChange={(page) =>
-              setCurrentPage({ ...currentPage, newReleases: page })
-            }
-            currentPage={currentPage.newReleases}
-          />
-        </section>
-
-        {/* Top Rated */}
-        <section className="mn-new-product p-tb-15">
-          <div className="mn-title">
-            <h2>
-              Top <span>Rated</span>
-            </h2>
-          </div>
-          {loadingTopRated ? (
-            <div className="text-center">
-              <div className="spinner-border" role="status">
-                <span className="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          ) : !Array.isArray(topRatedMovies) || topRatedMovies.length === 0 ? (
-            <p className="text-center text-muted">
-              No top-rated movies available.
-            </p>
-          ) : (
-            <div className="row">{topRatedMovies.map(renderMovieCard)}</div>
-          )}
-          <Pagination
-            totalItems={topRatedMovies.length}
-            itemsPerPage={pageSize}
-            onPageChange={(page) =>
-              setCurrentPage({ ...currentPage, topRated: page })
-            }
-            currentPage={currentPage.topRated}
-          />
-        </section>
-
-        {/* Selected Genres */}
-        {selectedGenres.map((genreId) => {
-          const genre = genres.find((g) => g.id === genreId);
-          return (
-            <section key={genreId} className="mn-new-product p-tb-15">
-              <div className="mn-title">
-                <h2>
-                  {genre?.name || "Unknown Genre"} <span>Movies</span>
-                </h2>
-              </div>
-              {loadingMovies[genreId] ? (
-                <div className="text-center">
-                  <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
-              ) : !Array.isArray(moviesByGenre[genreId]) ||
-                moviesByGenre[genreId].length === 0 ? (
-                <p className="text-center text-muted">
-                  No movies available for this genre.
-                </p>
-              ) : (
-                <div className="row">
-                  {moviesByGenre[genreId].map(renderMovieCard)}
-                </div>
-              )}
-              <Pagination
-                totalItems={totalItemsByGenre[genreId] || 0}
-                itemsPerPage={pageSize}
-                onPageChange={(page) => handleGenrePageChange(genreId, page)}
-                currentPage={pageByGenre[genreId] || 1}
-              />
-            </section>
-          );
-        })}
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        )}
+      </section>
+
+      <div className="container">
+        {/* Custom Categories */}
+        {customCategories.map(({ key, label }) => renderSection(key, label))}
+
+        {/* Optional: Genre Filter Tags (Uncomment if you want user-selectable genres) */}
+        {/* 
+        <section className="mn-section p-tb-30">
+          <div className="mn-title mb-4">
+            <h2>Browse by Genre</h2>
+          </div>
+          <div className="d-flex flex-wrap gap-2">
+            {genres.map((genre) => (
+              <button
+                key={genre.id}
+                className="btn btn-outline-primary btn-sm"
+                onClick={() => handleGenreSelect(genre.id)}
+              >
+                {genre.name}
+              </button>
+            ))}
+          </div>
+        </section>
+        */}
       </div>
     </div>
   );

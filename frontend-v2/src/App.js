@@ -12,8 +12,6 @@ function App() {
     "/forgot-password",
   ].includes(location.pathname);
 
-  const token = localStorage.getItem("token");
-  console.log(token);
   // Protected route component
 
   return (
@@ -22,8 +20,6 @@ function App() {
       <div class="mn-main-content">
         <Router />
       </div>
-
-      <Footer />
     </main>
   );
 }

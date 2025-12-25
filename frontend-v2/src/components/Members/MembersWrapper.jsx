@@ -1,390 +1,447 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  List,
   Card,
+  Avatar,
   Typography,
   Rate,
-  Spin,
-  message,
-  Avatar,
-  Row,
-  Col,
   Input,
   Select,
   Button,
   Space,
   Tag,
-  Dropdown,
-  Menu,
-  Badge,
   Tooltip,
   Pagination,
+  Row,
+  Col,
+  List,
+  Badge,
+  Empty,
+  Spin,
 } from "antd";
-import { Link, useNavigate } from "react-router-dom";
 import {
   UserAddOutlined,
   UserDeleteOutlined,
   MessageOutlined,
   FlagOutlined,
-  StarOutlined,
-  VideoCameraOutlined,
+  StarFilled,
+  FireOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
-import "./members.css";
+
 import { useGetAllUsersQuery } from "../../actions/userApi";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 const { Search } = Input;
 
 const MembersWrapper = () => {
   const navigate = useNavigate();
   const { data: members = [], isLoading, isError } = useGetAllUsersQuery();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("joined");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [followedUsers, setFollowedUsers] = useState(new Set());
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12; // Number of members per page
 
-  const roles = [
-    { value: "all", label: "All" },
-    { value: "creator", label: "Creator" },
-    { value: "moderator", label: "Moderator" },
-    { value: "member", label: "Member" },
-  ];
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("activity");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
+
+  const [followedUsers, setFollowedUsers] = useState(new Set());
+
+  const handleFollow = (userId) => {
+    setFollowedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  // Filtered & Sorted Members
+  const filteredAndSortedMembers = useMemo(() => {
+    let filtered = members;
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (user) =>
+          user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.bio?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Role filter
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((user) => user.role === roleFilter);
+    }
+
+    // Sort
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "activity":
+          return (b.postCount || 0) - (a.postCount || 0);
+        case "joined":
+          return new Date(b.joinedAt) - new Date(a.joinedAt);
+        case "rating":
+          return (b.rating || 0) - (a.rating || 0);
+        case "favorites":
+          return (
+            (b.favoriteMovies?.length || 0) - (a.favoriteMovies?.length || 0)
+          );
+        default:
+          return 0;
+      }
+    });
+  }, [members, searchQuery, roleFilter, sortBy]);
+
+  // Top Contributors (most posts)
+  const topContributors = useMemo(() => {
+    return [...members]
+      .sort((a, b) => (b.postCount || 0) - (a.postCount || 0))
+      .slice(0, 6);
+  }, [members]);
+
+  // Pagination
+  const paginatedMembers = useMemo(() => {
+    return filteredAndSortedMembers.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+  }, [filteredAndSortedMembers, currentPage]);
+
+  const totalMembers = filteredAndSortedMembers.length;
+
+  // Get shared favorite movie match (simple mock)
+  const getSharedMovieMatch = (user) => {
+    // In real app: compare with current user's favorites
+    if (user.favoriteMovies?.length > 0) {
+      return user.favoriteMovies[0];
+    }
+    return "None yet";
+  };
 
   if (isLoading) {
     return (
-      <div className="members-loading">
-        <Spin size="large" />
+      <div className="text-center py-8">
+        <Spin size="large" tip="Loading community members..." />
       </div>
     );
   }
 
-  if (isError) {
-    message.error("Failed to load members.");
-    return <div className="members-error">Failed to load members.</div>;
+  if (isError || members.length === 0) {
+    return (
+      <Empty
+        description="No members found or failed to load"
+        className="py-8"
+      />
+    );
   }
 
-  const handleFollow = (userId) => {
-    const newFollowed = new Set(followedUsers);
-    if (newFollowed.has(userId)) {
-      newFollowed.delete(userId);
-      message.success("Unfollowed user");
-    } else {
-      newFollowed.add(userId);
-      message.success("Followed user");
-    }
-    setFollowedUsers(newFollowed);
-  };
-
-  const handleMessage = (userId) => {
-    message.info("Opening chat with user");
-    console.log("Messaging user:", userId);
-  };
-
-  const handleReport = (userId) => {
-    message.info("User reported");
-    console.log("Reporting user:", userId);
-  };
-
-  const filteredMembers = members
-    .filter((user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .filter((user) => roleFilter === "all" || user.role === roleFilter);
-
-  const sortedMembers = [...filteredMembers].sort((a, b) => {
-    if (sortBy === "joined") return new Date(b.joinedAt) - new Date(a.joinedAt);
-    if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-    if (sortBy === "activity") return (b.postCount || 0) - (a.postCount || 0);
-    return 0;
-  });
-
-  const topContributors = sortedMembers
-    .filter((user) => (user.postCount || 0) > 5)
-    .slice(0, 5);
-
-  // Pagination logic
-  const totalMembers = sortedMembers.length;
-  const paginatedMembers = sortedMembers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  // Mock movie match logic (replace with actual API logic if available)
-  const getMovieMatch = (user) => {
-    const matches = members.filter(
-      (other) =>
-        other._id !== user._id &&
-        user.favoriteMovies?.some((movie) =>
-          other.favoriteMovies?.includes(movie)
-        )
-    );
-    return matches.length > 0 ? matches[0].username : "No matches yet";
-  };
-
-  const dropdownMenu = (user) => (
-    <Menu className="members-dropdown-menu">
-      <Menu.Item key="message" onClick={() => handleMessage(user._id)}>
-        <MessageOutlined /> Message
-      </Menu.Item>
-      <Menu.Item key="report" onClick={() => handleReport(user._id)}>
-        <FlagOutlined /> Report
-      </Menu.Item>
-    </Menu>
-  );
-
   return (
-    <section className="members-page" aria-label="Community members">
-      <Row className="members-container">
-        <Col xs={24} md={6} className="members-sidebar">
-          <Card
-            title="Community Stats"
-            className="members-sidebar-card"
-            aria-label="Community statistics"
-          >
-            <Space direction="vertical" className="members-stats-list">
-              <Text>Total Members: {members.length}</Text>
-              <Text>
-                Active Users: {members.filter((u) => u.postCount > 0).length}
-              </Text>
-              <Text>Top Contributors: {topContributors.length}</Text>
-            </Space>
-          </Card>
-          <Card
-            title="Top Contributors"
-            className="members-sidebar-card"
-            aria-label="Top contributors"
-          >
-            <List
-              dataSource={topContributors}
-              renderItem={(user) => (
-                <List.Item
-                  className="members-contributor-item"
-                  actions={[
-                    <Button
-                      key="follow"
-                      size="small"
-                      type={followedUsers.has(user._id) ? "default" : "primary"}
-                      onClick={() => handleFollow(user._id)}
-                      className="members-follow-button"
-                      aria-label={
-                        followedUsers.has(user._id)
-                          ? `Unfollow ${user.username}`
-                          : `Follow ${user.username}`
-                      }
-                    >
-                      {followedUsers.has(user._id) ? "Unfollow" : "Follow"}
-                    </Button>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        src={
-                          user.avatar ||
-                          `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
+    <div className="members-page container py-5">
+      <Row gutter={[32, 32]}>
+        {/* Sidebar */}
+        <Col xs={24} lg={6}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            {/* Community Stats */}
+            <Card
+              title={
+                <Title level={4} className="mb-0">
+                  Community Stats
+                </Title>
+              }
+              bordered={false}
+              style={{ borderRadius: 16 }}
+            >
+              <Space
+                direction="vertical"
+                size="middle"
+                style={{ width: "100%" }}
+              >
+                <div className="d-flex justify-content-between">
+                  <Text type="secondary">Total Members</Text>
+                  <Text strong>{members.length}</Text>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <Text type="secondary">Active This Month</Text>
+                  <Text strong>
+                    {members.filter((u) => u.postCount > 0).length}
+                  </Text>
+                </div>
+                <div className="d-flex justify-content-between">
+                  <Text type="secondary">Total Posts</Text>
+                  <Text strong>
+                    {members.reduce((sum, u) => sum + (u.postCount || 0), 0)}
+                  </Text>
+                </div>
+              </Space>
+            </Card>
+
+            {/* Top Contributors */}
+            <Card
+              title={
+                <Title level={4} className="mb-0">
+                  <FireOutlined /> Top Contributors
+                </Title>
+              }
+              bordered={false}
+              style={{ borderRadius: 16 }}
+            >
+              <List
+                dataSource={topContributors}
+                renderItem={(user) => (
+                  <List.Item
+                    actions={[
+                      <Button
+                        size="small"
+                        type={
+                          followedUsers.has(user._id) ? "default" : "primary"
                         }
-                        alt={`Avatar of ${user.username}`}
-                      />
-                    }
-                    title={
-                      <Link
-                        to={`/u/${user._id}`}
-                        className="members-contributor-link"
+                        icon={
+                          followedUsers.has(user._id) ? (
+                            <UserDeleteOutlined />
+                          ) : (
+                            <UserAddOutlined />
+                          )
+                        }
+                        onClick={() => handleFollow(user._id)}
                       >
-                        {user.username}
-                      </Link>
-                    }
-                    description={
-                      <Text ellipsis className="members-contributor-bio">
-                        {user.bio || "No bio provided"} (Posts: {user.postCount}
-                        )
-                      </Text>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
+                        {followedUsers.has(user._id) ? "Unfollow" : "Follow"}
+                      </Button>,
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar
+                          src={user.avatar}
+                          size={48}
+                          style={{
+                            border: "3px solid #fff",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                          }}
+                        />
+                      }
+                      title={
+                        <Link
+                          to={`/u/${user._id}`}
+                          className="text-dark fw-bold"
+                        >
+                          {user.username}
+                        </Link>
+                      }
+                      description={
+                        <Space size="small">
+                          <Text type="secondary">{user.postCount} posts</Text>
+                          {user.role && (
+                            <Tag color="volcano" bordered={false}>
+                              {user.role}
+                            </Tag>
+                          )}
+                        </Space>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </Card>
+          </Space>
         </Col>
-        <Col xs={24} md={18} className="members-main">
-          <div className="members-header">
-            <Title level={2} className="members-title">
+
+        {/* Main Content */}
+        <Col xs={24} lg={18}>
+          {/* Header & Filters */}
+          <div className="mb-5">
+            <Title level={1} className="mb-2">
               Community Members
             </Title>
-            <Space className="members-filters" wrap>
+            <Text type="secondary" style={{ fontSize: "1.1rem" }}>
+              Connect with fellow cinephiles • {totalMembers} member
+              {totalMembers !== 1 ? "s" : ""} found
+            </Text>
+
+            <Space className="mt-4 w-100" size="middle" wrap>
               <Search
-                placeholder="Search members by username"
+                placeholder="Search by username or bio..."
+                allowClear
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="members-search"
-                aria-label="Search members by username"
-                enterButton={<Button type="primary">Search</Button>}
+                style={{ width: 300 }}
+                size="large"
               />
               <Select
                 defaultValue="all"
                 onChange={setRoleFilter}
-                className="members-select"
-                aria-label="Filter by role"
+                style={{ width: 180 }}
+                size="large"
               >
-                {roles.map((role) => (
-                  <Option key={role.value} value={role.value}>
-                    {role.label}
-                  </Option>
-                ))}
+                <Select.Option value="all">All Roles</Select.Option>
+                <Select.Option value="creator">Creators</Select.Option>
+                <Select.Option value="moderator">Moderators</Select.Option>
+                <Select.Option value="member">Members</Select.Option>
               </Select>
               <Select
-                defaultValue="joined"
+                defaultValue="activity"
                 onChange={setSortBy}
-                className="members-select"
-                aria-label="Sort members"
+                style={{ width: 200 }}
+                size="large"
               >
-                <Option value="joined">Recently Joined</Option>
-                <Option value="rating">Highest Rated</Option>
-                <Option value="activity">Most Active</Option>
+                <Select.Option value="activity">
+                  <FireOutlined /> Most Active
+                </Select.Option>
+                <Select.Option value="joined">
+                  <ClockCircleOutlined /> Recently Joined
+                </Select.Option>
+                <Select.Option value="rating">
+                  <StarFilled /> Highest Rated
+                </Select.Option>
+                <Select.Option value="favorites">Most Favorites</Select.Option>
               </Select>
             </Space>
           </div>
-          <div className="members-grid">
-            {paginatedMembers.length > 0 ? (
-              paginatedMembers.map((user) => (
-                <Tooltip
-                  key={user._id}
-                  title={
-                    <div className="members-tooltip">
-                      <Text strong>{user.username}</Text>
-                      <Text>{user.bio || "No bio provided"}</Text>
-                      <Text>
-                        Favorite Movies:{" "}
-                        {user.favoriteMovies?.join(", ") || "None"}
-                      </Text>
-                      <Text>Movie Match: {getMovieMatch(user)}</Text>
-                    </div>
-                  }
-                  placement="right"
-                >
-                  <Card
-                    className="member-card"
-                    onClick={() => navigate(`/u/${user._id}`)}
-                  >
-                    <div className="member-card-content">
-                      <Badge
-                        count={
-                          user.role === "creator" ? (
-                            <StarOutlined style={{ color: "#fadb14" }} />
-                          ) : (
-                            0
-                          )
-                        }
-                        offset={[-10, 10]}
-                      >
+
+          {/* Members Grid */}
+          {paginatedMembers.length === 0 ? (
+            <Empty description="No members match your filters" />
+          ) : (
+            <>
+              <Row gutter={[24, 24]}>
+                {paginatedMembers.map((user) => (
+                  <Col xs={24} sm={12} lg={12} xl={8} key={user._id}>
+                    <Card
+                      hoverable
+                      className="member-card h-100"
+                      style={{ borderRadius: 16 }}
+                      onClick={() => navigate(`/u/${user._id}`)}
+                    >
+                      <div className="d-flex gap-4">
                         <Avatar
-                          src={
-                            user.avatar ||
-                            `https://api.dicebear.com/7.x/miniavs/svg?seed=${user.username}`
-                          }
-                          alt={`Avatar of ${user.username}`}
-                          size={48}
-                          className="member-avatar"
-                        />
-                      </Badge>
-                      <div className="member-info">
-                        <Text strong className="member-username">
-                          {user.username}
-                          {user.role && (
-                            <Tag
-                              className="member-role-tag"
-                              color={
-                                user.role === "creator"
-                                  ? "gold"
-                                  : user.role === "moderator"
-                                  ? "blue"
-                                  : "green"
-                              }
-                            >
-                              {user.role.charAt(0).toUpperCase() +
-                                user.role.slice(1)}
-                            </Tag>
-                          )}
-                        </Text>
-                        <Text className="member-bio" ellipsis>
-                          {user.bio || "No bio provided"}
-                        </Text>
-                        <Space className="member-stats">
-                          <Rate
-                            disabled
-                            allowHalf
-                            value={user.rating || 0}
-                            className="member-rating"
-                          />
-                          <Text>
-                            <VideoCameraOutlined />{" "}
-                            {user.favoriteMovies?.length || 0}
-                          </Text>
-                          <Text>Posts: {user.postCount || 0}</Text>
-                        </Space>
-                      </div>
-                      <div className="member-actions">
-                        <Button
-                          type={
-                            followedUsers.has(user._id) ? "default" : "primary"
-                          }
-                          icon={
-                            followedUsers.has(user._id) ? (
-                              <UserDeleteOutlined />
-                            ) : (
-                              <UserAddOutlined />
-                            )
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleFollow(user._id);
+                          src={user.avatar}
+                          size={80}
+                          className="flex-shrink-0"
+                          style={{
+                            border: "4px solid #fff",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                           }}
-                          aria-label={
-                            followedUsers.has(user._id)
-                              ? `Unfollow ${user.username}`
-                              : `Follow ${user.username}`
-                          }
                         />
-                        <Dropdown
-                          overlay={dropdownMenu(user)}
-                          trigger={["click"]}
-                          overlayClassName="members-dropdown"
-                        >
-                          <Button
-                            onClick={(e) => e.stopPropagation()}
-                            aria-label="More actions"
+
+                        <div className="flex-grow-1">
+                          <Space
+                            align="start"
+                            className="w-100 justify-content-between"
                           >
-                            ...
-                          </Button>
-                        </Dropdown>
+                            <div>
+                              <Title level={4} className="mb-1">
+                                {user.username}
+                                {user.role && (
+                                  <Tag
+                                    color={
+                                      user.role === "creator"
+                                        ? "gold"
+                                        : user.role === "moderator"
+                                        ? "blue"
+                                        : "green"
+                                    }
+                                    className="ms-2"
+                                  >
+                                    {user.role}
+                                  </Tag>
+                                )}
+                              </Title>
+                              <Text type="secondary" className="d-block mb-2">
+                                {user.bio || "No bio yet"}
+                              </Text>
+
+                              <Space size="large" className="mb-3">
+                                <Tooltip title="Posts">
+                                  <Space>
+                                    <FireOutlined />
+                                    <Text strong>{user.postCount || 0}</Text>
+                                  </Space>
+                                </Tooltip>
+                                <Tooltip title="Favorite Movies">
+                                  <Space>
+                                    <StarFilled style={{ color: "#fadb14" }} />
+                                    <Text strong>
+                                      {user.favoriteMovies?.length || 0}
+                                    </Text>
+                                  </Space>
+                                </Tooltip>
+                                <Tooltip title="Rating">
+                                  <Rate
+                                    disabled
+                                    allowHalf
+                                    value={user.rating || 0}
+                                    style={{ fontSize: 16 }}
+                                  />
+                                </Tooltip>
+                              </Space>
+
+                              <Text type="secondary" className="d-block">
+                                Shared favorite:{" "}
+                                <strong>{getSharedMovieMatch(user)}</strong>
+                              </Text>
+                            </div>
+
+                            <Space direction="vertical" size="small">
+                              <Button
+                                type={
+                                  followedUsers.has(user._id)
+                                    ? "default"
+                                    : "primary"
+                                }
+                                icon={
+                                  followedUsers.has(user._id) ? (
+                                    <UserDeleteOutlined />
+                                  ) : (
+                                    <UserAddOutlined />
+                                  )
+                                }
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleFollow(user._id);
+                                }}
+                              >
+                                {followedUsers.has(user._id)
+                                  ? "Unfollow"
+                                  : "Follow"}
+                              </Button>
+
+                              <Button
+                                icon={<MessageOutlined />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/messages/${user._id}`);
+                                }}
+                              >
+                                Message
+                              </Button>
+                            </Space>
+                          </Space>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                </Tooltip>
-              ))
-            ) : (
-              <Text className="members-empty-text">
-                No members found matching your criteria.
-              </Text>
-            )}
-          </div>
-          {totalMembers > pageSize && (
-            <div className="members-pagination">
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={totalMembers}
-                onChange={(page) => setCurrentPage(page)}
-                showSizeChanger={false}
-                aria-label="Pagination for community members"
-              />
-            </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+
+              {/* Pagination */}
+              {totalMembers > pageSize && (
+                <div className="text-center mt-5">
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={totalMembers}
+                    onChange={setCurrentPage}
+                    showSizeChanger={false}
+                    showQuickJumper
+                  />
+                </div>
+              )}
+            </>
           )}
         </Col>
       </Row>
-    </section>
+    </div>
   );
 };
 

@@ -1,880 +1,487 @@
 import React, { useState, useEffect } from "react";
-import { message } from "antd";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import {
+  message,
+  Avatar,
+  Tabs,
+  List,
+  Card,
+  Button,
+  Space,
+  Tag,
+  Modal,
+  Upload,
+  Input,
+  Empty,
+  Spin,
+  Badge,
+} from "antd";
+import {
+  UploadOutlined,
+  EditOutlined,
+  MessageOutlined,
+  ShareAltOutlined,
+  FlagOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import ImgCrop from "antd-img-crop";
+
 import {
   useGetProfileQuery,
   useFollowUserMutation,
   useGetUserByIdQuery,
   useGetUserReviewsQuery,
-  useGetUserRequestsQuery,
   useUpdateProfileMutation,
 } from "../../actions/userApi";
 import { useGetListsByUserIdQuery } from "../../actions/listApi";
+
 import Pagination from "../Common/Pagination";
-import "./profile.css"; // Updated styles to match cart page aesthetic
+import MovieCard from "../Films/MovieCard";
+
+const { TabPane } = Tabs;
+const { TextArea } = Input;
 
 const ProfileWrapper = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const {
-    data: authUser,
-    isLoading: authLoading,
-    error: authError,
-  } = useGetProfileQuery();
+  const userId = id === "me" ? undefined : id;
+
+  const { data: authUser } = useGetProfileQuery();
+  const { data: profileUser, isLoading: loadingUser } = useGetUserByIdQuery(
+    userId || authUser?._id,
+    { skip: !authUser && !userId }
+  );
+  const { data: lists = [], isLoading: loadingLists } =
+    useGetListsByUserIdQuery(profileUser?._id, { skip: !profileUser?._id });
+  const { data: reviews = [], isLoading: loadingReviews } =
+    useGetUserReviewsQuery(profileUser?._id, { skip: !profileUser?._id });
+
   const [followUser] = useFollowUserMutation();
   const [updateProfile] = useUpdateProfileMutation();
+
   const [isOwnProfile, setIsOwnProfile] = useState(false);
-  const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [suggestModalOpen, setSuggestModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
+
   const [formData, setFormData] = useState({
     bio: "",
     favoriteMovies: "",
     favoriteGenres: "",
   });
-  const [fileList, setFileList] = useState([]);
-  const [activeTab, setActiveTab] = useState("lists");
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
-
-  const {
-    data: userData,
-    isLoading: userLoading,
-    error: userError,
-  } = useGetUserByIdQuery(id === "me" ? authUser?._id : id, {
-    skip: !authUser?._id || !id,
-  });
-
-  const {
-    data: lists = [],
-    isLoading: listsLoading,
-    error: listsError,
-  } = useGetListsByUserIdQuery(id === "me" ? authUser?._id : id, {
-    skip: !userData?._id,
-  });
-
-  const {
-    data: reviews = [],
-    isLoading: reviewsLoading,
-    error: reviewsError,
-  } = useGetUserReviewsQuery(id === "me" ? authUser?._id : id, {
-    skip: !userData?._id,
-  });
-
-  const {
-    data: movieRequests = [],
-    isLoading: requestsLoading,
-    error: requestsError,
-  } = useGetUserRequestsQuery(authUser?._id, {
-    skip: !isOwnProfile || !authUser?._id,
-  });
+  const [avatarFile, setAvatarFile] = useState(null);
 
   useEffect(() => {
-    if (!authLoading && authUser) {
-      setIsOwnProfile(id === "me" || id === authUser._id);
-      setIsFollowing(userData?.followers?.includes(authUser._id) || false);
+    if (authUser && profileUser) {
+      const own = id === "me" || authUser._id === profileUser._id;
+      setIsOwnProfile(own);
+      setIsFollowing(profileUser.followers?.includes(authUser._id));
       setFormData({
-        bio: userData?.bio || "",
-        favoriteMovies: userData?.favoriteMovies?.join("\n") || "",
-        favoriteGenres: userData?.favoriteGenres?.join("\n") || "",
+        bio: profileUser.bio || "",
+        favoriteMovies: profileUser.favoriteMovies?.join("\n") || "",
+        favoriteGenres: profileUser.favoriteGenres?.join("\n") || "",
       });
     }
-  }, [id, authUser, authLoading, userData]);
+  }, [authUser, profileUser, id]);
 
   const handleFollow = async () => {
     try {
-      await followUser(userData._id).unwrap();
+      await followUser(profileUser._id).unwrap();
       setIsFollowing(!isFollowing);
-      message.success(isFollowing ? "Unfollowed user" : "Followed user", 2);
-    } catch (err) {
-      message.error("Failed to follow/unfollow user", 2);
+      message.success(isFollowing ? "Unfollowed" : "Now following!");
+    } catch {
+      message.error("Failed to update follow status");
     }
   };
 
-  const handleEditProfile = async (e) => {
-    e.preventDefault();
+  const handleUpdateProfile = async () => {
     try {
-      const profileData = {
-        ...formData,
-        avatar: fileList.length > 0 ? fileList[0].url : userData?.avatar,
-        favoriteMovies: formData.favoriteMovies
-          ? formData.favoriteMovies.split("\n").filter((m) => m.trim())
-          : [],
-        favoriteGenres: formData.favoriteGenres
-          ? formData.favoriteGenres.split("\n").filter((g) => g.trim())
-          : [],
-      };
-      await updateProfile(profileData).unwrap();
-      setIsEditModalOpen(false);
-      setFileList([]);
-      message.success("Profile updated successfully", 2);
-    } catch (error) {
-      message.error("Failed to update profile", 2);
+      const data = new FormData();
+      data.append("bio", formData.bio);
+      data.append(
+        "favoriteMovies",
+        JSON.stringify(formData.favoriteMovies.split("\n").filter(Boolean))
+      );
+      data.append(
+        "favoriteGenres",
+        JSON.stringify(formData.favoriteGenres.split("\n").filter(Boolean))
+      );
+      if (avatarFile) data.append("avatar", avatarFile);
+
+      await updateProfile(data).unwrap();
+      message.success("Profile updated successfully!");
+      setEditModalOpen(false);
+      setAvatarFile(null);
+    } catch {
+      message.error("Failed to update profile");
     }
   };
 
-  const handleMessage = () => {
-    message.info("Opening chat with user", 2);
-    navigate(`/messages/${userData._id}`);
-  };
+  const paginatedData = (data) =>
+    data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  const handleReport = () => {
-    message.info("Profile reported", 2);
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    message.info("Profile link copied!", 2);
-  };
-
-  const handleSuggestMovie = async (movieData) => {
-    message.success(`Suggested ${movieData.title} to ${userData.username}`, 2);
-    setIsSuggestModalOpen(false);
-  };
-
-  const uploadProps = {
-    onRemove: () => setFileList([]),
-    beforeUpload: (file) => {
-      setFileList([{ ...file, url: URL.createObjectURL(file) }]);
-      return false;
-    },
-    fileList,
-  };
-
-  const paginatedLists = lists.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const paginatedReviews = reviews.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-  const paginatedRequests = movieRequests.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  if (
-    authLoading ||
-    userLoading ||
-    listsLoading ||
-    reviewsLoading ||
-    requestsLoading
-  ) {
+  if (loadingUser || loadingLists || loadingReviews) {
     return (
-      <div className="text-center my-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+      <div className="text-center py-8">
+        <Spin size="large" />
       </div>
     );
   }
 
-  if (authError || userError || listsError || reviewsError || requestsError) {
-    return (
-      <div className="alert alert-danger text-center my-5" role="alert">
-        Error: {authError?.message || userError?.message || "An error occurred"}
-      </div>
-    );
+  if (!profileUser) {
+    return <Empty description="User not found" className="py-8" />;
   }
 
   return (
-    <div className="mn-main-content">
-      {/* Profile Section */}
-      <section className="mn-profile-section p-b-15">
-        <div className="row">
-          {/* Main Profile Content */}
-          <div className="mn-profile-leftside col-lg-8 col-md-12">
-            <div className="mn-profile-content">
-              <div className="mn-profile-inner">
-                {/* Profile Header */}
-                <div className="card">
-                  <img
-                    src={
-                      userData?.coverImage ||
-                      "https://via.placeholder.com/800x200"
-                    }
-                    className="card-img-top"
-                    alt={`Cover image for ${userData?.username}`}
+    <div className="profile-page container py-5">
+      {/* Cover + Avatar Header */}
+      <div className="profile-header rounded-3 overflow-hidden shadow-lg mb-5 position-relative">
+        <div
+          className="cover-image"
+          style={{
+            height: "300px",
+            backgroundImage: `url(${
+              profileUser.coverImage ||
+              "https://via.placeholder.com/1200x300?text=Cover+Image"
+            })`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <div
+          className="position-absolute bottom-0 start-0 end-0 bg-gradient"
+          style={{ height: "150px" }}
+        />
+
+        <div
+          className="container position-relative"
+          style={{ marginTop: "-80px" }}
+        >
+          <div className="d-flex flex-column flex-md-row align-items-center align-items-md-end gap-4 pb-4">
+            <Avatar
+              size={160}
+              src={profileUser.avatar}
+              icon={<UserOutlined />}
+              className="border border-4 border-dark shadow"
+            />
+            <div className="text-center text-md-start text-white flex-grow-1">
+              <h1 className="mb-1">
+                {profileUser.username}
+                {profileUser.role && (
+                  <Badge
+                    count={profileUser.role.toUpperCase()}
+                    style={{ backgroundColor: "#e50914", marginLeft: 12 }}
                   />
-                  <div className="card-body text-center">
-                    <img
-                      src={
-                        userData?.avatar || "https://via.placeholder.com/120"
-                      }
-                      className="rounded-circle mb-3"
-                      style={{
-                        width: "120px",
-                        height: "120px",
-                        objectFit: "cover",
-                      }}
-                      alt={`Avatar of ${userData?.username}`}
-                    />
-                    <h3 className="card-title">
-                      {userData?.username}
-                      {userData?.role && (
-                        <span
-                          className={`badge ms-2 ${
-                            userData.role === "creator"
-                              ? "bg-warning"
-                              : userData.role === "moderator"
-                              ? "bg-primary"
-                              : "bg-success"
-                          }`}
-                        >
-                          {userData.role.charAt(0).toUpperCase() +
-                            userData.role.slice(1)}
-                        </span>
-                      )}
-                    </h3>
-                    <p className="card-text">
-                      {userData?.bio || "No bio provided."}
-                    </p>
-                    <div className="d-flex justify-content-center gap-3 mb-3">
-                      <span>
-                        <strong>{userData?.followers?.length || 0}</strong>{" "}
-                        Followers
-                      </span>
-                      <span>
-                        <strong>{userData?.following?.length || 0}</strong>{" "}
-                        Following
-                      </span>
-                      <span>
-                        <strong>{userData?.postCount || 0}</strong> Posts
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-center gap-2">
-                      {isOwnProfile ? (
-                        <button
-                          className="mn-btn-2"
-                          onClick={() => setIsEditModalOpen(true)}
-                          aria-label="Edit profile"
-                        >
-                          <span>Edit Profile</span>
-                        </button>
-                      ) : (
-                        <>
-                          <button
-                            className={`mn-btn-2 ${
-                              isFollowing ? "btn-outline-secondary" : ""
-                            }`}
-                            onClick={handleFollow}
-                            aria-label={
-                              isFollowing ? "Unfollow user" : "Follow user"
-                            }
-                          >
-                            <span>{isFollowing ? "Unfollow" : "Follow"}</span>
-                          </button>
-                          <div className="dropdown">
-                            <button
-                              className="mn-btn-2 dropdown-toggle"
-                              type="button"
-                              data-bs-toggle="dropdown"
-                              aria-expanded="false"
-                              aria-label="More actions"
-                            >
-                              More
-                            </button>
-                            <ul className="dropdown-menu">
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={handleMessage}
-                                >
-                                  <i className="bi bi-chat me-2"></i> Message
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={handleReport}
-                                >
-                                  <i className="bi bi-flag me-2"></i> Report
-                                </button>
-                              </li>
-                              <li>
-                                <button
-                                  className="dropdown-item"
-                                  onClick={handleShare}
-                                >
-                                  <i className="bi bi-share me-2"></i> Share
-                                </button>
-                              </li>
-                            </ul>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                )}
+              </h1>
+              <p className="mb-2 opacity-90">
+                {profileUser.bio || "No bio yet."}
+              </p>
+              <Space size="middle">
+                <span>
+                  <strong>{profileUser.followers?.length || 0}</strong>{" "}
+                  Followers
+                </span>
+                <span>
+                  <strong>{profileUser.following?.length || 0}</strong>{" "}
+                  Following
+                </span>
+                <span>
+                  <strong>{lists.length}</strong> Lists
+                </span>
+              </Space>
+            </div>
 
-                {/* Profile Content Tabs */}
-                <ul className="nav nav-tabs mt-4" role="tablist">
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "lists" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("lists")}
-                      role="tab"
-                      aria-selected={activeTab === "lists"}
-                      aria-controls="lists-tab"
-                    >
-                      Lists
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "reviews" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("reviews")}
-                      role="tab"
-                      aria-selected={activeTab === "reviews"}
-                      aria-controls="reviews-tab"
-                    >
-                      Reviews
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "groups" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("groups")}
-                      role="tab"
-                      aria-selected={activeTab === "groups"}
-                      aria-controls="groups-tab"
-                    >
-                      Groups
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "activity" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("activity")}
-                      role="tab"
-                      aria-selected={activeTab === "activity"}
-                      aria-controls="activity-tab"
-                    >
-                      Activity
-                    </button>
-                  </li>
-                  <li className="nav-item" role="presentation">
-                    <button
-                      className={`nav-link ${
-                        activeTab === "suggest" ? "active" : ""
-                      }`}
-                      onClick={() => setActiveTab("suggest")}
-                      role="tab"
-                      aria-selected={activeTab === "suggest"}
-                      aria-controls="suggest-tab"
-                    >
-                      Suggest a Movie
-                    </button>
-                  </li>
-                  {isOwnProfile && (
-                    <li className="nav-item" role="presentation">
-                      <button
-                        className={`nav-link ${
-                          activeTab === "requests" ? "active" : ""
-                        }`}
-                        onClick={() => setActiveTab("requests")}
-                        role="tab"
-                        aria-selected={activeTab === "requests"}
-                        aria-controls="requests-tab"
-                      >
-                        Movie Requests
-                      </button>
-                    </li>
-                  )}
-                </ul>
-                <div className="tab-content mt-3">
-                  {/* Lists Tab */}
-                  <div
-                    className={`tab-pane fade ${
-                      activeTab === "lists" ? "show active" : ""
-                    }`}
-                    id="lists-tab"
-                    role="tabpanel"
+            <Space size="middle">
+              {isOwnProfile ? (
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  size="large"
+                  onClick={() => setEditModalOpen(true)}
+                >
+                  Edit Profile
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type={isFollowing ? "default" : "primary"}
+                    size="large"
+                    onClick={handleFollow}
                   >
-                    {paginatedLists.length > 0 ? (
-                      <div className="row g-3">
-                        {paginatedLists.map((list) => (
-                          <div key={list._id} className="col-md-4">
-                            <div className="card h-100">
-                              <img
-                                src={
-                                  list.movies[0]?.poster_path
-                                    ? `https://image.tmdb.org/t/p/w200${list.movies[0].poster_path}`
-                                    : "https://via.placeholder.com/200"
-                                }
-                                className="card-img-top"
-                                alt={list.name}
-                              />
-                              <div className="card-body">
-                                <h5 className="card-title">
-                                  <Link to={`/lists/${list._id}`}>
-                                    {list.name}
-                                  </Link>
-                                </h5>
-                                <p className="card-text">
-                                  {list.movies.length} movie
-                                  {list.movies.length !== 1 ? "s" : ""}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted">No lists created yet.</p>
-                    )}
-                    <Pagination
-                      totalItems={lists.length}
-                      itemsPerPage={pageSize}
-                      onPageChange={setCurrentPage}
-                      currentPage={currentPage}
-                    />
-                  </div>
-                  {/* Reviews Tab */}
-                  <div
-                    className={`tab-pane fade ${
-                      activeTab === "reviews" ? "show active" : ""
-                    }`}
-                    id="reviews-tab"
-                    role="tabpanel"
+                    {isFollowing ? "Unfollow" : "Follow"}
+                  </Button>
+                  <Button icon={<MessageOutlined />} size="large">
+                    Message
+                  </Button>
+                  <Button
+                    icon={<ShareAltOutlined />}
+                    size="large"
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      message.success("Link copied!");
+                    }}
                   >
-                    {paginatedReviews.length > 0 ? (
-                      <div className="list-group">
-                        {paginatedReviews.map((review) => (
-                          <div key={review._id} className="list-group-item">
-                            <h6>
-                              <Link to={`/movies/${review.movieId}`}>
-                                {review.movieTitle}
-                              </Link>
-                            </h6>
-                            <p className="mb-1">{review.comment}</p>
-                            <small className="text-muted">
-                              Posted on{" "}
-                              {new Date(review.createdAt).toLocaleDateString()}
-                            </small>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted">No reviews posted yet.</p>
-                    )}
-                    <Pagination
-                      totalItems={reviews.length}
-                      itemsPerPage={pageSize}
-                      onPageChange={setCurrentPage}
-                      currentPage={currentPage}
-                    />
-                  </div>
-                  {/* Groups Tab */}
-                  <div
-                    className={`tab-pane fade ${
-                      activeTab === "groups" ? "show active" : ""
-                    }`}
-                    id="groups-tab"
-                    role="tabpanel"
+                    Share
+                  </Button>
+                  <Button
+                    icon={<FlagOutlined />}
+                    danger
+                    type="text"
+                    size="large"
                   >
-                    {userData?.groups?.length > 0 ? (
-                      <div className="list-group">
-                        {userData.groups.map((group) => (
-                          <div key={group.id} className="list-group-item">
-                            <h6>
-                              <Link
-                                to={`/groups/${group.id}`}
-                                aria-label={`View ${group.name} group`}
-                              >
-                                {group.name}
-                              </Link>
-                            </h6>
-                            <p className="mb-1">{group.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted">Not a member of any groups.</p>
-                    )}
-                  </div>
-                  {/* Activity Tab */}
-                  <div
-                    className={`tab-pane fade ${
-                      activeTab === "activity" ? "show active" : ""
-                    }`}
-                    id="activity-tab"
-                    role="tabpanel"
-                  >
-                    {userData?.activity?.length > 0 ? (
-                      <div className="list-group">
-                        {userData.activity.map((activity, index) => (
-                          <div key={index} className="list-group-item">
-                            <p className="mb-1">
-                              {activity.type === "post"
-                                ? `Posted: ${activity.content}`
-                                : activity.type === "comment"
-                                ? `Commented: ${activity.content}`
-                                : `Liked a post`}
-                            </p>
-                            <small className="text-muted">
-                              {new Date(
-                                activity.createdAt
-                              ).toLocaleDateString()}
-                            </small>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted">No recent activity.</p>
-                    )}
-                  </div>
-                  {/* Suggest a Movie Tab */}
-                  <div
-                    className={`tab-pane fade ${
-                      activeTab === "suggest" ? "show active" : ""
-                    }`}
-                    id="suggest-tab"
-                    role="tabpanel"
-                  >
-                    {!isOwnProfile ? (
-                      <div className="text-center">
-                        <p>Want to recommend something?</p>
-                        <button
-                          className="mn-btn-2"
-                          onClick={() => setIsSuggestModalOpen(true)}
-                          aria-label="Suggest a movie"
-                        >
-                          <span>Suggest a Movie</span>
-                        </button>
-                        <div
-                          className={`modal fade ${
-                            isSuggestModalOpen ? "show d-block" : ""
-                          }`}
-                          tabIndex="-1"
-                          aria-labelledby="suggestMovieModalLabel"
-                          aria-hidden={!isSuggestModalOpen}
-                        >
-                          <div className="modal-dialog modal-dialog-centered">
-                            <div className="modal-content">
-                              <div className="modal-header">
-                                <h5
-                                  className="modal-title"
-                                  id="suggestMovieModalLabel"
-                                >
-                                  Suggest a Movie
-                                </h5>
-                                <button
-                                  type="button"
-                                  className="btn-close"
-                                  onClick={() => setIsSuggestModalOpen(false)}
-                                  aria-label="Close"
-                                ></button>
-                              </div>
-                              <div className="modal-body">
-                                <form
-                                  onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const form = e.target;
-                                    handleSuggestMovie({
-                                      title: form.title.value,
-                                      description: form.description.value,
-                                    });
-                                  }}
-                                >
-                                  <div className="mb-3">
-                                    <label
-                                      htmlFor="suggestTitle"
-                                      className="form-label"
-                                    >
-                                      Movie Title
-                                    </label>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      id="suggestTitle"
-                                      name="title"
-                                      required
-                                      aria-label="Movie title"
-                                    />
-                                  </div>
-                                  <div className="mb-3">
-                                    <label
-                                      htmlFor="suggestDescription"
-                                      className="form-label"
-                                    >
-                                      Why recommend this?
-                                    </label>
-                                    <textarea
-                                      className="form-control"
-                                      id="suggestDescription"
-                                      name="description"
-                                      rows="4"
-                                      aria-label="Recommendation description"
-                                    ></textarea>
-                                  </div>
-                                  <button type="submit" className="mn-btn-2">
-                                    <span>Suggest</span>
-                                  </button>
-                                </form>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted">
-                        You can’t suggest a movie to yourself 😄
-                      </p>
-                    )}
-                  </div>
-                  {/* Movie Requests Tab */}
-                  {isOwnProfile && (
-                    <div
-                      className={`tab-pane fade ${
-                        activeTab === "requests" ? "show active" : ""
-                      }`}
-                      id="requests-tab"
-                      role="tabpanel"
-                    >
-                      {paginatedRequests.length > 0 ? (
-                        <div className="list-group">
-                          {paginatedRequests.map((request) => (
-                            <div key={request._id} className="list-group-item">
-                              <h6>
-                                {request.title}{" "}
-                                <span
-                                  className={`badge bg-${
-                                    request.status === "Pending"
-                                      ? "warning"
-                                      : request.status === "Approved"
-                                      ? "success"
-                                      : "danger"
-                                  }`}
-                                >
-                                  {request.status}
-                                </span>
-                              </h6>
-                              <p className="mb-1">{request.description}</p>
-                              <small className="text-muted">
-                                Submitted on{" "}
-                                {new Date(
-                                  request.createdAt
-                                ).toLocaleDateString()}
-                              </small>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted">No movie requests yet.</p>
-                      )}
-                      <Pagination
-                        totalItems={movieRequests.length}
-                        itemsPerPage={pageSize}
-                        onPageChange={setCurrentPage}
-                        currentPage={currentPage}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar Area */}
-          <div className="mn-profile-rightside col-lg-4 col-md-12 m-t-991">
-            <div className="mn-sidebar-wrap">
-              {/* Profile Stats Block */}
-              <div className="mn-sidebar-block">
-                <div className="mn-sb-title">
-                  <h3 className="mn-sidebar-title">Profile Stats</h3>
-                </div>
-                <div className="mn-sb-block-content">
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item">
-                      Joined:{" "}
-                      {new Date(userData?.joinedAt).toLocaleDateString()}
-                    </li>
-                    <li className="list-group-item">
-                      Favorite Genres:{" "}
-                      {userData?.favoriteGenres?.join(", ") || "None"}
-                    </li>
-                    <li className="list-group-item">
-                      Mutual Followers: {userData?.mutualFollowers?.length || 0}
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              {/* Suggested Users Block */}
-              <div className="mn-sidebar-block">
-                <div className="mn-sb-title">
-                  <h3 className="mn-sidebar-title">Suggested Users</h3>
-                </div>
-                <div className="mn-sb-block-content">
-                  {userData?.suggestedUsers?.length > 0 ? (
-                    <ul className="list-group list-group-flush">
-                      {userData.suggestedUsers.map((user) => (
-                        <li
-                          key={user._id}
-                          className="list-group-item d-flex align-items-center"
-                        >
-                          <img
-                            src={
-                              user.avatar || "https://via.placeholder.com/40"
-                            }
-                            className="rounded-circle me-2"
-                            style={{ width: "40px", height: "40px" }}
-                            alt={`Avatar of ${user.username}`}
-                          />
-                          <div className="flex-grow-1">
-                            <Link to={`/profile/${user._id}`}>
-                              {user.username}
-                            </Link>
-                            <p className="mb-0 text-muted">{user.bio}</p>
-                          </div>
-                          <button
-                            className="mn-btn-2 btn-sm"
-                            onClick={() => handleFollow(user._id)}
-                            aria-label={`Follow ${user.username}`}
-                          >
-                            <span>Follow</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-muted">No suggested users.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Edit Profile Modal */}
-      <div
-        className={`modal fade ${isEditModalOpen ? "show d-block" : ""}`}
-        tabIndex="-1"
-        aria-labelledby="editProfileModalLabel"
-        aria-hidden={!isEditModalOpen}
-      >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title" id="editProfileModalLabel">
-                Edit Profile
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => {
-                  setIsEditModalOpen(false);
-                  setFileList([]);
-                }}
-                aria-label="Close"
-              ></button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={handleEditProfile}>
-                <div className="mb-3">
-                  <label htmlFor="bio" className="form-label">
-                    Bio
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) =>
-                      setFormData({ ...formData, bio: e.target.value })
-                    }
-                    rows="4"
-                    placeholder="Tell us about yourself"
-                    aria-label="Bio"
-                  ></textarea>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="avatar" className="form-label">
-                    Avatar
-                  </label>
-                  <input
-                    type="file"
-                    className="form-control"
-                    id="avatar"
-                    accept="image/*"
-                    onChange={(e) =>
-                      uploadProps.beforeUpload(e.target.files[0])
-                    }
-                    aria-label="Upload avatar"
-                  />
-                  {fileList.length > 0 && (
-                    <div className="mt-2">
-                      <img
-                        src={fileList[0].url}
-                        alt="Avatar preview"
-                        style={{ maxWidth: "100px" }}
-                      />
-                      <button
-                        type="button"
-                        className="mn-btn-2 btn-sm btn-outline-danger ms-2"
-                        onClick={uploadProps.onRemove}
-                        aria-label="Remove avatar"
-                      >
-                        <span>Remove</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="favoriteMovies" className="form-label">
-                    Favorite Movies
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="favoriteMovies"
-                    value={formData.favoriteMovies}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        favoriteMovies: e.target.value,
-                      })
-                    }
-                    rows="4"
-                    placeholder="Enter one movie per line"
-                    aria-label="Favorite movies"
-                  ></textarea>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="favoriteGenres" className="form-label">
-                    Favorite Genres
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="favoriteGenres"
-                    value={formData.favoriteGenres}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        favoriteGenres: e.target.value,
-                      })
-                    }
-                    rows="4"
-                    placeholder="Enter one genre per line"
-                    aria-label="Favorite genres"
-                  ></textarea>
-                </div>
-                <button type="submit" className="mn-btn-2">
-                  <span>Save</span>
-                </button>
-              </form>
-            </div>
+                    Report
+                  </Button>
+                </>
+              )}
+            </Space>
           </div>
         </div>
       </div>
+
+      {/* Tabs Content */}
+      <Tabs
+        defaultActiveKey="lists"
+        size="large"
+        onChange={() => setCurrentPage(1)}
+      >
+        <TabPane tab="Lists" key="lists">
+          {lists.length === 0 ? (
+            <Empty description="No lists created yet" />
+          ) : (
+            <>
+              <div className="row g-4">
+                {paginatedData(lists).map((list) => (
+                  <div key={list._id} className="col-md-6 col-lg-4">
+                    <Card
+                      hoverable
+                      cover={
+                        <img
+                          alt={list.name}
+                          src={
+                            list.movies[0]?.poster_path
+                              ? `https://image.tmdb.org/t/p/w500${list.movies[0].poster_path}`
+                              : "/assets/imgs/placeholder.png"
+                          }
+                          style={{ height: "300px", objectFit: "cover" }}
+                        />
+                      }
+                    >
+                      <Card.Meta
+                        title={
+                          <Link to={`/lists/${list._id}`}>{list.name}</Link>
+                        }
+                        description={`${list.movies.length} movie${
+                          list.movies.length !== 1 ? "s" : ""
+                        }`}
+                      />
+                    </Card>
+                  </div>
+                ))}
+              </div>
+              <Pagination
+                totalItems={lists.length}
+                itemsPerPage={pageSize}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+                className="mt-4 text-center"
+              />
+            </>
+          )}
+        </TabPane>
+
+        <TabPane tab="Reviews" key="reviews">
+          {reviews.length === 0 ? (
+            <Empty description="No reviews yet" />
+          ) : (
+            <>
+              <List
+                itemLayout="vertical"
+                dataSource={paginatedData(reviews)}
+                renderItem={(review) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <Link to={`/movies/${review.movieId}`}>
+                          {review.movieTitle}
+                        </Link>
+                      }
+                      description={
+                        <span>
+                          <Tag color="volcano">{review.rating}/10</Tag> •{" "}
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      }
+                    />
+                    <p>{review.comment}</p>
+                  </List.Item>
+                )}
+              />
+              <Pagination
+                totalItems={reviews.length}
+                itemsPerPage={pageSize}
+                currentPage={currentPage}
+                onPageChange={setCurrentPage}
+                className="mt-4 text-center"
+              />
+            </>
+          )}
+        </TabPane>
+
+        <TabPane tab="Activity" key="activity">
+          <Empty description="Activity feed coming soon" />
+        </TabPane>
+
+        {!isOwnProfile && (
+          <TabPane tab="Suggest Movie" key="suggest">
+            <div className="text-center py-5">
+              <p className="mb-4">
+                Know a movie {profileUser.username} would love?
+              </p>
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => setSuggestModalOpen(true)}
+              >
+                Suggest a Movie
+              </Button>
+            </div>
+          </TabPane>
+        )}
+      </Tabs>
+
+      {/* Edit Profile Modal */}
+      <Modal
+        title="Edit Profile"
+        open={editModalOpen}
+        onCancel={() => {
+          setEditModalOpen(false);
+          setAvatarFile(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          <div>
+            <label className="fw-bold mb-2 d-block">Avatar</label>
+            <ImgCrop rotationSlider>
+              <Upload
+                listType="picture-card"
+                maxCount={1}
+                showUploadList={{ showPreviewIcon: true, showRemoveIcon: true }}
+                beforeUpload={(file) => {
+                  setAvatarFile(file);
+                  return false;
+                }}
+                onRemove={() => setAvatarFile(null)}
+              >
+                {avatarFile || profileUser.avatar ? null : (
+                  <div>
+                    <UploadOutlined />
+                    <div className="mt-2">Upload</div>
+                  </div>
+                )}
+              </Upload>
+            </ImgCrop>
+            {(avatarFile || profileUser.avatar) && (
+              <Avatar
+                size={100}
+                src={
+                  avatarFile
+                    ? URL.createObjectURL(avatarFile)
+                    : profileUser.avatar
+                }
+                className="mt-3"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="fw-bold mb-2 d-block">Bio</label>
+            <TextArea
+              rows={4}
+              value={formData.bio}
+              onChange={(e) =>
+                setFormData({ ...formData, bio: e.target.value })
+              }
+              placeholder="Tell the community about yourself..."
+            />
+          </div>
+
+          <div>
+            <label className="fw-bold mb-2 d-block">
+              Favorite Movies (one per line)
+            </label>
+            <TextArea
+              rows={5}
+              value={formData.favoriteMovies}
+              onChange={(e) =>
+                setFormData({ ...formData, favoriteMovies: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="fw-bold mb-2 d-block">
+              Favorite Genres (one per line)
+            </label>
+            <TextArea
+              rows={4}
+              value={formData.favoriteGenres}
+              onChange={(e) =>
+                setFormData({ ...formData, favoriteGenres: e.target.value })
+              }
+            />
+          </div>
+
+          <Button
+            type="primary"
+            size="large"
+            block
+            onClick={handleUpdateProfile}
+          >
+            Save Changes
+          </Button>
+        </Space>
+      </Modal>
+
+      {/* Suggest Movie Modal */}
+      <Modal
+        title={`Suggest a movie to ${profileUser.username}`}
+        open={suggestModalOpen}
+        onCancel={() => setSuggestModalOpen(false)}
+        footer={null}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const title = e.target.title.value;
+            const reason = e.target.reason.value;
+            if (title) {
+              message.success(`"${title}" suggested!`);
+              setSuggestModalOpen(false);
+              e.target.reset();
+            }
+          }}
+        >
+          <div className="mb-3">
+            <label className="form-label fw-bold">Movie Title</label>
+            <Input name="title" required placeholder="e.g. Inception" />
+          </div>
+          <div className="mb-4">
+            <label className="form-label fw-bold">Why this movie?</label>
+            <TextArea
+              name="reason"
+              rows={4}
+              placeholder="They'd love the mind-bending plot..."
+            />
+          </div>
+          <Button type="primary" htmlType="submit" block>
+            Send Suggestion
+          </Button>
+        </form>
+      </Modal>
     </div>
   );
 };
