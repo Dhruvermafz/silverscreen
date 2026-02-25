@@ -8,11 +8,11 @@ const MovieCard = ({
   movie,
   lists = [],
   profile,
-  isGridView = true, // true for grid, false for carousel
-  handleToggleLike,
-  handleAddToList,
-  handleReviewClick,
-  handleModalClose,
+  isGridView = true,
+  handleToggleLike, // (movie) => () => void
+  handleAddToList, // (movie, listId) => void
+  handleReviewClick, // (movie) => () => void
+  handleModalClose, // (movie) => () => void
 }) => {
   const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ const MovieCard = ({
     navigate(`/explore?year=${year}`);
   };
 
-  if (!movie || !movie.id) return null;
+  if (!movie?.id) return null;
 
   return (
     <>
@@ -60,9 +60,7 @@ const MovieCard = ({
           {/* Hover Actions */}
           <div className="movie-card__actions">
             <button
-              className={`movie-card__action-btn ${
-                movie.isLiked ? "active" : ""
-              }`}
+              className={`movie-card__action-btn ${movie.isLiked ? "active" : ""}`}
               onClick={handleToggleLike(movie)}
               title="Add to Favorites"
             >
@@ -117,25 +115,28 @@ const MovieCard = ({
               className="movie-card__year"
               onClick={() =>
                 handleYearClick(
-                  movie.release_date?.substring(0, 4) || "Unknown"
+                  movie.release_date?.substring(0, 4) || "Unknown",
                 )
               }
+              style={{ cursor: "pointer" }}
             >
               {movie.release_date?.substring(0, 4) || "N/A"}
             </span>
           </div>
 
-          {movie.genres && movie.genres.length > 0 && (
+          {movie.genres?.length > 0 && (
             <div className="movie-card__genres">
               {movie.genres.slice(0, 2).map((g, index) => (
-                <span
-                  key={g.id}
-                  className="movie-card__genre-tag"
-                  onClick={() => handleGenreClick(g.name)}
-                >
-                  {g.name}
-                  {index < Math.min(movie.genres.length - 1, 1) && ", "}
-                </span>
+                <React.Fragment key={g.id}>
+                  <span
+                    className="movie-card__genre-tag"
+                    onClick={() => handleGenreClick(g.name)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {g.name}
+                  </span>
+                  {index < 1 && movie.genres.length > 1 && ", "}
+                </React.Fragment>
               ))}
               {movie.genres.length > 2 && (
                 <span className="movie-card__genre-more">

@@ -1,4 +1,3 @@
-// src/components/Auth/Login.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -47,21 +46,21 @@ const Login = () => {
       style={{
         minHeight: "100vh",
         position: "relative",
-        background: "#141414",
+        background: "#f8f9fa", // light gray background
       }}
     >
-      {/* Dynamic Animated MovieSlider Background */}
+      {/* Animated MovieSlider Background - subtle & lightened */}
       <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-        <MovieSlider category="viral-flicks" limit={16} />
+        <MovieSlider category="viral-flicks" limit={12} />
       </div>
 
-      {/* Dark Gradient Overlay for Perfect Text Contrast */}
+      {/* Light gradient overlay for better text contrast */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(to right, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.4) 50%, rgba(20,20,20,0.95) 100%)",
+            "linear-gradient(to right, rgba(248,249,250,0.92) 0%, rgba(248,249,250,0.75) 50%, rgba(248,249,250,0.92) 100%)",
           pointerEvents: "none",
           zIndex: 1,
         }}
@@ -78,22 +77,21 @@ const Login = () => {
           <Card
             style={{
               width: "100%",
-              maxWidth: 420,
+              maxWidth: 440,
               borderRadius: 16,
-              boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-              background: "rgba(31, 31, 31, 0.95)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+              background: "#ffffff",
+              border: "1px solid #e9ecef",
             }}
             bodyStyle={{ padding: "48px 40px" }}
           >
             <div className="text-center mb-5">
-              <Title level={2} style={{ color: "#fff", marginBottom: 8 }}>
+              <Title level={2} style={{ color: "#212529", marginBottom: 8 }}>
                 Welcome Back
               </Title>
               <Text
                 type="secondary"
-                style={{ fontSize: "1.1rem", color: "#ccc" }}
+                style={{ fontSize: "1.1rem", color: "#6c757d" }}
               >
                 Log in to continue your cinematic journey
               </Text>
@@ -135,7 +133,7 @@ const Login = () => {
               <Form.Item>
                 <Space className="w-100 justify-content-between">
                   <Form.Item name="remember" valuePropName="checked" noStyle>
-                    <Checkbox style={{ color: "#ccc" }}>Remember me</Checkbox>
+                    <Checkbox>Remember me</Checkbox>
                   </Form.Item>
                   <Link to="/forgot-password" style={{ color: "#e50914" }}>
                     Forgot password?
@@ -162,7 +160,7 @@ const Login = () => {
               </Form.Item>
 
               <div className="text-center mt-4">
-                <Text style={{ color: "#ccc", fontSize: "1rem" }}>
+                <Text style={{ color: "#495057", fontSize: "1rem" }}>
                   Don't have an account?{" "}
                   <Link
                     to="/signup"
@@ -188,27 +186,27 @@ const Login = () => {
           className="d-flex align-items-center justify-content-center"
         >
           <div
-            className="text-center text-white px-5"
-            style={{ maxWidth: 700, zIndex: 2 }}
+            className="text-center px-5"
+            style={{ maxWidth: 720, zIndex: 2 }}
           >
             <Title
               level={1}
               style={{
-                color: "#fff",
-                fontSize: "4rem",
+                color: "#212529",
+                fontSize: "3.8rem",
                 fontWeight: "bold",
-                textShadow: "0 4px 20px rgba(0,0,0,0.8)",
                 marginBottom: 24,
+                lineHeight: 1.1,
               }}
             >
               Discover Your Next Favorite Movie
             </Title>
             <Text
               style={{
-                fontSize: "1.6rem",
-                color: "#eee",
-                textShadow: "0 2px 10px rgba(0,0,0,0.8)",
+                fontSize: "1.5rem",
+                color: "#495057",
                 lineHeight: 1.6,
+                maxWidth: 680,
               }}
             >
               Join the community of passionate cinephiles sharing reviews,

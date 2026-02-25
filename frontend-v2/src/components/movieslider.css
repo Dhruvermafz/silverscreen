@@ -5,7 +5,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  pointer-events: none; /* Allows clicks through to form */
+  pointer-events: none; /* Allows clicks through to form/login content */
 }
 
 .movie-slider-column {
@@ -67,12 +67,13 @@
   width: 180px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: transform 0.4s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
 .movie-poster-item:hover {
-  transform: scale(1.08);
+  transform: scale(1.06);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
   z-index: 10;
 }
 
@@ -83,7 +84,7 @@
   object-fit: cover;
 }
 
-/* Dark overlay for better text contrast (use on parent container) */
+/* Very subtle overlay – helps improve text/button contrast without darkening */
 .movie-slider-overlay {
   position: absolute;
   top: 0;
@@ -92,28 +93,28 @@
   height: 100%;
   background: linear-gradient(
     to right,
-    rgba(20, 20, 20, 0.9) 0%,
-    rgba(20, 20, 20, 0.3) 50%,
-    rgba(20, 20, 20, 0.9) 100%
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0.12) 100%
   );
   pointer-events: none;
 }
 
-/* Loading state */
+/* Loading state – light friendly */
 .movie-slider-loading {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(20, 20, 20, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(6px);
 }
 
 .spinner {
   width: 60px;
   height: 60px;
-  border: 4px solid #333;
+  border: 4px solid #e0e0e0;
   border-top: 4px solid #e50914;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -124,7 +125,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 992px) {
   .movie-poster-item {
     width: 140px;
@@ -136,7 +137,7 @@
     width: 100%;
   }
   .right-column {
-    display: none; /* Only show one column on mobile */
+    display: none;
   }
   .left-column {
     justify-content: center;

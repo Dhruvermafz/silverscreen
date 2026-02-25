@@ -1,4 +1,3 @@
-// src/components/Auth/Signup.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -12,9 +11,7 @@ import {
   Typography,
   Space,
   message,
-  Divider,
 } from "antd";
-import { GoogleOutlined, FacebookFilled } from "@ant-design/icons";
 
 import { useRegisterMutation } from "../../actions/authApi";
 import MovieSlider from "../MovieSlider";
@@ -42,7 +39,7 @@ const Signup = () => {
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       message.error(
-        err?.data?.message || "Registration failed. Please try again."
+        err?.data?.message || "Registration failed. Please try again.",
       );
     }
   };
@@ -53,21 +50,21 @@ const Signup = () => {
       style={{
         minHeight: "100vh",
         position: "relative",
-        background: "#141414",
+        background: "#f8f9fa", // light neutral background
       }}
     >
-      {/* Dynamic MovieSlider Background */}
+      {/* Subtle MovieSlider background */}
       <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-        <MovieSlider category="viral-flicks" limit={16} />
+        <MovieSlider category="viral-flicks" limit={12} />
       </div>
 
-      {/* Dark Overlay for Text Readability */}
+      {/* Light overlay for readability */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           background:
-            "linear-gradient(to right, rgba(20,20,20,0.95) 0%, rgba(20,20,20,0.4) 50%, rgba(20,20,20,0.95) 100%)",
+            "linear-gradient(to right, rgba(248,249,250,0.92) 0%, rgba(248,249,250,0.78) 50%, rgba(248,249,250,0.92) 100%)",
           pointerEvents: "none",
           zIndex: 1,
         }}
@@ -86,20 +83,19 @@ const Signup = () => {
               width: "100%",
               maxWidth: 440,
               borderRadius: 16,
-              boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
-              background: "rgba(31, 31, 31, 0.95)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+              background: "#ffffff",
+              border: "1px solid #e9ecef",
             }}
             bodyStyle={{ padding: "48px 40px" }}
           >
             <div className="text-center mb-5">
-              <Title level={2} style={{ color: "#fff", marginBottom: 8 }}>
+              <Title level={2} style={{ color: "#212529", marginBottom: 8 }}>
                 Join DimeCine
               </Title>
               <Text
                 type="secondary"
-                style={{ fontSize: "1.1rem", color: "#ccc" }}
+                style={{ fontSize: "1.1rem", color: "#6c757d" }}
               >
                 Create an account and start exploring the world of cinema
               </Text>
@@ -187,7 +183,7 @@ const Signup = () => {
                         return Promise.resolve();
                       }
                       return Promise.reject(
-                        new Error("Passwords do not match")
+                        new Error("Passwords do not match"),
                       );
                     },
                   }),
@@ -209,12 +205,12 @@ const Signup = () => {
                       value
                         ? Promise.resolve()
                         : Promise.reject(
-                            new Error("You must accept the terms")
+                            new Error("You must accept the terms"),
                           ),
                   },
                 ]}
               >
-                <Checkbox style={{ color: "#ccc" }}>
+                <Checkbox>
                   I agree to the{" "}
                   <Link to="/terms-and-conditions" style={{ color: "#e50914" }}>
                     Terms of Service
@@ -245,7 +241,7 @@ const Signup = () => {
               </Form.Item>
 
               <div className="text-center mt-4">
-                <Text style={{ color: "#ccc", fontSize: "1rem" }}>
+                <Text style={{ color: "#495057", fontSize: "1rem" }}>
                   Already have an account?{" "}
                   <Link
                     to="/login"
@@ -263,7 +259,7 @@ const Signup = () => {
           </Card>
         </Col>
 
-        {/* Right: Hero Text over MovieSlider */}
+        {/* Right: Hero Text */}
         <Col
           xs={0}
           lg={14}
@@ -271,27 +267,27 @@ const Signup = () => {
           className="d-flex align-items-center justify-content-center"
         >
           <div
-            className="text-center text-white px-5"
-            style={{ maxWidth: 700, zIndex: 2 }}
+            className="text-center px-5"
+            style={{ maxWidth: 720, zIndex: 2 }}
           >
             <Title
               level={1}
               style={{
-                color: "#fff",
-                fontSize: "4rem",
+                color: "#212529",
+                fontSize: "3.8rem",
                 fontWeight: "bold",
-                textShadow: "0 4px 20px rgba(0,0,0,0.8)",
                 marginBottom: 24,
+                lineHeight: 1.1,
               }}
             >
               Join the Conversation
             </Title>
             <Text
               style={{
-                fontSize: "1.6rem",
-                color: "#eee",
-                textShadow: "0 2px 10px rgba(0,0,0,0.8)",
+                fontSize: "1.5rem",
+                color: "#495057",
                 lineHeight: 1.6,
+                maxWidth: 680,
               }}
             >
               Share reviews, create personal lists, join passionate communities,

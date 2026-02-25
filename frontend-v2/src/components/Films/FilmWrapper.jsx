@@ -9,7 +9,6 @@ import { useGetProfileQuery } from "../../actions/userApi";
 import {
   getMoviesFromAPI,
   getGenresFromAPI,
-  getLanguagesFromAPI,
   getCustomCategories,
 } from "../../actions/getMoviesFromAPI";
 import debounce from "lodash.debounce";
@@ -17,6 +16,22 @@ import MovieCard from "./MovieCard";
 import Pagination from "../Common/Pagination";
 
 const { Search } = Input;
+
+// Hardcoded popular languages (most used in movies)
+const POPULAR_LANGUAGES = [
+  { iso_639_1: "", english_name: "Any Language" },
+  { iso_639_1: "en", english_name: "English" },
+  { iso_639_1: "hi", english_name: "Hindi" },
+  { iso_639_1: "ta", english_name: "Tamil" },
+  { iso_639_1: "te", english_name: "Telugu" },
+  { iso_639_1: "kn", english_name: "Kannada" },
+  { iso_639_1: "ml", english_name: "Malayalam" },
+  { iso_639_1: "es", english_name: "Spanish" },
+  { iso_639_1: "fr", english_name: "French" },
+  { iso_639_1: "zh", english_name: "Chinese" },
+  { iso_639_1: "ja", english_name: "Japanese" },
+  { iso_639_1: "ko", english_name: "Korean" },
+];
 
 const FilmWrapper = () => {
   const [movies, setMovies] = useState([]);
@@ -29,14 +44,12 @@ const FilmWrapper = () => {
     language: "",
     runtimeRange: [0, 300],
     voteAverageRange: [0, 10],
-    category: "", // For custom vibes
   });
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [isGridView, setIsGridView] = useState(true);
   const [genres, setGenres] = useState([]);
-  const [languages, setLanguages] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -48,7 +61,7 @@ const FilmWrapper = () => {
 
   const customCategories = useMemo(() => getCustomCategories(), []);
 
-  // Parse URL params on mount or change
+  // Parse URL query params (genre, year)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const genreParam = params.get("genre");
@@ -58,9 +71,11 @@ const FilmWrapper = () => {
 
     if (genreParam && genres.length > 0) {
       const genre = genres.find(
-        (g) => g.name.toLowerCase() === genreParam.toLowerCase()
+        (g) => g.name.toLowerCase() === genreParam.toLowerCase(),
       );
-      if (genre) newFilters.genres = [genre.id.toString()];
+      if (genre) {
+        newFilters.genres = [genre.id.toString()];
+      }
     }
 
     if (yearParam && !isNaN(yearParam)) {
@@ -72,48 +87,47 @@ const FilmWrapper = () => {
     setPage(1);
   }, [location.search, genres]);
 
-  // Fetch genres & languages
+  // Load genres once
   useEffect(() => {
-    const fetchInitialData = async () => {
+    const fetchGenres = async () => {
       try {
-        const [fetchedGenres, fetchedLanguages] = await Promise.all([
-          getGenresFromAPI(),
-          getLanguagesFromAPI(),
-        ]);
+        const fetchedGenres = await getGenresFromAPI();
         setGenres(fetchedGenres || []);
-        setLanguages(fetchedLanguages || []);
       } catch (err) {
-        message.error("Failed to load filters");
+        message.error("Failed to load genres");
       }
     };
-    fetchInitialData();
+    fetchGenres();
   }, []);
 
   // Debounced search
   const debouncedFetch = useCallback(
-    debounce((query) => {
-      setSearchQuery(query);
+    debounce((value) => {
+      setSearchQuery(value.trim());
       setPage(1);
     }, 500),
-    []
+    [],
   );
 
   // Fetch movies
   const fetchMovies = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await getMoviesFromAPI(
-        searchQuery,
-        { ...filters, category: selectedCategory || undefined },
-        page
-      );
+      const apiFilters = {
+        ...filters,
+        category: selectedCategory || undefined,
+      };
+
+      const response = await getMoviesFromAPI(searchQuery, apiFilters, page);
+
       setMovies(response.movies || []);
       setTotal(response.totalResults || 0);
 
       if (response.movies.length === 0 && page === 1) {
-        message.info("No movies found matching your filters");
+        message.info("No movies found. Try different filters.");
       }
     } catch (err) {
+      console.error(err);
       message.error("Failed to load movies");
       setMovies([]);
     } finally {
@@ -125,21 +139,21 @@ const FilmWrapper = () => {
     fetchMovies();
   }, [fetchMovies]);
 
-  const updateFilters = (newFilters) => {
-    setFilters(newFilters);
+  const updateFilters = useCallback((newPartial) => {
+    setFilters((prev) => ({ ...prev, ...newPartial }));
     setPage(1);
-  };
+  }, []);
 
   const handleCategoryChange = (value) => {
     setSelectedCategory(value || "");
-    updateFilters({ ...filters, category: value || "" });
   };
 
   const handleGenreToggle = (genreId) => {
-    const newGenres = filters.genres.includes(genreId.toString())
-      ? filters.genres.filter((id) => id !== genreId.toString())
-      : [...filters.genres, genreId.toString()];
-    updateFilters({ ...filters, genres: newGenres });
+    const idStr = genreId.toString();
+    const newGenres = filters.genres.includes(idStr)
+      ? filters.genres.filter((id) => id !== idStr)
+      : [...filters.genres, idStr];
+    updateFilters({ genres: newGenres });
   };
 
   const handleAddToList = async (movie, listId) => {
@@ -149,7 +163,8 @@ const FilmWrapper = () => {
         movie: {
           id: movie.id,
           title: movie.title,
-          poster_path: movie.poster_path || movie.posterUrl?.split("/w500")[1],
+          poster_path:
+            movie.poster_path || movie.posterUrl?.split("/w500")[1] || "",
         },
       }).unwrap();
       message.success(`Added "${movie.title}" to list`);
@@ -158,29 +173,42 @@ const FilmWrapper = () => {
     }
   };
 
-  const handleToggleLike = (movie) => () => {
-    setMovies((prev) =>
-      prev.map((m) => (m.id === movie.id ? { ...m, isLiked: !m.isLiked } : m))
-    );
-  };
+  const handleToggleLike = useCallback(
+    (movie) => () => {
+      setMovies((prev) =>
+        prev.map((m) =>
+          m.id === movie.id ? { ...m, isLiked: !m.isLiked } : m,
+        ),
+      );
+    },
+    [],
+  );
 
-  const handleReviewClick = (movie) => () => {
-    if (!profile) {
-      message.warning("Please log in to review");
-      return;
-    }
-    setMovies((prev) =>
-      prev.map((m) => (m.id === movie.id ? { ...m, showReviewModal: true } : m))
-    );
-  };
+  const handleReviewClick = useCallback(
+    (movie) => () => {
+      if (!profile) {
+        message.warning("Please log in to write a review");
+        return;
+      }
+      setMovies((prev) =>
+        prev.map((m) =>
+          m.id === movie.id ? { ...m, showReviewModal: true } : m,
+        ),
+      );
+    },
+    [profile],
+  );
 
-  const handleModalClose = (movie) => () => {
-    setMovies((prev) =>
-      prev.map((m) =>
-        m.id === movie.id ? { ...m, showReviewModal: false } : m
-      )
-    );
-  };
+  const handleModalClose = useCallback(
+    (movie) => () => {
+      setMovies((prev) =>
+        prev.map((m) =>
+          m.id === movie.id ? { ...m, showReviewModal: false } : m,
+        ),
+      );
+    },
+    [],
+  );
 
   const resetAllFilters = () => {
     setSelectedCategory("");
@@ -192,7 +220,6 @@ const FilmWrapper = () => {
       language: "",
       runtimeRange: [0, 300],
       voteAverageRange: [0, 10],
-      category: "",
     });
     navigate("/explore");
     setPage(1);
@@ -201,11 +228,18 @@ const FilmWrapper = () => {
   const pageSize = 20;
   const currentYear = new Date().getFullYear();
 
+  const hasActiveFilters =
+    selectedCategory ||
+    filters.genres.length > 0 ||
+    filters.language ||
+    filters.yearRange[0] > 1900 ||
+    filters.yearRange[1] < currentYear;
+
   return (
     <section className="mn-explore py-4">
       <div className="container">
         <div className="row">
-          {/* Mobile Filter Toggle */}
+          {/* Mobile filter toggle */}
           <div className="col-12 mb-4 d-lg-none">
             <Button
               block
@@ -213,33 +247,32 @@ const FilmWrapper = () => {
               onClick={() => setIsSidebarOpen(true)}
               icon={<i className="ri-filter-3-line me-2" />}
             >
-              Filters{" "}
-              {filters.genres.length > 0 && `(${filters.genres.length})`}
+              Filters {hasActiveFilters && `(${filters.genres.length || ""})`}
             </Button>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar / Filters */}
           <div className={`col-lg-3 ${isSidebarOpen ? "sidebar-open" : ""}`}>
             <div
-              className="explore-sidebar bg-dark rounded-3 p-4 h-100 position-sticky top-0"
+              className="explore-sidebar bg-light border rounded-3 p-4 h-100 position-sticky top-0"
               style={{ maxHeight: "95vh", overflowY: "auto" }}
             >
               <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="mb-0 text-white">Discover Filters</h4>
+                <h4 className="mb-0">Filters</h4>
                 <Button
                   type="text"
                   icon={<i className="ri-close-line" />}
                   onClick={() => setIsSidebarOpen(false)}
-                  className="d-lg-none text-white"
+                  className="d-lg-none"
                 />
               </div>
 
-              {/* Vibe Check */}
-              <div className="mb-4">
-                <h6 className="text-white mb-3">Vibe Check</h6>
+              {/* Vibe / Category */}
+              <div className="mb-5">
+                <h6 className="mb-3">Vibe Check</h6>
                 <Select
                   className="w-100"
-                  placeholder="Choose a mood..."
+                  placeholder="Choose a vibe..."
                   value={selectedCategory}
                   onChange={handleCategoryChange}
                   allowClear
@@ -254,91 +287,91 @@ const FilmWrapper = () => {
               </div>
 
               {/* Genres */}
-              <div className="mb-4">
-                <h6 className="text-white mb-3">Genres</h6>
-                <Space direction="vertical" className="w-100">
-                  {genres.slice(0, 10).map((genre) => (
+              <div className="mb-5">
+                <h6 className="mb-3">Genres</h6>
+                <Space direction="vertical" className="w-100" wrap>
+                  {genres.slice(0, 12).map((genre) => (
                     <Tag.CheckableTag
                       key={genre.id}
                       checked={filters.genres.includes(genre.id.toString())}
                       onChange={() => handleGenreToggle(genre.id)}
-                      className="py-2 px-3"
                     >
                       {genre.name}
                     </Tag.CheckableTag>
                   ))}
-                  {genres.length > 10 && (
-                    <Tag className="text-muted">+{genres.length - 10} more</Tag>
+                  {genres.length > 12 && (
+                    <div className="text-muted small">
+                      +{genres.length - 12} more
+                    </div>
                   )}
                 </Space>
               </div>
 
-              {/* Other Filters */}
-              <div className="mb-4">
-                <h6 className="text-white mb-3">Year Range</h6>
+              {/* Year Range */}
+              <div className="mb-5">
+                <h6 className="mb-3">Release Year</h6>
                 <Slider
                   range
                   min={1900}
                   max={currentYear}
                   value={filters.yearRange}
-                  onChange={(v) => updateFilters({ ...filters, yearRange: v })}
+                  onChange={(v) => updateFilters({ yearRange: v })}
+                  tooltip={{ formatter: (val) => val }}
                 />
               </div>
 
-              <div className="mb-4">
-                <h6 className="text-white mb-3">Language</h6>
+              {/* Language */}
+              <div className="mb-5">
+                <h6 className="mb-3">Language</h6>
                 <Select
                   className="w-100"
                   placeholder="Any language"
                   value={filters.language || undefined}
-                  onChange={(v) =>
-                    updateFilters({ ...filters, language: v || "" })
-                  }
+                  onChange={(v) => updateFilters({ language: v || "" })}
                   allowClear
+                  size="middle"
                 >
-                  {languages
-                    .filter((l) =>
-                      ["en", "hi", "es", "fr", "zh", "ta", "te"].includes(
-                        l.iso_639_1
-                      )
-                    )
-                    .map((lang) => (
-                      <Select.Option
-                        key={lang.iso_639_1}
-                        value={lang.iso_639_1}
-                      >
-                        {lang.english_name}
-                      </Select.Option>
-                    ))}
+                  {POPULAR_LANGUAGES.map((lang) => (
+                    <Select.Option key={lang.iso_639_1} value={lang.iso_639_1}>
+                      {lang.english_name}
+                    </Select.Option>
+                  ))}
                 </Select>
               </div>
 
-              <Button block danger onClick={resetAllFilters} className="mt-4">
-                Reset All Filters
+              <Button
+                block
+                type="primary"
+                danger
+                size="large"
+                onClick={resetAllFilters}
+                className="mt-4"
+              >
+                Reset Filters
               </Button>
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main Content Area */}
           <div className="col-lg-9">
-            {/* Search & Sort Bar */}
+            {/* Search + Sort + View Toggle */}
             <div className="mb-4">
               <div className="row g-3 align-items-center">
-                <div className="col-md-8">
+                <div className="col-md-7">
                   <Search
-                    placeholder="Search for movies..."
+                    placeholder="Search movies..."
                     allowClear
                     enterButton="Search"
                     size="large"
                     onSearch={(value) => {
-                      setSearchQuery(value);
+                      setSearchQuery(value.trim());
                       setPage(1);
                     }}
                     onChange={(e) => debouncedFetch(e.target.value)}
                   />
                 </div>
-                <div className="col-md-4 text-md-end">
-                  <Space>
+                <div className="col-md-5 text-md-end">
+                  <Space wrap>
                     <Button
                       icon={<i className="ri-apps-2-line" />}
                       type={isGridView ? "primary" : "default"}
@@ -351,14 +384,15 @@ const FilmWrapper = () => {
                     />
                     <Select
                       value={filters.sort}
-                      onChange={(v) => updateFilters({ ...filters, sort: v })}
-                      style={{ width: 200 }}
+                      onChange={(v) => updateFilters({ sort: v })}
+                      style={{ width: 180 }}
+                      size="middle"
                     >
                       <Select.Option value="popularity.desc">
-                        Most Popular
+                        Popular
                       </Select.Option>
                       <Select.Option value="vote_average.desc">
-                        Highest Rated
+                        Top Rated
                       </Select.Option>
                       <Select.Option value="release_date.desc">
                         Newest
@@ -372,18 +406,15 @@ const FilmWrapper = () => {
               </div>
             </div>
 
-            {/* Active Filters Chips */}
-            {(selectedCategory ||
-              filters.genres.length > 0 ||
-              filters.language ||
-              filters.yearRange[0] > 1900) && (
+            {/* Active Filters Tags */}
+            {hasActiveFilters && (
               <div className="mb-4">
                 <Space size={[8, 8]} wrap>
                   {selectedCategory && (
                     <Tag
                       color="volcano"
                       closable
-                      onClose={() => handleCategoryChange("")}
+                      onClose={() => setSelectedCategory("")}
                     >
                       {
                         customCategories.find((c) => c.key === selectedCategory)
@@ -408,45 +439,40 @@ const FilmWrapper = () => {
                     <Tag
                       color="green"
                       closable
-                      onClose={() =>
-                        updateFilters({ ...filters, language: "" })
-                      }
+                      onClose={() => updateFilters({ language: "" })}
                     >
                       {
-                        languages.find((l) => l.iso_639_1 === filters.language)
-                          ?.english_name
+                        POPULAR_LANGUAGES.find(
+                          (l) => l.iso_639_1 === filters.language,
+                        )?.english_name
                       }
                     </Tag>
                   )}
-                  {filters.yearRange[0] > 1900 && (
+                  {(filters.yearRange[0] > 1900 ||
+                    filters.yearRange[1] < currentYear) && (
                     <Tag
                       color="purple"
                       closable
                       onClose={() =>
-                        updateFilters({
-                          ...filters,
-                          yearRange: [1900, currentYear],
-                        })
+                        updateFilters({ yearRange: [1900, currentYear] })
                       }
                     >
-                      {filters.yearRange[0]} - {filters.yearRange[1]}
+                      {filters.yearRange[0]} – {filters.yearRange[1]}
                     </Tag>
                   )}
                 </Space>
               </div>
             )}
 
-            {/* Movies Grid/List */}
+            {/* Results */}
             {loading ? (
               <div className="text-center py-5">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
+                <div className="spinner-border text-primary" role="status" />
               </div>
             ) : movies.length === 0 ? (
               <div className="text-center py-5 text-muted">
-                <h5>No movies found</h5>
-                <p>Try adjusting your filters or search term.</p>
+                <h4>No movies found</h4>
+                <p>Try changing filters or search term</p>
               </div>
             ) : (
               <div className="row g-4">
@@ -455,7 +481,7 @@ const FilmWrapper = () => {
                     key={movie.id}
                     className={`${
                       isGridView
-                        ? "col-xl-3 col-lg-4 col-md-4 col-sm-6"
+                        ? "col-xl-3 col-lg-4 col-md-6 col-sm-6"
                         : "col-12"
                     }`}
                   >
@@ -475,7 +501,7 @@ const FilmWrapper = () => {
             )}
 
             {/* Pagination */}
-            {total > pageSize && (
+            {total > pageSize && !loading && (
               <div className="mt-5 text-center">
                 <Pagination
                   page={page}
@@ -492,7 +518,7 @@ const FilmWrapper = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50 z-1030 d-lg-none"

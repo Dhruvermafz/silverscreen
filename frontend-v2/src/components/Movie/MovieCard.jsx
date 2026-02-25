@@ -9,17 +9,17 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useGetListsQuery } from "../../actions/listApi";
 import { useGetProfileQuery } from "../../actions/userApi";
-import MovieReview from "./MovieReview"; // Adjust path as needed
+import MovieReview from "./MovieReview";
 import { toast } from "react-toastify";
 
 const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const navigate = useNavigate();
+
   const { data: lists = [] } = useGetListsQuery();
   const { data: profile, isLoading: isProfileLoading } = useGetProfileQuery();
 
-  // Log movie data to verify
   console.log("Movie data:", movie);
 
   const handleToggleLike = (e) => {
@@ -80,19 +80,16 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
         className="movie-card-image"
         style={{
           backgroundImage: `url(${
-            movie.posterUrl || "https://via.placeholder.com/300"
+            movie.posterUrl ||
+            "https://via.placeholder.com/300x450?text=No+Poster"
           })`,
         }}
         onClick={() => {
           if (!movie.id) {
             console.error("Movie ID is undefined:", movie);
-            toast.error("Invalid movie ID", {
-              position: "top-right",
-              autoClose: 2000,
-            });
+            toast.error("Invalid movie ID");
             return;
           }
-          console.log("Navigating to:", `/movies/${movie.id}`);
           navigate(`/movies/${movie.id}`);
         }}
         role="img"
@@ -100,59 +97,55 @@ const MovieCard = ({ movie, isCompact = false, onAddToList }) => {
       >
         <div className="movie-card-overlay">
           <div className="movie-card-content">
-            <h3 className="movie-card-title" style={{ color: "white" }}>
-              {movie.title}
-            </h3>
+            <h3 className="movie-card-title">{movie.title}</h3>
+
             {!isCompact && (
               <>
                 <p className="movie-card-meta">
                   {movie.releaseDate?.substring(0, 4) || "N/A"} •{" "}
                   {movie.genre || "N/A"}
                 </p>
+
                 <p className="movie-card-rating">
                   <Rate disabled value={movie.rating / 2} allowHalf /> (
                   {movie.rating || "N/A"})
                 </p>
+
                 <Space size="small" className="movie-card-actions">
                   <Tooltip title="Review">
                     <Button
                       size="small"
                       onClick={handleReviewClick}
-                      aria-label={`Review ${movie.title}`}
                       disabled={isProfileLoading || !profile}
                     >
                       Review
                     </Button>
                   </Tooltip>
+
                   <Tooltip title={isLiked ? "Unlike" : "Like"}>
                     <Button
                       size="small"
                       icon={isLiked ? <HeartFilled /> : <HeartOutlined />}
                       type={isLiked ? "primary" : "default"}
                       onClick={handleToggleLike}
-                      aria-label={
-                        isLiked
-                          ? `Unlike ${movie.title}`
-                          : `Like ${movie.title}`
-                      }
                     />
                   </Tooltip>
+
                   <Tooltip title="Add to List">
                     <Dropdown overlay={addToListMenu} trigger={["click"]}>
                       <Button
                         size="small"
                         icon={<PlusOutlined />}
                         onClick={(e) => e.stopPropagation()}
-                        aria-label={`Add ${movie.title} to list`}
                       />
                     </Dropdown>
                   </Tooltip>
+
                   <Tooltip title="Share">
                     <Button
                       size="small"
                       icon={<ShareAltOutlined />}
                       onClick={handleShare}
-                      aria-label={`Share ${movie.title}`}
                     />
                   </Tooltip>
                 </Space>

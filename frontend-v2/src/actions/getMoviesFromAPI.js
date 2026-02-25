@@ -1,119 +1,140 @@
 import axios from "axios";
 
-// --- TMDB API Config ---
+// ────────────────────────────────────────────────
+// TMDB API Configuration
+// ────────────────────────────────────────────────
 const TMDB_API_URL = "https://api.themoviedb.org/3";
-const TMDB_API_KEY = "967df4e131f467edcdd674b650bf257c";
+const TMDB_API_KEY = "967df4e131f467edcdd674b650bf257c"; // ← move to .env in production!
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/original";
 
-// --- Indian Languages ---
-const INDIAN_LANGUAGES = ["hi", "ta", "te", "ml", "kn", "bn", "mr", "gu"];
+// Indian languages (ISO 639-1 codes)
+const INDIAN_LANGUAGES = [
+  "hi",
+  "ta",
+  "te",
+  "ml",
+  "kn",
+  "bn",
+  "mr",
+  "gu",
+  "pa",
+  "as",
+];
 
-// --- Custom Categories ---
+// ────────────────────────────────────────────────
+// Custom Categories Definition
+// ────────────────────────────────────────────────
 const CUSTOM_CATEGORIES = {
   "oldies-but-goldies": {
     label: "Oldies but Goldies 😎",
     filters: {
-      yearRange: [1900, 2000],
-      voteAverageRange: [7, 10],
-      sort: "vote_average.desc",
+      primary_release_date_gte: "1900-01-01",
+      primary_release_date_lte: "2000-12-31",
+      "vote_average.gte": 7,
+      sort_by: "vote_average.desc",
     },
   },
   "binge-worthy-hits": {
     label: "Binge-Worthy Hits 🔥",
     filters: {
-      yearRange: [2015, new Date().getFullYear()],
-      voteAverageRange: [6, 10],
-      sort: "popularity.desc",
+      primary_release_date_gte: "2015-01-01",
+      "vote_average.gte": 6,
+      sort_by: "popularity.desc",
     },
   },
   "underrated-gems": {
     label: "Underrated Gems 💎",
     filters: {
-      voteAverageRange: [6, 8],
-      voteCount: [50, 500],
-      sort: "vote_average.desc",
+      "vote_average.gte": 6,
+      "vote_average.lte": 8,
+      "vote_count.gte": 50,
+      "vote_count.lte": 500,
+      sort_by: "vote_average.desc",
     },
   },
   "viral-flicks": {
     label: "Viral Flicks 🚀",
     filters: {
-      yearRange: [new Date().getFullYear() - 2, new Date().getFullYear()],
-      sort: "popularity.desc",
+      primary_release_date_gte: `${new Date().getFullYear() - 2}-01-01`,
+      primary_release_date_lte: `${new Date().getFullYear()}-12-31`,
+      sort_by: "popularity.desc",
     },
   },
   "desi-vibes": {
     label: "Desi Vibes 🇮🇳",
     filters: {
-      language: INDIAN_LANGUAGES.join(","),
+      with_original_language: INDIAN_LANGUAGES.join(","),
       region: "IN",
-      sort: "popularity.desc",
+      sort_by: "popularity.desc",
     },
   },
 };
 
-// --- Genre Cache ---
+// ────────────────────────────────────────────────
+// Genre Cache (24-hour TTL)
+// ────────────────────────────────────────────────
 let genreCache = null;
 let genreCacheTimestamp = 0;
-const GENRE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+const GENRE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
-// --- Helper: Fetch & Cache Genres ---
 async function getGenresCached() {
   const now = Date.now();
   if (genreCache && now - genreCacheTimestamp < GENRE_CACHE_TTL) {
     return genreCache;
   }
-  const response = await axios.get(`${TMDB_API_URL}/genre/movie/list`, {
-    params: { api_key: TMDB_API_KEY, language: "en-US" },
-  });
-  genreCache = response.data.genres.reduce((acc, g) => {
-    acc[g.id] = g;
-    return acc;
-  }, {});
-  genreCacheTimestamp = now;
-  return genreCache;
+
+  try {
+    const { data } = await axios.get(`${TMDB_API_URL}/genre/movie/list`, {
+      params: { api_key: TMDB_API_KEY, language: "en-US" },
+    });
+
+    genreCache = data.genres.reduce((acc, g) => {
+      acc[g.id] = g;
+      return acc;
+    }, {});
+    genreCacheTimestamp = now;
+    return genreCache;
+  } catch (err) {
+    console.error("Failed to fetch genres:", err);
+    return {};
+  }
 }
 
-// --- Helper: Map TMDB Movie Object ---
-function mapMovie(movie, genreMap, category = null) {
+// ────────────────────────────────────────────────
+// Movie → App Movie shape mapper
+// ────────────────────────────────────────────────
+function mapMovie(movie, genreMap = {}, categoryKey = null) {
   return {
     id: movie.id,
-    title: movie.title,
+    title: movie.title || movie.name || "Unknown Title",
     posterUrl: movie.poster_path
       ? `${POSTER_BASE_URL}${movie.poster_path}`
       : "/assets/imgs/placeholder.png",
-    poster_path: movie.poster_path,
     backdrop_path: movie.backdrop_path,
-    overview: movie.overview,
-    release_date: movie.release_date,
-    genres: movie.genre_ids?.map(
-      (id) => genreMap[id] || { id, name: "Unknown" }
+    overview: movie.overview || "No overview available.",
+    release_date: movie.release_date || movie.first_air_date || null,
+    genres: (movie.genre_ids || []).map(
+      (id) => genreMap[id] || { id, name: "Unknown" },
     ),
-    rating: movie.vote_average,
-    vote_count: movie.vote_count,
+    rating: movie.vote_average || 0,
+    vote_count: movie.vote_count || 0,
     runtime: movie.runtime || null,
     original_language: movie.original_language,
-    isNew: movie.release_date
-      ? new Date(movie.release_date).getFullYear() === new Date().getFullYear()
-      : false,
+    isNew:
+      movie.release_date &&
+      new Date(movie.release_date).getFullYear() === new Date().getFullYear(),
     isLiked: false,
     showReviewModal: false,
-    boxOffice: null,
-    categoryLabel: category ? CUSTOM_CATEGORIES[category]?.label : null,
+    categoryLabel: categoryKey ? CUSTOM_CATEGORIES[categoryKey]?.label : null,
   };
 }
 
-// --- Enhanced: getMoviesFromAPI ---
-export const getMoviesFromAPI = async (query, filter = {}, page = 1) => {
+// ────────────────────────────────────────────────
+// Main movie fetch function
+// ────────────────────────────────────────────────
+export const getMoviesFromAPI = async (query = "", filter = {}, page = 1) => {
   try {
-    const {
-      sort,
-      genres,
-      yearRange,
-      language,
-      runtimeRange,
-      voteAverageRange,
-      category,
-    } = filter;
     const genreMap = await getGenresCached();
 
     const params = {
@@ -121,231 +142,160 @@ export const getMoviesFromAPI = async (query, filter = {}, page = 1) => {
       language: "en-US",
       page,
       include_adult: false,
+      include_video: false,
     };
 
-    // Category-specific filters
-    if (category && CUSTOM_CATEGORIES[category]) {
-      const catFilters = CUSTOM_CATEGORIES[category].filters;
-      Object.assign(params, {
-        sort_by: catFilters.sort || sort,
-        with_genres: genres?.length ? genres.join(",") : catFilters.genres,
-        "primary_release_date.gte": catFilters.yearRange
-          ? `${catFilters.yearRange[0]}-01-01`
-          : yearRange?.[0]
-          ? `${yearRange[0]}-01-01`
-          : undefined,
-        "primary_release_date.lte": catFilters.yearRange
-          ? `${catFilters.yearRange[1]}-12-31`
-          : yearRange?.[1]
-          ? `${yearRange[1]}-12-31`
-          : undefined,
-        with_original_language: catFilters.language || language,
-        "with_runtime.gte": catFilters.runtimeRange?.[0] || runtimeRange?.[0],
-        "with_runtime.lte": catFilters.runtimeRange?.[1] || runtimeRange?.[1],
-        "vote_average.gte":
-          catFilters.voteAverageRange?.[0] || voteAverageRange?.[0],
-        "vote_average.lte":
-          catFilters.voteAverageRange?.[1] || voteAverageRange?.[1],
-        "vote_count.gte": catFilters.voteCount?.[0],
-        "vote_count.lte": catFilters.voteCount?.[1],
-        region: catFilters.region || undefined,
-      });
-    } else {
-      if (sort) params.sort_by = sort;
-      if (genres?.length) params.with_genres = genres.join(",");
-      if (yearRange?.length === 2) {
-        params["primary_release_date.gte"] = `${yearRange[0]}-01-01`;
-        params["primary_release_date.lte"] = `${yearRange[1]}-12-31`;
-      }
-      if (language) params.with_original_language = language;
-      if (runtimeRange?.length === 2) {
-        params["with_runtime.gte"] = runtimeRange[0];
-        params["with_runtime.lte"] = runtimeRange[1];
-      }
-      if (voteAverageRange?.length === 2) {
-        params["vote_average.gte"] = voteAverageRange[0];
-        params["vote_average.lte"] = voteAverageRange[1];
-      }
+    // ── Apply category-specific filters if category is provided ──
+    let categoryKey = filter.category;
+    if (categoryKey && CUSTOM_CATEGORIES[categoryKey]) {
+      Object.assign(params, CUSTOM_CATEGORIES[categoryKey].filters);
     }
 
-    let url = query
+    // ── Override / merge with explicit filter props ──
+    if (filter.sort) params.sort_by = filter.sort;
+    if (filter.genres?.length) params.with_genres = filter.genres.join(",");
+    if (filter.yearRange?.[0])
+      params["primary_release_date.gte"] = `${filter.yearRange[0]}-01-01`;
+    if (filter.yearRange?.[1])
+      params["primary_release_date.lte"] = `${filter.yearRange[1]}-12-31`;
+    if (filter.language) params.with_original_language = filter.language;
+    if (filter.runtimeRange?.[0])
+      params["with_runtime.gte"] = filter.runtimeRange[0];
+    if (filter.runtimeRange?.[1])
+      params["with_runtime.lte"] = filter.runtimeRange[1];
+    if (filter.voteAverageRange?.[0])
+      params["vote_average.gte"] = filter.voteAverageRange[0];
+    if (filter.voteAverageRange?.[1])
+      params["vote_average.lte"] = filter.voteAverageRange[1];
+    if (filter.voteCount?.[0]) params["vote_count.gte"] = filter.voteCount[0];
+    if (filter.voteCount?.[1]) params["vote_count.lte"] = filter.voteCount[1];
+    if (filter.region) params.region = filter.region;
+
+    const baseUrl = query.trim()
       ? `${TMDB_API_URL}/search/movie`
       : `${TMDB_API_URL}/discover/movie`;
 
-    if (query) params.query = query;
+    if (query.trim()) {
+      params.query = query.trim();
+    }
 
+    // ── Special logic: prioritize Indian content when no query/category ──
     let movies = [];
     let totalResults = 0;
 
-    if (!query && !category) {
-      // Fetch Indian movies first
+    if (!query.trim() && !categoryKey) {
+      // Step 1: Indian language + region priority
       const indianParams = {
         ...params,
         with_original_language: INDIAN_LANGUAGES.join(","),
         region: "IN",
       };
-      const indianResponse = await axios.get(url, { params: indianParams });
-      const indianMovies = (indianResponse.data.results || []).map((m) =>
-        mapMovie(m, genreMap, category)
-      );
-      totalResults += indianResponse.data.total_results || 0;
 
-      // International fallback
-      let otherMovies = [];
+      const indianRes = await axios.get(baseUrl, { params: indianParams });
+      const indianMovies = (indianRes.data.results || []).map((m) =>
+        mapMovie(m, genreMap, categoryKey),
+      );
+      totalResults += indianRes.data.total_results || 0;
+
+      movies = [...indianMovies];
+
+      // Step 2: Fill up to ~20 if needed with international
       if (indianMovies.length < 20) {
         const otherParams = {
           ...params,
-          without_original_language: INDIAN_LANGUAGES.join(","),
+          // We can't use without_original_language → rely on region absence
         };
-        const otherResponse = await axios.get(url, { params: otherParams });
-        otherMovies = (otherResponse.data.results || []).map((m) =>
-          mapMovie(m, genreMap, category)
+        const otherRes = await axios.get(baseUrl, { params: otherParams });
+        const otherMovies = (otherRes.data.results || []).map((m) =>
+          mapMovie(m, genreMap, categoryKey),
         );
-        totalResults += otherResponse.data.total_results || 0;
-      }
+        totalResults += otherRes.data.total_results || 0;
 
-      const seen = new Set();
-      movies = [...indianMovies, ...otherMovies].filter((m) => {
-        if (seen.has(m.id)) return false;
-        seen.add(m.id);
-        return true;
-      });
+        // Deduplicate & append
+        const seen = new Set(movies.map((m) => m.id));
+        const uniqueOthers = otherMovies.filter((m) => !seen.has(m.id));
+        movies = [...movies, ...uniqueOthers.slice(0, 20 - movies.length)];
+      }
     } else {
-      const response = await axios.get(url, { params });
+      // Normal search / category / filtered discover
+      const response = await axios.get(baseUrl, { params });
       movies = (response.data.results || []).map((m) =>
-        mapMovie(m, genreMap, category)
+        mapMovie(m, genreMap, categoryKey),
       );
       totalResults = response.data.total_results || 0;
     }
 
-    return { movies, totalResults, currentPage: page };
+    return {
+      movies,
+      totalResults,
+      currentPage: page,
+      totalPages: Math.ceil(totalResults / 20) || 1,
+    };
   } catch (error) {
-    console.error("Error fetching movies:", error);
-    return { movies: [], totalResults: 0, currentPage: page };
+    console.error(
+      "getMoviesFromAPI error:",
+      error?.response?.data || error.message,
+    );
+    return { movies: [], totalResults: 0, currentPage: page, totalPages: 1 };
   }
 };
 
-// --- Genres ---
+// ────────────────────────────────────────────────
+// Exported helpers (unchanged or slightly improved)
+// ────────────────────────────────────────────────
+
 export const getGenresFromAPI = async () => {
   try {
     const genreMap = await getGenresCached();
     return Object.values(genreMap);
-  } catch (error) {
-    console.error("Error fetching genres:", error);
+  } catch {
     return [];
   }
 };
 
-// --- Languages ---
-export const getLanguagesFromAPI = async () => {
-  try {
-    const response = await axios.get(
-      `${TMDB_API_URL}/configuration/languages`,
-      {
-        params: { api_key: TMDB_API_KEY },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching languages:", error);
-    return [];
-  }
-};
-
-// --- Custom Categories ---
 export const getCustomCategories = () => {
-  return Object.entries(CUSTOM_CATEGORIES).map(([key, value]) => ({
+  return Object.entries(CUSTOM_CATEGORIES).map(([key, { label }]) => ({
     key,
-    label: value.label,
+    label,
   }));
 };
 
-// --- New: Extra Endpoints (but no component changes needed) ---
+// Optional: keep these if used elsewhere
 export const getMovieDetails = async (id) => {
   try {
-    const response = await axios.get(`${TMDB_API_URL}/movie/${id}`, {
-      params: { api_key: TMDB_API_KEY, language: "en-US" },
+    const { data } = await axios.get(`${TMDB_API_URL}/movie/${id}`, {
+      params: {
+        api_key: TMDB_API_KEY,
+        language: "en-US",
+        append_to_response: "videos,credits",
+      },
     });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching movie details:", error);
+    return data;
+  } catch (err) {
+    console.error("getMovieDetails failed:", err);
     return null;
-  }
-};
-
-export const getMovieCredits = async (id) => {
-  try {
-    const response = await axios.get(`${TMDB_API_URL}/movie/${id}/credits`, {
-      params: { api_key: TMDB_API_KEY, language: "en-US" },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching movie credits:", error);
-    return null;
-  }
-};
-
-export const getWatchProviders = async (id) => {
-  try {
-    const response = await axios.get(
-      `${TMDB_API_URL}/movie/${id}/watch/providers`,
-      {
-        params: { api_key: TMDB_API_KEY },
-      }
-    );
-    return response.data.results || {};
-  } catch (error) {
-    console.error("Error fetching watch providers:", error);
-    return {};
-  }
-};
-
-export const getSimilarMovies = async (id) => {
-  try {
-    const response = await axios.get(`${TMDB_API_URL}/movie/${id}/similar`, {
-      params: { api_key: TMDB_API_KEY, language: "en-US" },
-    });
-    return response.data.results || [];
-  } catch (error) {
-    console.error("Error fetching similar movies:", error);
-    return [];
   }
 };
 
 export const getTrendingMovies = async (timeWindow = "week") => {
   try {
-    const response = await axios.get(
+    const { data } = await axios.get(
       `${TMDB_API_URL}/trending/movie/${timeWindow}`,
-      {
-        params: { api_key: TMDB_API_KEY },
-      }
+      { params: { api_key: TMDB_API_KEY } },
     );
-    return response.data.results || [];
-  } catch (error) {
-    console.error("Error fetching trending movies:", error);
+    return data.results || [];
+  } catch {
     return [];
   }
 };
 
-// Example: NewsAPI Integration
-const fetchNews = async (name) => {
-  try {
-    const response = await axios.get("https://newsapi.org/v2/everything", {
-      params: {
-        q: name,
-        apiKey: "YOUR_NEWSAPI_KEY",
-        language: "en",
-        sortBy: "publishedAt",
-        pageSize: 5,
-      },
-    });
-    return response.data.articles.map((article) => ({
-      title: article.title,
-      url: article.url,
-      source: article.source.name,
-    }));
-  } catch (error) {
-    console.error("Error fetching news:", error);
-    return [];
-  }
+// NewsAPI example – better to move key to env
+// export const fetchNewsAboutMovie = async (title) => { ... }
+
+export default {
+  getMoviesFromAPI,
+  getGenresFromAPI,
+  getCustomCategories,
+  getMovieDetails,
+  getTrendingMovies,
 };

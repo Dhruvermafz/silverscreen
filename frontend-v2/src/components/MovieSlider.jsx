@@ -12,9 +12,9 @@ const MovieSlider = ({ category = "viral-flicks", limit = 12 }) => {
       try {
         setLoading(true);
         const { movies } = await getMoviesFromAPI("", { category }, 1);
-        // Duplicate for seamless loop
+        // Duplicate for seamless infinite loop
         const displayedMovies = movies.slice(0, limit);
-        setMovies([...displayedMovies, ...displayedMovies]); // Double for infinite scroll
+        setMovies([...displayedMovies, ...displayedMovies]);
       } catch (error) {
         console.error("Error fetching movies for slider:", error);
         setMovies([]);
@@ -45,12 +45,12 @@ const MovieSlider = ({ category = "viral-flicks", limit = 12 }) => {
         <div className="movie-slider-track scroll-down">
           {movies.map((movie, index) => (
             <div
-              key={`left-${movie.id}-${index}`}
+              key={`left-${movie.id || index}-${index}`}
               className="movie-poster-item"
             >
               <img
                 src={movie.posterUrl || "/assets/imgs/placeholder.png"}
-                alt={movie.title}
+                alt={movie.title || "Movie poster"}
                 loading="lazy"
                 onError={(e) => {
                   e.target.src = "/assets/imgs/placeholder.png";
@@ -66,12 +66,12 @@ const MovieSlider = ({ category = "viral-flicks", limit = 12 }) => {
         <div className="movie-slider-track scroll-up">
           {movies.map((movie, index) => (
             <div
-              key={`right-${movie.id}-${index}`}
+              key={`right-${movie.id || index}-${index}`}
               className="movie-poster-item"
             >
               <img
                 src={movie.posterUrl || "/assets/imgs/placeholder.png"}
-                alt={movie.title}
+                alt={movie.title || "Movie poster"}
                 loading="lazy"
                 onError={(e) => {
                   e.target.src = "/assets/imgs/placeholder.png";
@@ -82,7 +82,7 @@ const MovieSlider = ({ category = "viral-flicks", limit = 12 }) => {
         </div>
       </div>
 
-      {/* Optional Dark Overlay for Text Readability */}
+      {/* Optional very subtle overlay – helps text/buttons stand out if needed */}
       <div className="movie-slider-overlay" />
     </div>
   );

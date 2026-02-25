@@ -18,8 +18,6 @@ import {
   SearchOutlined,
   MenuOutlined,
   CloseOutlined,
-  SunOutlined,
-  MoonOutlined,
   UserOutlined,
   LoginOutlined,
   UserAddOutlined,
@@ -34,8 +32,7 @@ import { useLogoutMutation } from "../../actions/authApi";
 import { useGetProfileQuery } from "../../actions/userApi";
 import { getMoviesFromAPI } from "../../actions/getMoviesFromAPI";
 
-import logoLight from "../../assets/img/logo/logo.png";
-import logoDark from "../../assets/img/logo/logo_dark.png";
+import logo from "../../assets/img/logo/logo.png";
 
 const { Search } = Input;
 
@@ -51,21 +48,8 @@ const Header = () => {
   const [searchValue, setSearchValue] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [recentSearches, setRecentSearches] = useState(
-    JSON.parse(localStorage.getItem("recentSearches") || "[]")
+    JSON.parse(localStorage.getItem("recentSearches") || "[]"),
   );
-
-  const [isDarkMode, setIsDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
-
-  // Theme sync
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDarkMode ? "dark" : "light"
-    );
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
 
   // Live search with debounce
   useEffect(() => {
@@ -88,7 +72,7 @@ const Header = () => {
   const addRecentSearch = (term) => {
     const updated = [term, ...recentSearches.filter((s) => s !== term)].slice(
       0,
-      8
+      8,
     );
     setRecentSearches(updated);
     localStorage.setItem("recentSearches", JSON.stringify(updated));
@@ -121,10 +105,10 @@ const Header = () => {
 
   const displayName = user?.username || user?.email?.split("@")[0] || "User";
 
-  // User Menu
+  // User Menu (kept bg-white)
   const userMenu = (
     <div
-      className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg"
+      className="p-4 bg-white rounded-lg shadow-lg"
       style={{ minWidth: 220 }}
     >
       <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
@@ -210,9 +194,9 @@ const Header = () => {
 
   return (
     <>
-      {/* Main Header */}
+      {/* Main Header – now light */}
       <header
-        className="bg-dark border-bottom border-secondary sticky-top"
+        className="bg-white border-bottom border-light sticky-top shadow-sm"
         style={{ zIndex: 1000 }}
       >
         <div className="container">
@@ -222,15 +206,11 @@ const Header = () => {
               <Button
                 type="text"
                 icon={<MenuOutlined style={{ fontSize: "1.4rem" }} />}
-                className="text-white d-lg-none"
+                className="text-dark d-lg-none"
                 onClick={() => setMobileMenuOpen(true)}
               />
               <Link to="/">
-                <img
-                  src={isDarkMode ? logoDark : logoLight}
-                  alt="DimeCine"
-                  height={40}
-                />
+                <img src={logo} alt="DimeCine" height={40} />
               </Link>
             </div>
 
@@ -250,32 +230,28 @@ const Header = () => {
             </div>
 
             {/* Right: Desktop Actions */}
-            <Space size="middle" className="d-none d-lg-flex">
+            <Space
+              size="middle"
+              className="d-none d-lg-flex align-items-center"
+            >
               <Link
                 to="/explore"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+                className="text-dark text-decoration-none fw-medium hover-text-primary"
               >
                 Explore
               </Link>
               <Link
                 to="/categories"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+                className="text-dark text-decoration-none fw-medium hover-text-primary"
               >
                 Categories
               </Link>
               <Link
                 to="/groups"
-                className="text-white text-decoration-none opacity-75 hover-opacity-100"
+                className="text-dark text-decoration-none fw-medium hover-text-primary"
               >
                 Communities
               </Link>
-
-              <Button
-                type="text"
-                icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="text-white"
-              />
 
               {loadingUser ? (
                 <Spin />
@@ -309,14 +285,14 @@ const Header = () => {
             <Button
               type="text"
               icon={<SearchOutlined style={{ fontSize: "1.4rem" }} />}
-              className="text-white d-lg-none"
+              className="text-dark d-lg-none"
               onClick={() => setSearchDrawerOpen(true)}
             />
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Menu Drawer – texts/icons already adapt well */}
       <Drawer
         placement="left"
         open={mobileMenuOpen}
@@ -364,13 +340,6 @@ const Header = () => {
               Members
             </Link>
 
-            <div className="border-top pt-4">
-              <Button block onClick={() => setIsDarkMode(!isDarkMode)}>
-                {isDarkMode ? <SunOutlined /> : <MoonOutlined />}{" "}
-                {isDarkMode ? "Light" : "Dark"} Mode
-              </Button>
-            </div>
-
             {user ? (
               <div className="border-top pt-4">
                 <Button
@@ -405,7 +374,7 @@ const Header = () => {
         </div>
       </Drawer>
 
-      {/* Search Drawer (Mobile) */}
+      {/* Search Drawer (Mobile) – no dark classes here */}
       <Drawer
         title="Search"
         placement="top"

@@ -1,7 +1,7 @@
 .tmdb-movie-page {
   font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #f5f5f5;
-  color: #000;
+  background-color: #f8f9fa; /* Very light gray / off-white */
+  color: #212529; /* Dark gray / near-black text */
 }
 
 /* Backdrop Section */
@@ -9,18 +9,22 @@
   background-size: cover;
   background-position: center top;
   position: relative;
-  min-height: 400px;
+  min-height: 420px;
   width: 100%;
 }
 
 .tmdb-backdrop-overlay {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9));
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.45),
+    rgba(0, 0, 0, 0.65)
+  ); /* Softer gradient — still gives contrast but not pitch black */
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 40px 20px;
+  padding: 48px 24px;
 }
 
 .tmdb-header {
@@ -31,145 +35,159 @@
 .tmdb-poster {
   width: 100%;
   max-width: 342px;
-  border-radius: 4px;
-  border: 1px solid #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .tmdb-title {
-  color: #fff !important;
-  font-size: 2.2em;
+  color: #ffffff !important;
+  font-size: 2.4em;
   font-weight: 700;
   margin-bottom: 8px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); /* Improved readability on backdrop */
 }
 
 .tmdb-year {
-  color: #fff;
-  font-size: 0.8em;
+  color: #e9ecef;
+  font-size: 0.9em;
   font-weight: 400;
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .tmdb-tagline {
-  color: #fff;
+  color: #e9ecef;
   font-style: italic;
-  font-size: 1.1em;
-  margin-bottom: 12px;
+  font-size: 1.15em;
+  margin-bottom: 14px;
 }
 
 .tmdb-meta {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   align-items: center;
 }
 
 .tmdb-certification {
-  color: #fff;
-  border: 1px solid #fff;
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-size: 0.9em;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.95em;
+  font-weight: 500;
 }
 
 .tmdb-rating {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .tmdb-rating-text {
-  color: #fff;
-  font-size: 0.9em;
-  margin-left: 8px;
+  color: #ffffff;
+  font-size: 1em;
+  margin-left: 10px;
 }
 
 .tmdb-actions {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .tmdb-action-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   border: none;
-  color: #fff;
-  width: 40px;
-  height: 40px;
-  font-size: 1.2em;
+  color: #ffffff;
+  width: 44px;
+  height: 44px;
+  font-size: 1.3em;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .tmdb-action-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
 }
 
 .tmdb-action-btn-primary {
   background: #01b4e4 !important;
   border: none !important;
-  color: #fff !important;
-  height: 40px;
-  font-size: 1em;
-  border-radius: 20px;
-  padding: 0 20px;
+  color: #ffffff !important;
+  height: 42px;
+  font-size: 1.05em;
+  border-radius: 24px;
+  padding: 0 24px;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
 .tmdb-action-btn-primary:hover {
-  background: #0398c2 !important;
+  background: #009fd9 !important;
+  transform: translateY(-1px);
 }
 
 /* Main Content */
 .tmdb-content {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: -80px auto 0;
+  padding: 32px 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 2;
 }
 
 /* Tabs */
 .tmdb-tabs .ant-tabs-nav {
-  background: #f5f5f5;
+  background: #ffffff;
   padding: 0 16px;
-  border-radius: 4px;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 24px;
 }
 
 .tmdb-tabs .ant-tabs-tab {
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: 600;
-  color: #000;
+  color: #495057;
 }
 
 .tmdb-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #01b4e4 !important;
 }
 
+/* Overview & Details */
 .tmdb-overview {
   font-size: 1.1em;
-  line-height: 1.6;
-  margin-bottom: 16px;
+  line-height: 1.7;
+  color: #343a40;
+  margin-bottom: 24px;
 }
 
 .tmdb-details {
-  font-size: 0.95em;
+  font-size: 1em;
   list-style: none;
   padding: 0;
+  color: #495057;
 }
 
 .tmdb-details li {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
+/* Trailer */
 .tmdb-trailer-iframe {
   width: 100%;
-  max-width: 640px;
-  height: 360px;
+  max-width: 720px;
+  height: 405px;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Cast & Crew Face Cards */
 .tmdb-cast-crew {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .tmdb-face-card {
@@ -177,12 +195,13 @@
 }
 
 .tmdb-face-image {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e3e3e3;
-  margin-bottom: 8px;
+  border: 3px solid #e9ecef;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .tmdb-face-info {
@@ -192,54 +211,61 @@
 
 .tmdb-face-info .ant-typography {
   margin: 0;
-  font-size: 0.9em;
+  font-size: 0.95em;
+  color: #343a40;
 }
 
 .tmdb-face-info .ant-typography:first-child {
   font-weight: 600;
+  color: #212529;
 }
 
 /* Sidebar */
 .tmdb-sidebar {
-  background: #fff;
-  padding: 16px;
-  border: 1px solid #e3e3e3;
-  border-radius: 4px;
+  background: #ffffff;
+  padding: 24px;
+  border: 1px solid #e9ecee;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .tmdb-facts {
-  font-size: 0.9em;
+  font-size: 0.95em;
   line-height: 1.8;
   list-style: none;
   padding: 0;
+  color: #495057;
 }
 
 .tmdb-facts li {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .tmdb-facts a {
   color: #01b4e4;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .tmdb-facts a:hover {
   text-decoration: underline;
+  color: #009fd9;
 }
 
-/* Movie List */
+/* Movie List / Recommendations */
 .tmdb-movie-list .ant-col {
   display: flex;
 }
 
 .tmdb-section h4 {
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  color: #212529;
 }
 
 /* Review Form */
 .tmdb-review-form .ant-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .tmdb-review-form .ant-btn-primary {
@@ -248,23 +274,23 @@
 }
 
 .tmdb-review-form .ant-btn-primary:hover {
-  background: #0398c2;
-  border-color: #0398c2;
+  background: #009fd9;
+  border-color: #009fd9;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .tmdb-backdrop {
-    min-height: 500px;
+    min-height: 520px;
   }
 
   .tmdb-poster {
-    max-width: 200px;
+    max-width: 240px;
     margin: 0 auto;
   }
 
   .tmdb-title {
-    font-size: 1.8em;
+    font-size: 2em;
     text-align: center;
   }
 
@@ -277,16 +303,12 @@
   }
 
   .tmdb-trailer-iframe {
-    height: 200px;
+    height: 240px;
   }
 
-  .tmdb-tabs .ant-tabs-nav {
-    padding: 0 8px;
-  }
-
-  .tmdb-face-image {
-    width: 80px;
-    height: 80px;
+  .tmdb-content {
+    margin-top: -60px;
+    padding: 24px 16px;
   }
 }
 
@@ -297,26 +319,31 @@
   }
 
   .tmdb-face-image {
-    width: 60px;
-    height: 60px;
+    width: 90px;
+    height: 90px;
+  }
+
+  .tmdb-title {
+    font-size: 1.8em;
   }
 }
+
 /* Face Card Grid */
 .mn-face-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
 @media (max-width: 991px) {
   .mn-face-card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
 
 @media (max-width: 576px) {
   .mn-face-card-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   }
 }
